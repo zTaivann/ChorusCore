@@ -1,0 +1,126 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   W A R P S                                                            │
+# │   /warp  /warps  /setwarp  /delwarp                                    │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# ── How a command block works ──────────────────────────────────────────────
+#
+# Every command reads the `defaults` block first and then its own, so a command
+# only writes down what it does differently. Add any of these options to any
+# command to override it:
+#
+#   enabled           false makes the command answer that it is switched off.
+#                     The `enabled` at the top of this file does the same for
+#                     the whole module at once.
+#
+#   warmup-seconds    how long the player stands still before the teleport
+#                     happens. Only means anything for commands that teleport.
+#                     Moving or taking damage during the wait cancels it and
+#                     nothing is charged. chorus.teleport.instant skips it.
+#
+#   cooldown-seconds  how long before that player may use the command again.
+#                     Only starts once the command actually succeeded.
+#                     chorus.bypass.cooldown ignores it.
+#
+#   price             what it costs, through Vault. 0 is free. Without an
+#                     economy plugin the price is ignored.
+#                     chorus.bypass.price never pays.
+#
+#   sound.key         a Minecraft sound name, for example entity.enderman.teleport.
+#                     Empty for silence. A name the client does not know simply
+#                     plays nothing, so a typo can never break anything.
+#   sound.volume      0 to 10. Doubles as the distance others hear it from.
+#   sound.pitch       0.5 to 2. Higher is squeakier.
+#
+#   particle.name     a Bukkit particle name, for example PORTAL. Empty for none.
+#                     Mojang renamed several of these, so both the old and the
+#                     new spelling are accepted and the right one is picked for
+#                     your version. Safe on every supported version: PORTAL,
+#                     REVERSE_PORTAL, FLAME, SOUL_FIRE_FLAME, CLOUD, END_ROD,
+#                     DRAGON_BREATH, HEART, CRIT, ELECTRIC_SPARK, GLOW, NOTE,
+#                     SNOWFLAKE, ASH.
+#   particle.count    how many. 0 means none.
+#   particle.spread   how far they scatter sideways, in blocks.
+#   particle.height   how tall the burst is, in blocks.
+#   particle.speed    how fast they drift. Keep it small.
+#
+# Teleport commands show their particles twice: once where the player left from
+# and once where they arrive.
+
+# Switches off every command in this file at once.
+enabled: true
+
+# ── Settings ──────────────────────────────────────────────────────────────
+warps:
+  # Require chorus.warp.use.<name> on top of chorus.warp.use.
+  # Warps a player cannot use disappear from /warps instead of erroring on /warp.
+  # Example with LuckPerms: lp group vip permission set chorus.warp.use.vipzone
+  per-warp-permission: false
+
+  # Names accept letters, numbers, hyphens and underscores.
+  max-name-length: 24
+
+  # /warps opens a clickable grid instead of printing a line of names.
+  menu:
+    enabled: true
+    rows: 3
+    icon: ENDER_PEARL
+    filler: ''
+    navigation-filler: GRAY_STAINED_GLASS_PANE
+    previous-page: ARROW
+    next-page: ARROW
+    close: BARRIER
+
+# ── Commands ──────────────────────────────────────────────────────────────
+commands:
+
+  # Everything below inherits this and overrides only what it needs.
+  defaults:
+    enabled: true
+    warmup-seconds: 0
+    cooldown-seconds: 0
+    price: 0.0
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.2
+    particle:
+      name: ''
+      count: 0
+      spread: 0.4
+      height: 1.8
+      speed: 0.02
+
+  warp:
+    enabled: true
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.7
+      pitch: 1.0
+    particle:
+      name: PORTAL
+      count: 45
+      height: 2.0
+      speed: 0.04
+
+  warps:
+    enabled: true
+    sound:
+      pitch: 1.5
+
+  setwarp:
+    enabled: true
+    sound:
+      key: entity.player.levelup
+      volume: 0.6
+      pitch: 1.5
+
+  delwarp:
+    enabled: true
+    sound:
+      key: block.note_block.bass
+      volume: 0.7
+      pitch: 0.8
+

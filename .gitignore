@@ -1,0 +1,8 @@
+.gradle/
+build/
+.idea/
+*.iml
+run/
+
+# The wrapper jar has to be committed, and plenty of people ignore *.jar globally.
+!gradle/wrapper/gradle-wrapper.jar

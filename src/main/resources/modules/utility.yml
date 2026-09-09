@@ -1,0 +1,266 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   U T I L I T Y                                                        │
+# │   /heal  /feed  /fly  /god  /ping  /fix  /trash  /speed  /top  /near   │
+# │   /invsee  /ecsee  /craft  /anvil  /smithingtable  /grindstone         │
+# │   /stonecutter  /loom  /cartography  /enchanting  /enderchest          │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# ── How a command block works ──────────────────────────────────────────────
+#
+# Every command reads the `defaults` block first and then its own, so a command
+# only writes down what it does differently. Add any of these options to any
+# command to override it:
+#
+#   enabled           false makes the command answer that it is switched off.
+#                     The `enabled` at the top of this file does the same for
+#                     the whole module at once.
+#
+#   warmup-seconds    how long the player stands still before the teleport
+#                     happens. Only means anything for commands that teleport.
+#                     Moving or taking damage during the wait cancels it and
+#                     nothing is charged. chorus.teleport.instant skips it.
+#
+#   cooldown-seconds  how long before that player may use the command again.
+#                     Only starts once the command actually succeeded.
+#                     chorus.bypass.cooldown ignores it.
+#
+#   price             what it costs, through Vault. 0 is free. Without an
+#                     economy plugin the price is ignored.
+#                     chorus.bypass.price never pays.
+#
+#   sound.key         a Minecraft sound name, for example entity.enderman.teleport.
+#                     Empty for silence. A name the client does not know simply
+#                     plays nothing, so a typo can never break anything.
+#   sound.volume      0 to 10. Doubles as the distance others hear it from.
+#   sound.pitch       0.5 to 2. Higher is squeakier.
+#
+#   particle.name     a Bukkit particle name, for example PORTAL. Empty for none.
+#                     Mojang renamed several of these, so both the old and the
+#                     new spelling are accepted and the right one is picked for
+#                     your version. Safe on every supported version: PORTAL,
+#                     REVERSE_PORTAL, FLAME, SOUL_FIRE_FLAME, CLOUD, END_ROD,
+#                     DRAGON_BREATH, HEART, CRIT, ELECTRIC_SPARK, GLOW, NOTE,
+#                     SNOWFLAKE, ASH.
+#   particle.count    how many. 0 means none.
+#   particle.spread   how far they scatter sideways, in blocks.
+#   particle.height   how tall the burst is, in blocks.
+#   particle.speed    how fast they drift. Keep it small.
+#
+# Teleport commands show their particles twice: once where the player left from
+# and once where they arrive.
+
+# Every command here defaults to op except /ping. Grant what you want per rank,
+# for example: lp group vip permission set chorus.utility.craft
+
+# Switches off every command in this file at once.
+enabled: true
+
+# ── Settings ──────────────────────────────────────────────────────────────
+utility:
+  heal:
+    extinguish: true
+    clear-effects: false
+    restore-food: false
+
+  feed:
+    # 0 to 20. Vanilla food tops out at 20 and drains from there.
+    saturation: 20.0
+
+  fix:
+    # Whether /fix all exists at all. chorus.utility.fix.all is still required.
+    allow-all: true
+    # Items that can never be repaired, whatever the permission.
+    blacklist: [ ]
+
+  disposal:
+    # Height of the /trash window, 1 to 6 rows.
+    # Whatever is inside when it closes is gone for good.
+    rows: 4
+
+  speed:
+    # 1 is always exactly vanilla speed and this value is always the fastest
+    # the client will accept, on foot and in the air.
+    maximum: 10.0
+
+  invsee:
+    filler: GRAY_STAINED_GLASS_PANE
+    # How often an open window re-reads the player it shows, in ticks.
+    # The task only runs while somebody actually has a window open.
+    refresh-ticks: 10
+
+  top:
+    # The highest block in the Nether is the bedrock roof, so /top there would
+    # drop the player on top of the world.
+    allow-in-nether: false
+
+  near:
+    default-radius: 100
+    max-radius: 500
+
+# ── Commands ──────────────────────────────────────────────────────────────
+commands:
+
+  # Everything below inherits this and overrides only what it needs.
+  defaults:
+    enabled: true
+    warmup-seconds: 0
+    cooldown-seconds: 0
+    price: 0.0
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.2
+    particle:
+      name: ''
+      count: 0
+      spread: 0.4
+      height: 1.8
+      speed: 0.02
+
+  heal:
+    enabled: true
+    sound:
+      key: entity.player.levelup
+      volume: 0.6
+      pitch: 1.6
+
+  feed:
+    enabled: true
+    sound:
+      key: entity.player.burp
+      volume: 0.7
+      pitch: 1.2
+
+  fly:
+    enabled: true
+    sound:
+      key: entity.bat.takeoff
+      volume: 0.7
+      pitch: 1.2
+
+  god:
+    enabled: true
+    sound:
+      key: block.beacon.activate
+      volume: 0.4
+      pitch: 1.5
+
+  ping:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.6
+
+  fix:
+    enabled: true
+    sound:
+      key: block.anvil.use
+      volume: 0.5
+      pitch: 1.4
+
+  trash:
+    enabled: true
+    sound:
+      key: block.barrel.open
+      volume: 0.6
+      pitch: 1.0
+
+  speed:
+    enabled: true
+    sound:
+      key: block.note_block.pling
+      volume: 0.6
+      pitch: 1.8
+
+  top:
+    enabled: true
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.7
+      pitch: 1.4
+    particle:
+      name: END_ROD
+      count: 40
+      height: 2.0
+      speed: 0.05
+
+  near:
+    enabled: true
+    sound:
+      pitch: 1.4
+
+  invsee:
+    enabled: true
+    sound:
+      key: block.ender_chest.open
+      volume: 0.5
+      pitch: 1.2
+
+  ecsee:
+    enabled: true
+    sound:
+      key: block.ender_chest.open
+      volume: 0.5
+      pitch: 0.9
+
+  craft:
+    enabled: true
+
+  anvil:
+    enabled: true
+    sound:
+      key: block.anvil.land
+      volume: 0.3
+      pitch: 1.6
+
+  smithingtable:
+    enabled: true
+    sound:
+      key: block.smithing_table.use
+      volume: 0.6
+      pitch: 1.0
+
+  grindstone:
+    enabled: true
+    sound:
+      key: block.grindstone.use
+      volume: 0.6
+      pitch: 1.0
+
+  stonecutter:
+    enabled: true
+    sound:
+      key: ui.stonecutter.take_result
+      volume: 0.6
+      pitch: 1.0
+
+  loom:
+    enabled: true
+    sound:
+      key: ui.loom.take_result
+      volume: 0.6
+      pitch: 1.0
+
+  cartography:
+    enabled: true
+    sound:
+      key: ui.cartography_table.take_result
+      volume: 0.6
+      pitch: 1.0
+
+  enchanting:
+    enabled: true
+    sound:
+      key: block.enchantment_table.use
+      volume: 0.6
+      pitch: 1.0
+
+  enderchest:
+    enabled: true
+    sound:
+      key: block.ender_chest.open
+      volume: 0.6
+      pitch: 1.0
+

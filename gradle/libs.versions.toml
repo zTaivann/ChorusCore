@@ -1,0 +1,19 @@
+[versions]
+paper = "1.18.2-R0.1-SNAPSHOT"
+hikari = "6.3.0"
+sqlite = "3.49.1.0"
+mariadb = "3.5.3"
+vault = "1.7"
+placeholderapi = "2.11.6"
+junit = "5.11.4"
+
+[libraries]
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
+mariadb-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadb" }
+vault-api = { module = "com.github.MilkBowl:VaultAPI", version.ref = "vault" }
+placeholder-api = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }

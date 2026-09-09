@@ -1,0 +1,24 @@
+package dev.chorus.core.kits;
+
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * When each player last took each kit.
+ *
+ * <p>It lives in the database rather than in memory because a kit on a week's cooldown is
+ * worthless if a restart wipes it.
+ */
+public interface KitRepository {
+
+    void createTables() throws SQLException;
+
+    /** Kit name to the moment it was last taken. */
+    Map<String, Long> findUses(UUID owner) throws SQLException;
+
+    void markUsed(UUID owner, String kit, long when) throws SQLException;
+
+    /** Used by /kitreset, and by an admin clearing a one-time kit. */
+    boolean clear(UUID owner, String kit) throws SQLException;
+}

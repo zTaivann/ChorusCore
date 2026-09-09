@@ -1,0 +1,9 @@
+# Keep line endings sane between Windows and everything else.
+* text=auto eol=lf
+
+# The Windows launcher is the one file that must keep CRLF.
+gradlew.bat text eol=crlf
+gradlew     text eol=lf
+
+*.jar binary
+*.png binary

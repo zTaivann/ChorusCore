@@ -1,0 +1,467 @@
+name: ChorusCore
+version: '${version}'
+main: dev.chorus.core.ChorusPlugin
+api-version: '1.18'
+description: Modular core for Paper servers.
+authors: [ zTaivann ]
+folia-supported: false
+softdepend: [ Vault ]
+
+libraries:
+  - com.zaxxer:HikariCP:${hikari}
+  - org.xerial:sqlite-jdbc:${sqlite}
+  - org.mariadb.jdbc:mariadb-java-client:${mariadb}
+
+# No permission or aliases here on purpose.
+#   permission -> Bukkit would refuse the command itself and print its own message
+#                 instead of the one in messages.yml. Every command checks in code.
+#   aliases    -> they all live in aliases.yml so there is one place to edit them.
+commands:
+  chorus:
+    description: Core administration.
+    usage: /chorus reload
+  home:
+    description: Teleport to one of your homes.
+    usage: /home [name]
+  sethome:
+    description: Save your current position as a home.
+    usage: /sethome [name]
+  delhome:
+    description: Delete one of your homes.
+    usage: /delhome [name]
+  homes:
+    description: List your homes.
+    usage: /homes
+  warp:
+    description: Teleport to a warp.
+    usage: /warp [name]
+  warps:
+    description: List the warps you can use.
+    usage: /warps
+  setwarp:
+    description: Create a warp or move an existing one.
+    usage: /setwarp [name]
+  delwarp:
+    description: Delete a warp.
+    usage: /delwarp [name]
+  spawn:
+    description: Teleport to spawn.
+    usage: /spawn
+  setspawn:
+    description: Set the spawn point to your position.
+    usage: /setspawn
+  tpa:
+    description: Ask a player to let you teleport to them.
+    usage: /tpa [player]
+  tpahere:
+    description: Ask a player to teleport to you.
+    usage: /tpahere [player]
+  tpaccept:
+    description: Accept a teleport request.
+    usage: /tpaccept [player]
+  tpdeny:
+    description: Reject a teleport request.
+    usage: /tpdeny [player]
+  tpcancel:
+    description: Cancel a request you sent.
+    usage: /tpcancel [player]
+  back:
+    description: Return to where you were before your last teleport.
+    usage: /back
+
+  heal:
+    description: Restore health.
+    usage: /heal [player]
+  feed:
+    description: Restore hunger.
+    usage: /feed [player]
+  fly:
+    description: Toggle flight.
+    usage: /fly [player]
+  god:
+    description: Toggle invulnerability.
+    usage: /god [player]
+  ping:
+    description: Show a connection delay.
+    usage: /ping [player]
+  fix:
+    description: Repair the item you are holding.
+    usage: /fix [all]
+  trash:
+    description: Open a throwaway inventory.
+    usage: /trash
+  craft:
+    description: Open a crafting table.
+    usage: /craft
+  anvil:
+    description: Open an anvil.
+    usage: /anvil
+  smithingtable:
+    description: Open a smithing table.
+    usage: /smithingtable
+  grindstone:
+    description: Open a grindstone.
+    usage: /grindstone
+  stonecutter:
+    description: Open a stonecutter.
+    usage: /stonecutter
+  loom:
+    description: Open a loom.
+    usage: /loom
+  cartography:
+    description: Open a cartography table.
+    usage: /cartography
+  enchanting:
+    description: Open an enchanting table.
+    usage: /enchanting
+  enderchest:
+    description: Open your ender chest.
+    usage: /enderchest
+
+  pay:
+    description: Send money to another player.
+    usage: /pay [player] [amount]
+  balance:
+    description: Show a money balance.
+    usage: /balance [player]
+  msg:
+    description: Send a private message.
+    usage: /msg [player] [message]
+  reply:
+    description: Answer the last private message.
+    usage: /reply [message]
+  socialspy:
+    description: Watch private messages.
+    usage: /socialspy
+
+  speed:
+    description: Change walking or flying speed.
+    usage: /speed [walk|fly] [1-10] [player]
+  top:
+    description: Teleport to the surface above you.
+    usage: /top
+  near:
+    description: List the players around you.
+    usage: /near [radius]
+  invsee:
+    description: Look inside another player's inventory.
+    usage: /invsee [player]
+  ecsee:
+    description: Look inside another player's ender chest.
+    usage: /ecsee [player]
+
+  tp:
+    description: Teleport to a player, or move one to another.
+    usage: /tp [player] [target]
+  tphere:
+    description: Bring a player to you.
+    usage: /tphere [player]
+  tppos:
+    description: Teleport to coordinates.
+    usage: /tppos [x] [y] [z] [world] [player]
+  tpall:
+    description: Bring everyone to you.
+    usage: /tpall
+  vanish:
+    description: Hide yourself from other players.
+    usage: /vanish
+  gamemode:
+    description: Change a game mode.
+    usage: /gamemode [mode] [player]
+  gmc:
+    description: Switch to creative.
+    usage: /gmc [player]
+  gms:
+    description: Switch to survival.
+    usage: /gms [player]
+  gma:
+    description: Switch to adventure.
+    usage: /gma [player]
+  gmsp:
+    description: Switch to spectator.
+    usage: /gmsp [player]
+  afk:
+    description: Mark yourself away.
+    usage: /afk
+  seen:
+    description: Show when a player was last online.
+    usage: /seen [player]
+  playtime:
+    description: Show how long a player has played.
+    usage: /playtime [player]
+  hat:
+    description: Wear the item you are holding.
+    usage: /hat
+  condense:
+    description: Pack loose materials into blocks.
+    usage: /condense
+  clearinventory:
+    description: Empty an inventory.
+    usage: /clearinventory [player]
+  itemname:
+    description: Rename the item you are holding.
+    usage: /itemname [text]
+  lore:
+    description: Edit the lore of the item you are holding.
+    usage: /lore [add|set|remove|clear]
+
+  kit:
+    description: Take a kit.
+    usage: /kit [name]
+  kits:
+    description: List the kits you can take.
+    usage: /kits
+
+permissions:
+  chorus.admin:
+    description: Access to /chorus.
+    default: op
+  chorus.home.use:
+    description: Allows /home.
+    default: true
+  chorus.home.set:
+    description: Allows /sethome.
+    default: true
+  chorus.home.delete:
+    description: Allows /delhome.
+    default: true
+  chorus.home.list:
+    description: Allows /homes.
+    default: true
+  chorus.home.unlimited:
+    description: Ignores the home limit.
+    default: op
+  chorus.warp.use:
+    description: Allows /warp.
+    default: true
+  chorus.warp.list:
+    description: Allows /warps.
+    default: true
+  chorus.warp.set:
+    description: Allows /setwarp.
+    default: op
+  chorus.warp.delete:
+    description: Allows /delwarp.
+    default: op
+  chorus.spawn.use:
+    description: Allows /spawn.
+    default: true
+  chorus.spawn.set:
+    description: Allows /setspawn.
+    default: op
+  chorus.tpa.use:
+    description: Allows /tpa and /tpcancel.
+    default: true
+  chorus.tpa.here:
+    description: Allows /tpahere.
+    default: true
+  chorus.tpa.accept:
+    description: Allows /tpaccept.
+    default: true
+  chorus.tpa.deny:
+    description: Allows /tpdeny.
+    default: true
+  chorus.back.use:
+    description: Allows /back.
+    default: true
+  chorus.back.ondeath:
+    description: Lets /back return to a death point.
+    default: op
+  chorus.teleport.instant:
+    description: Skips every teleport warmup.
+    default: op
+  chorus.bypass.cooldown:
+    description: Ignores every command cooldown.
+    default: op
+  chorus.bypass.price:
+    description: Never pays for a command.
+    default: op
+  chorus.utility.heal:
+    description: Allows /heal.
+    default: op
+  chorus.utility.heal.others:
+    description: Allows /heal on another player.
+    default: op
+  chorus.utility.feed:
+    description: Allows /feed.
+    default: op
+  chorus.utility.feed.others:
+    description: Allows /feed on another player.
+    default: op
+  chorus.utility.fly:
+    description: Allows /fly.
+    default: op
+  chorus.utility.fly.others:
+    description: Allows /fly on another player.
+    default: op
+  chorus.utility.god:
+    description: Allows /god.
+    default: op
+  chorus.utility.god.others:
+    description: Allows /god on another player.
+    default: op
+  chorus.utility.ping:
+    description: Allows /ping.
+    default: true
+  chorus.utility.ping.others:
+    description: Allows /ping on another player.
+    default: true
+  chorus.utility.fix:
+    description: Allows /fix on the held item.
+    default: op
+  chorus.utility.fix.all:
+    description: Allows /fix all.
+    default: op
+  chorus.utility.trash:
+    description: Allows /trash.
+    default: op
+  chorus.utility.craft:
+    description: Allows /craft.
+    default: op
+  chorus.utility.anvil:
+    description: Allows /anvil.
+    default: op
+  chorus.utility.smithingtable:
+    description: Allows /smithingtable.
+    default: op
+  chorus.utility.grindstone:
+    description: Allows /grindstone.
+    default: op
+  chorus.utility.stonecutter:
+    description: Allows /stonecutter.
+    default: op
+  chorus.utility.loom:
+    description: Allows /loom.
+    default: op
+  chorus.utility.cartography:
+    description: Allows /cartography.
+    default: op
+  chorus.utility.enchanting:
+    description: Allows /enchanting.
+    default: op
+  chorus.utility.enderchest:
+    description: Allows /enderchest.
+    default: op
+  chorus.economy.pay:
+    description: Allows /pay.
+    default: true
+  chorus.economy.balance:
+    description: Allows /balance.
+    default: true
+  chorus.economy.balance.others:
+    description: Allows /balance on another player.
+    default: op
+  chorus.chat.msg:
+    description: Allows /msg.
+    default: true
+  chorus.chat.reply:
+    description: Allows /reply.
+    default: true
+  chorus.chat.spy:
+    description: Allows /socialspy and receiving the copies.
+    default: op
+  chorus.utility.speed:
+    description: Allows /speed.
+    default: op
+  chorus.utility.speed.others:
+    description: Allows /speed on another player.
+    default: op
+  chorus.utility.top:
+    description: Allows /top.
+    default: op
+  chorus.utility.near:
+    description: Allows /near.
+    default: op
+  chorus.utility.near.exempt:
+    description: Hides the holder from /near.
+    default: false
+  chorus.utility.invsee:
+    description: Allows /invsee, read only.
+    default: op
+  chorus.utility.invsee.edit:
+    description: Allows changing what /invsee shows.
+    default: op
+  chorus.utility.invsee.exempt:
+    description: Protects the holder from /invsee and /ecsee.
+    default: false
+  chorus.utility.ecsee:
+    description: Allows /ecsee, read only.
+    default: op
+  chorus.utility.ecsee.edit:
+    description: Allows changing what /ecsee shows.
+    default: op
+  chorus.staff.tp:
+    description: Allows /tp.
+    default: op
+  chorus.staff.tphere:
+    description: Allows /tphere.
+    default: op
+  chorus.staff.tppos:
+    description: Allows /tppos.
+    default: op
+  chorus.staff.tpall:
+    description: Allows /tpall.
+    default: op
+  chorus.staff.vanish:
+    description: Allows /vanish.
+    default: op
+  chorus.staff.vanish.see:
+    description: Keeps seeing players who are vanished.
+    default: op
+  chorus.staff.gamemode:
+    description: Allows the game mode commands.
+    default: op
+  chorus.staff.gamemode.others:
+    description: Allows changing another player's game mode.
+    default: op
+  chorus.staff.gamemode.survival:
+    description: Allows switching to survival.
+    default: op
+  chorus.staff.gamemode.creative:
+    description: Allows switching to creative.
+    default: op
+  chorus.staff.gamemode.adventure:
+    description: Allows switching to adventure.
+    default: op
+  chorus.staff.gamemode.spectator:
+    description: Allows switching to spectator.
+    default: op
+  chorus.players.afk:
+    description: Allows /afk.
+    default: true
+  chorus.players.seen:
+    description: Allows /seen.
+    default: true
+  chorus.players.playtime:
+    description: Allows /playtime.
+    default: true
+  chorus.players.playtime.others:
+    description: Allows /playtime on another player.
+    default: op
+  chorus.items.hat:
+    description: Allows /hat.
+    default: op
+  chorus.items.condense:
+    description: Allows /condense.
+    default: op
+  chorus.items.clearinventory:
+    description: Allows /clearinventory.
+    default: op
+  chorus.items.clearinventory.others:
+    description: Allows /clearinventory on another player.
+    default: op
+  chorus.items.itemname:
+    description: Allows /itemname.
+    default: op
+  chorus.items.lore:
+    description: Allows /lore.
+    default: op
+  chorus.items.format:
+    description: Allows MiniMessage tags in /itemname and /lore.
+    default: op
+  chorus.kits.use:
+    description: Allows /kit.
+    default: true
+  chorus.kits.list:
+    description: Allows /kits.
+    default: true

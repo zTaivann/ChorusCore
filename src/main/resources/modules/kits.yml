@@ -1,0 +1,127 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   K I T S                                                              │
+# │   /kit  /kits                                                          │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Every command block reads the `defaults` block first and then its own, so a
+# command only writes down what it does differently. See homes.yml for the full
+# list of options a command block takes.
+
+# Switches off every command in this file at once.
+enabled: true
+
+# ── Settings ──────────────────────────────────────────────────────────────
+kits:
+  # Given automatically the first time a player ever joins. Empty for none.
+  first-join: starter
+
+  # /kits opens a clickable grid instead of printing a line of names.
+  menu:
+    enabled: true
+    rows: 3
+    icon: CHEST
+    filler: ''
+    navigation-filler: GRAY_STAINED_GLASS_PANE
+    previous-page: ARROW
+    next-page: ARROW
+    close: BARRIER
+
+  # ── The kits themselves ─────────────────────────────────────────────────
+  #
+  #   display           the name shown in /kits, in MiniMessage.
+  #   lore              extra lines under that name.
+  #   icon              the item it is shown as.
+  #   cooldown-seconds  how long before the same player may take it again.
+  #   one-time          true means once ever, whatever the cooldown says.
+  #   price             what taking it costs, through Vault.
+  #   permission        who may take it. Leave it out and it defaults to
+  #                     chorus.kits.use.<name>. Set it to '' for everyone.
+  #   items             what is in it. Each entry takes:
+  #                       material      required, a Bukkit material name
+  #                       amount        defaults to 1
+  #                       name          renames the item, in MiniMessage
+  #                       lore          lines under the item name
+  #                       enchantments  vanilla names, for example
+  #                                     protection, sharpness, unbreaking.
+  #                                     These are the same on every version,
+  #                                     unlike the old PROTECTION_ENVIRONMENTAL
+  #                                     spellings, so use them.
+  #
+  # Anything that will not fit in the player's bags lands at their feet.
+  definitions:
+
+    starter:
+      display: '<green><bold>Starter'
+      lore:
+        - '<gray>Everything you need to begin'
+      icon: LEATHER_CHESTPLATE
+      cooldown-seconds: 0
+      one-time: true
+      price: 0.0
+      permission: ''
+      items:
+        - material: STONE_SWORD
+        - material: STONE_PICKAXE
+        - material: STONE_AXE
+        - material: BREAD
+          amount: 16
+        - material: LEATHER_CHESTPLATE
+          name: '<green>Starter Chestplate'
+          lore:
+            - '<dark_gray>Welcome to the server'
+          enchantments:
+            protection: 1
+        - material: TORCH
+          amount: 32
+
+    daily:
+      display: '<gold><bold>Daily'
+      lore:
+        - '<gray>Once a day, every day'
+      icon: GOLD_INGOT
+      cooldown-seconds: 86400
+      one-time: false
+      price: 0.0
+      items:
+        - material: GOLDEN_APPLE
+          amount: 2
+        - material: COOKED_BEEF
+          amount: 16
+        - material: IRON_INGOT
+          amount: 8
+
+# ── Commands ──────────────────────────────────────────────────────────────
+commands:
+
+  # Everything below inherits this and overrides only what it needs.
+  defaults:
+    enabled: true
+    warmup-seconds: 0
+    cooldown-seconds: 0
+    price: 0.0
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.2
+    particle:
+      name: ''
+      count: 0
+      spread: 0.4
+      height: 1.8
+      speed: 0.02
+
+  # The per-kit cooldown above is the one that matters. This one would stop a
+  # player using /kit at all for a while, whichever kit they asked for.
+  kit:
+    enabled: true
+    sound:
+      key: entity.player.levelup
+      volume: 0.6
+      pitch: 1.4
+
+  kits:
+    enabled: true
+    sound:
+      pitch: 1.5

@@ -1,0 +1,102 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   A L I A S E S                                                        │
+# │   extra names for every command                                        │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# The real name on the left always works; anything you list is added on top of it.
+# An alias another plugin already owns is skipped, so /home stays yours and the clash
+# just does nothing. Leave a list empty to have no extra names at all.
+#
+# Aliases are applied while the server starts, so changing them needs a restart,
+# not /chorus reload.
+
+# Core
+chorus: [ chorusecore ]
+
+# Homes
+home: [ ]
+sethome: [ ]
+delhome: [ removehome, remhome ]
+homes: [ listhomes, homelist ]
+
+# Warps
+warp: [ ]
+warps: [ listwarps, warplist ]
+setwarp: [ createwarp ]
+delwarp: [ removewarp, remwarp ]
+
+# Spawn
+spawn: [ ]
+setspawn: [ ]
+
+# Teleport requests
+tpa: [ call, tpask ]
+tpahere: [ tpaskhere ]
+tpaccept: [ tpyes, tpacc ]
+tpdeny: [ tpno ]
+tpcancel: [ ]
+back: [ return ]
+
+# Utility
+heal: [ ]
+feed: [ ]
+fly: [ ]
+god: [ godmode ]
+ping: [ latency ]
+fix: [ repair ]
+trash: [ disposal, bin ]
+craft: [ workbench, wb ]
+anvil: [ ]
+smithingtable: [ smithing ]
+grindstone: [ ]
+stonecutter: [ ]
+loom: [ ]
+cartography: [ cartographytable ]
+enchanting: [ enchantingtable, etable ]
+enderchest: [ ec, echest ]
+
+# Economy
+pay: [ ]
+balance: [ bal, money ]
+
+# Chat
+msg: [ w, tell, whisper, pm ]
+reply: [ r ]
+socialspy: [ spy ]
+
+# Utility, second batch
+speed: [ walkspeed ]
+top: [ jump ]
+near: [ nearby ]
+invsee: [ inventorysee, seeinv ]
+ecsee: [ endersee, enderchestsee ]
+
+# Staff
+tp: [ teleport ]
+tphere: [ bring, s ]
+tppos: [ teleportpos ]
+tpall: [ teleportall ]
+vanish: [ v ]
+gamemode: [ gm ]
+gmc: [ ]
+gms: [ ]
+gma: [ ]
+gmsp: [ ]
+
+# Players
+afk: [ away ]
+seen: [ lastseen ]
+playtime: [ played, ontime ]
+
+# Items
+hat: [ head ]
+condense: [ compress ]
+clearinventory: [ ci, clearinv ]
+itemname: [ rename ]
+lore: [ itemlore ]
+
+# Kits
+kit: [ ]
+kits: [ kitlist ]

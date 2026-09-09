@@ -1,0 +1,82 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   C U S T O M   C O M M A N D S                                        │
+# │   the /discord and /rules of your server                               │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Commands you invent here are registered when the server starts, so adding,
+# renaming or removing one needs a restart rather than /chorus reload. Editing
+# what an existing one says or does is picked up on reload.
+#
+# Each command takes:
+#
+#   description       shown in /help.
+#   permission        who may use it. Empty means everyone.
+#   aliases           extra names for it.
+#   cooldown-seconds  how long before the same player may repeat it.
+#                     chorus.bypass.cooldown ignores it.
+#   messages          lines sent to whoever ran it, in MiniMessage.
+#                     %prefix% and %player% both work.
+#   run-as-player     commands run as the player, with their permissions.
+#   run-as-console    commands run as the console, with full permissions.
+#                     Be careful: this is how you let a player trigger
+#                     something they could not do themselves.
+#   sound             played to the player who ran it.
+#
+# A command with no messages and no commands to run is skipped with a warning,
+# since it would do nothing at all.
+
+# Switches off every command in this file at once.
+enabled: true
+
+# ── The commands ──────────────────────────────────────────────────────────
+custom:
+
+  discord:
+    description: Shows the Discord invite.
+    permission: ''
+    aliases: [ dc ]
+    cooldown-seconds: 0
+    messages:
+      - '%prefix%<gray>Come talk to us:'
+      - '<dark_gray>   ▪ <aqua><underlined>discord.gg/yourserver'
+    run-as-player: [ ]
+    run-as-console: [ ]
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.4
+
+  rules:
+    description: Shows the server rules.
+    permission: ''
+    aliases: [ rule ]
+    cooldown-seconds: 0
+    messages:
+      - '%prefix%<gray>Rules:'
+      - '<dark_gray>   ▪ <gray>Be decent to each other'
+      - '<dark_gray>   ▪ <gray>No cheating'
+      - '<dark_gray>   ▪ <gray>No griefing'
+    run-as-player: [ ]
+    run-as-console: [ ]
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.2
+
+  # An example of the console form: the player gets something they could not
+  # give themselves. Delete it if you do not want it.
+  website:
+    description: Shows the website.
+    permission: ''
+    aliases: [ web ]
+    cooldown-seconds: 5
+    messages:
+      - '%prefix%<gray>Find us at <aqua><underlined>example.com'
+    run-as-player: [ ]
+    run-as-console: [ ]
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.2

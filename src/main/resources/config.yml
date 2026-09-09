@@ -1,0 +1,50 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   C H O R U S   C O R E                                                │
+# │   storage  -  economy                                                  │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# This file only holds things the whole plugin shares. Everything else has its own file:
+#
+#   aliases.yml           extra names for the commands
+#   messages.yml          every line the plugin sends
+#   modules/homes.yml     /home /sethome /delhome /homes
+#   modules/warps.yml     /warp /warps /setwarp /delwarp
+#   modules/spawn.yml     /spawn /setspawn
+#   modules/teleport.yml  /tpa /tpahere /tpaccept /tpdeny /tpcancel /back
+#   modules/utility.yml   /heal /feed /fly /god /ping /fix /trash and the portable screens
+#   modules/economy.yml   /pay /balance
+#   modules/chat.yml      /msg /reply /socialspy
+#
+# /chorus reload re-reads all of them. Only the storage section and aliases.yml
+# need a full server restart.
+
+# ── Storage ──────────────────────────────────────────────────────────────
+storage:
+  # sqlite -> a single file in this folder, nothing to set up.
+  # mysql  -> MySQL or MariaDB, for sharing data between servers.
+  type: sqlite
+
+  # sqlite only. Relative to plugins/ChorusCore/.
+  file: chorus.db
+
+  # mysql only.
+  mysql:
+    host: localhost
+    port: 3306
+    database: chorus
+    username: root
+    password: ''
+    pool-size: 8
+    # Appended to the connection URL.
+    properties:
+      useSSL: false
+      characterEncoding: utf8
+
+# ── Economy ──────────────────────────────────────────────────────────────
+economy:
+  # Prices are charged through Vault. With no Vault, or no economy plugin behind it,
+  # every price is simply ignored and nothing else changes.
+  # Set this to false to switch prices off even when Vault is installed.
+  enabled: true

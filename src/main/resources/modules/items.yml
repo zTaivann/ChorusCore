@@ -1,0 +1,132 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   I T E M S                                                            │
+# │   /hat  /condense  /clearinventory  /itemname  /lore                   │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# ── How a command block works ──────────────────────────────────────────────
+#
+# Every command reads the `defaults` block first and then its own, so a command
+# only writes down what it does differently. Add any of these options to any
+# command to override it:
+#
+#   enabled           false makes the command answer that it is switched off.
+#                     The `enabled` at the top of this file does the same for
+#                     the whole module at once.
+#
+#   warmup-seconds    how long the player stands still before the teleport
+#                     happens. Only means anything for commands that teleport.
+#                     Moving or taking damage during the wait cancels it and
+#                     nothing is charged. chorus.teleport.instant skips it.
+#
+#   cooldown-seconds  how long before that player may use the command again.
+#                     Only starts once the command actually succeeded.
+#                     chorus.bypass.cooldown ignores it.
+#
+#   price             what it costs, through Vault. 0 is free. Without an
+#                     economy plugin the price is ignored.
+#                     chorus.bypass.price never pays.
+#
+#   sound.key         a Minecraft sound name, for example entity.enderman.teleport.
+#                     Empty for silence. A name the client does not know simply
+#                     plays nothing, so a typo can never break anything.
+#   sound.volume      0 to 10. Doubles as the distance others hear it from.
+#   sound.pitch       0.5 to 2. Higher is squeakier.
+#
+#   particle.name     a Bukkit particle name, for example PORTAL. Empty for none.
+#                     Mojang renamed several of these, so both the old and the
+#                     new spelling are accepted and the right one is picked for
+#                     your version. Safe on every supported version: PORTAL,
+#                     REVERSE_PORTAL, FLAME, SOUL_FIRE_FLAME, CLOUD, END_ROD,
+#                     DRAGON_BREATH, HEART, CRIT, ELECTRIC_SPARK, GLOW, NOTE,
+#                     SNOWFLAKE, ASH.
+#   particle.count    how many. 0 means none.
+#   particle.spread   how far they scatter sideways, in blocks.
+#   particle.height   how tall the burst is, in blocks.
+#   particle.speed    how fast they drift. Keep it small.
+#
+# Teleport commands show their particles twice: once where the player left from
+# and once where they arrive.
+
+# chorus.items.format lets a player use MiniMessage tags in /itemname and /lore.
+# Without it their text is used exactly as typed, tags and all.
+
+# Switches off every command in this file at once.
+enabled: true
+
+# ── Settings ──────────────────────────────────────────────────────────────
+items:
+  # How many lines of lore an item may carry.
+  max-lore-lines: 10
+
+  # Nine of the key become one of the value. Only untouched stacks are taken:
+  # anything named, enchanted or damaged is left alone.
+  condense:
+    IRON_INGOT: IRON_BLOCK
+    GOLD_INGOT: GOLD_BLOCK
+    DIAMOND: DIAMOND_BLOCK
+    EMERALD: EMERALD_BLOCK
+    NETHERITE_INGOT: NETHERITE_BLOCK
+    COPPER_INGOT: COPPER_BLOCK
+    LAPIS_LAZULI: LAPIS_BLOCK
+    REDSTONE: REDSTONE_BLOCK
+    COAL: COAL_BLOCK
+    RAW_IRON: RAW_IRON_BLOCK
+    RAW_GOLD: RAW_GOLD_BLOCK
+    RAW_COPPER: RAW_COPPER_BLOCK
+    WHEAT: HAY_BLOCK
+    SLIME_BALL: SLIME_BLOCK
+    BONE_MEAL: BONE_BLOCK
+
+# ── Commands ──────────────────────────────────────────────────────────────
+commands:
+
+  # Everything below inherits this and overrides only what it needs.
+  defaults:
+    enabled: true
+    warmup-seconds: 0
+    cooldown-seconds: 0
+    price: 0.0
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.2
+    particle:
+      name: ''
+      count: 0
+      spread: 0.4
+      height: 1.8
+      speed: 0.02
+
+  hat:
+    enabled: true
+    sound:
+      key: item.armor.equip_leather
+      volume: 0.7
+      pitch: 1.2
+
+  condense:
+    enabled: true
+    sound:
+      key: block.anvil.use
+      volume: 0.5
+      pitch: 1.2
+
+  clearinventory:
+    enabled: true
+    sound:
+      key: block.lava.extinguish
+      volume: 0.5
+      pitch: 1.4
+
+  itemname:
+    enabled: true
+    sound:
+      pitch: 1.4
+
+  lore:
+    enabled: true
+    sound:
+      pitch: 1.4
+

@@ -1,0 +1,163 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   S T A F F                                                            │
+# │   /tp  /tphere  /tppos  /tpall  /vanish                                │
+# │   /gamemode  /gmc  /gms  /gma  /gmsp                                   │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# ── How a command block works ──────────────────────────────────────────────
+#
+# Every command reads the `defaults` block first and then its own, so a command
+# only writes down what it does differently. Add any of these options to any
+# command to override it:
+#
+#   enabled           false makes the command answer that it is switched off.
+#                     The `enabled` at the top of this file does the same for
+#                     the whole module at once.
+#
+#   warmup-seconds    how long the player stands still before the teleport
+#                     happens. Only means anything for commands that teleport.
+#                     Moving or taking damage during the wait cancels it and
+#                     nothing is charged. chorus.teleport.instant skips it.
+#
+#   cooldown-seconds  how long before that player may use the command again.
+#                     Only starts once the command actually succeeded.
+#                     chorus.bypass.cooldown ignores it.
+#
+#   price             what it costs, through Vault. 0 is free. Without an
+#                     economy plugin the price is ignored.
+#                     chorus.bypass.price never pays.
+#
+#   sound.key         a Minecraft sound name, for example entity.enderman.teleport.
+#                     Empty for silence. A name the client does not know simply
+#                     plays nothing, so a typo can never break anything.
+#   sound.volume      0 to 10. Doubles as the distance others hear it from.
+#   sound.pitch       0.5 to 2. Higher is squeakier.
+#
+#   particle.name     a Bukkit particle name, for example PORTAL. Empty for none.
+#                     Mojang renamed several of these, so both the old and the
+#                     new spelling are accepted and the right one is picked for
+#                     your version. Safe on every supported version: PORTAL,
+#                     REVERSE_PORTAL, FLAME, SOUL_FIRE_FLAME, CLOUD, END_ROD,
+#                     DRAGON_BREATH, HEART, CRIT, ELECTRIC_SPARK, GLOW, NOTE,
+#                     SNOWFLAKE, ASH.
+#   particle.count    how many. 0 means none.
+#   particle.spread   how far they scatter sideways, in blocks.
+#   particle.height   how tall the burst is, in blocks.
+#   particle.speed    how fast they drift. Keep it small.
+#
+# Teleport commands show their particles twice: once where the player left from
+# and once where they arrive.
+
+# Everything here defaults to op.
+#
+# Each game mode has its own permission, so a rank can have creative without
+# also getting spectator: chorus.staff.gamemode.creative, .survival, .adventure
+# and .spectator. chorus.staff.gamemode.others changes somebody else.
+#
+# chorus.staff.vanish.see keeps a player able to see anyone vanished.
+
+# Switches off every command in this file at once.
+enabled: true
+
+# ── Commands ──────────────────────────────────────────────────────────────
+commands:
+
+  # Everything below inherits this and overrides only what it needs.
+  defaults:
+    enabled: true
+    warmup-seconds: 0
+    cooldown-seconds: 0
+    price: 0.0
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.2
+    particle:
+      name: ''
+      count: 0
+      spread: 0.4
+      height: 1.8
+      speed: 0.02
+
+  tp:
+    enabled: true
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.6
+      pitch: 1.0
+    particle:
+      name: REVERSE_PORTAL
+      count: 30
+      height: 2.0
+      speed: 0.04
+
+  tphere:
+    enabled: true
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.6
+      pitch: 1.0
+    particle:
+      name: REVERSE_PORTAL
+      count: 30
+      height: 2.0
+      speed: 0.04
+
+  tppos:
+    enabled: true
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.6
+      pitch: 1.0
+    particle:
+      name: REVERSE_PORTAL
+      count: 30
+      height: 2.0
+      speed: 0.04
+
+  tpall:
+    enabled: true
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.7
+      pitch: 0.8
+    particle:
+      name: REVERSE_PORTAL
+      count: 30
+      height: 2.0
+      speed: 0.04
+
+  vanish:
+    enabled: true
+    sound:
+      key: entity.bat.takeoff
+      volume: 0.5
+      pitch: 1.6
+
+  gamemode:
+    enabled: true
+    sound:
+      pitch: 1.3
+
+  gmc:
+    enabled: true
+    sound:
+      pitch: 1.3
+
+  gms:
+    enabled: true
+    sound:
+      pitch: 1.3
+
+  gma:
+    enabled: true
+    sound:
+      pitch: 1.3
+
+  gmsp:
+    enabled: true
+    sound:
+      pitch: 1.3
+
