@@ -5,35 +5,11 @@ messages, staff tools, item tools, kits and the usual utilities. Sixty-three com
 twelve modules, every one of them switchable, priced and themed from its own config file, plus
 as many commands of your own as you care to write.
 
-Other plugins can build on it: it registers a public API as a Bukkit service and, when
-PlaceholderAPI is installed, exposes its numbers as placeholders.
-
 Compiled against the Paper 1.18.2 API and emitting Java 17 bytecode, so a single jar runs on
-anything from **1.18.2 to 26.2**. Newer Minecraft releases need a newer JDK for *the server*,
-but a Java 17 jar loads happily on a server running Java 25.
+anything from **1.18.2 to 26.2**.
 
-## Building
-
-You need a JDK 21 or newer. Nothing else: Gradle downloads itself.
-
-```bash
-./gradlew build
-```
-
-On Windows, `.\gradlew.bat build`. The jar lands in `build/libs/ChorusCore-0.1.0.jar`.
-
-The same command runs the checks in `src/test/java`. They are not unit tests of game logic
-so much as guards on the things that only break once the plugin is already on a server:
-
-- every message template still parses as MiniMessage;
-- every key the code sends exists in `messages.yml`, and nothing in `messages.yml` is dead;
-- `plugin.yml`, `aliases.yml` and the module files agree on one command list, with no alias
-  colliding with another command;
-- no command declares a permission or an alias in `plugin.yml`, which would hand the command
-  back to Bukkit;
-- every sound and particle named in a config exists on 1.18.2, the oldest version supported;
-- the SQL runs against a real throwaway SQLite file, so saving a home twice moves it instead
-  of duplicating it, and a warp named `spawn` cannot overwrite the actual spawn.
+Addons can build on it: it registers a public API as a Bukkit service and, when
+PlaceholderAPI is installed, exposes its numbers as placeholders.
 
 ## Installing
 
@@ -42,7 +18,8 @@ so much as guards on the things that only break once the plugin is already on a 
 3. The first start needs internet access: the server fetches HikariCP, the SQLite driver and
    the MariaDB driver from Maven Central into its own `libraries/` folder.
 
-Vault is optional. Install it plus an economy plugin if you want prices to do anything.
+Vault is optional: install it plus an economy plugin if you want prices to do anything.
+PlaceholderAPI is optional too, and the expansion registers itself when it is there.
 
 ## Configuration
 
@@ -105,18 +82,12 @@ commands:
 | `sound` | A Minecraft sound name with volume (0-10) and pitch (0.5-2). Empty for silence. A name the client does not know just plays nothing. |
 | `particle` | A Bukkit particle name, how many, and how far they spread. Empty for none. |
 
-Warmup, cooldown and price default to `0`, which is off. Cooldowns survive a disconnect, so
-relogging is not a way around them.
-
-Every command ships with a sound. Only the teleports ship with particles; the rest have the
-block ready with `name: ''` so you can turn them on without adding anything. Teleport
-commands show their particles twice, once where the player leaves and once where they land.
+Each file opens its `commands` section with a `defaults` block, so a command only writes down
+what it does differently. Warmup, cooldown and price default to `0`, which is off, and
+cooldowns survive a disconnect.
 
 Mojang renamed a fair number of particles over the years, so both the old and the new
-spelling are accepted and the right one is picked for whichever version you run. These are
-safe everywhere from 1.18.2 to 26.2: `PORTAL`, `REVERSE_PORTAL`, `FLAME`, `SOUL_FIRE_FLAME`,
-`CLOUD`, `END_ROD`, `DRAGON_BREATH`, `HEART`, `CRIT`, `ELECTRIC_SPARK`, `GLOW`, `NOTE`,
-`SNOWFLAKE`, `ASH`.
+spelling are accepted and the right one is picked for whichever version you run.
 
 ### Menus
 
@@ -137,7 +108,7 @@ menu:
 
 The bottom row is always navigation, so three rows shows eighteen entries a page and nothing
 ever moves under the cursor between pages. Set `enabled: false` to go back to the written
-list; the console always gets the written one, having no screen to open.
+list.
 
 The titles, the entry names and the lore under them live in `messages.yml`, so the wording
 and the colours are yours as well as the layout.
@@ -211,6 +182,11 @@ with no name withdraws every request you sent.
 | `/feed [player]` | `chorus.utility.feed` | op |
 | `/fly [player]` | `chorus.utility.fly` | op |
 | `/god [player]` | `chorus.utility.god` | op |
+| `/speed <1-10> [player]` | `chorus.utility.speed` | op |
+| `/top` | `chorus.utility.top` | op |
+| `/near [radius]` | `chorus.utility.near` | op |
+| `/invsee <player>` | `chorus.utility.invsee` | op |
+| `/ecsee <player>` | `chorus.utility.ecsee` | op |
 | `/ping [player]` | `chorus.utility.ping` | everyone |
 | `/fix [all]` | `chorus.utility.fix` | op |
 | `/trash` | `chorus.utility.trash` | op |
@@ -220,12 +196,16 @@ Portable screens, all `chorus.utility.<command>`, op by default:
 `/craft` · `/anvil` · `/smithingtable` · `/grindstone` · `/stonecutter` · `/loom`
 · `/cartography` · `/enchanting` · `/enderchest`
 
-Aiming any of the first four at someone else needs the same permission with `.others`
-on the end, for example `chorus.utility.heal.others`. `/fix all` needs
-`chorus.utility.fix.all` on top of `chorus.utility.fix`.
+Aiming a command at someone else needs the same permission with `.others` on the end, for
+example `chorus.utility.heal.others`. `/fix all` needs `chorus.utility.fix.all` on top of
+`chorus.utility.fix`.
 
-Whatever is left in the `/trash` window when it closes is gone for good. That is the point
-of the command, not a bug.
+`/invsee` and `/ecsee` are live: what you drag into the window lands in the other player's
+inventory straight away, and what they pick up shows in yours. They are read-only until the
+viewer also holds `chorus.utility.invsee.edit` or `chorus.utility.ecsee.edit`, and anyone
+with `chorus.utility.invsee.exempt` cannot be looked at.
+
+Whatever is left in the `/trash` window when it closes is gone for good.
 
 ### Economy
 
@@ -237,7 +217,7 @@ of the command, not a bug.
 Both need Vault plus an economy plugin; without one they say so and nothing else changes.
 Payments go to online players only, are rounded to two decimals, and honour the minimum and
 maximum in `economy.yml`. If the deposit fails after the money left the sender it is put
-straight back, and a failure to do even that is logged loudly.
+straight back.
 
 `/balance <player>` needs `chorus.economy.balance.others`.
 
@@ -272,8 +252,8 @@ Each mode also needs its own permission, so a rank can have creative without spe
 `chorus.staff.gamemode.creative`, `.survival`, `.adventure`, `.spectator`. Changing somebody
 else needs `chorus.staff.gamemode.others`.
 
-`chorus.staff.vanish.see` keeps a player able to see anyone vanished. Vanish is reapplied
-when either side reconnects, which Bukkit does not do on its own.
+`chorus.staff.vanish.see` keeps a player able to see anyone vanished, and vanish is reapplied
+when either side reconnects.
 
 ### Players
 
@@ -284,11 +264,8 @@ when either side reconnects, which Bukkit does not do on its own.
 | `/playtime [player]` | `chorus.players.playtime` | everyone |
 
 Players are marked away on their own after `auto-afk-minutes` of standing still, and come
-back the moment they move, interact or type a command. `/seen` only ever reads the server's
-own cache, never Mojang, so it can never stall the server on a web request.
-
-`/playtime` reads the figure the server already keeps, the same one the vanilla statistics
-screen shows. It counts this server, not a whole network.
+back the moment they move, interact or type a command. `/playtime` reads the figure the
+server already keeps, the same one the vanilla statistics screen shows.
 
 ### Items
 
@@ -357,6 +334,7 @@ says or does is picked up by `/chorus reload`.
 | `chorus.bypass.price` | Never pays. |
 | `chorus.back.ondeath` | Lets `/back` return to where the player died. |
 | `chorus.economy.balance.others` | Reads someone else's balance. |
+| `chorus.utility.invsee.edit` | Allows editing through `/invsee`, `/ecsee` needs its own. |
 | `chorus.chat.spy` | Uses /socialspy and receives the copies. |
 | `chorus.kits.use.<name>` | Required per kit, unless that kit sets its own permission. |
 
@@ -372,9 +350,8 @@ lp group staff permission set chorus.bypass.cooldown
 `chorus.home.limit.*` carries no number, so it cannot raise the cap; use
 `chorus.home.unlimited` for that.
 
-Because permissions are checked in code rather than declared in `plugin.yml`, players see
-the message from `messages.yml` instead of Bukkit's built-in one. The trade-off is that
-command names are not hidden from tab completion for players who lack the permission.
+Permissions are checked in code rather than declared in `plugin.yml`, so players see the
+message from `messages.yml` instead of Bukkit's built-in one.
 
 ## For other plugins
 
@@ -400,6 +377,9 @@ any module can be switched off in its config and an addon has to cope with that.
 | `economy()` | Balances and transfers. Reports itself disabled when there is no Vault. |
 | `teleports()` | The same delayed, cancel-on-move teleport the plugin's own commands use. |
 | `messages()` | Send or render anything from messages.yml, prefix included. |
+
+There are cancellable events too: `ChorusTeleportEvent`, `ChorusHomeSaveEvent` and
+`ChorusPaymentEvent`.
 
 Only the interfaces in `dev.chorus.core.api` are promised to stay stable. Everything else is
 free to change between versions.
@@ -432,11 +412,22 @@ SQLite by default: one file in the plugin folder, nothing to configure. For seve
 sharing data, set `storage.type` to `mysql` and fill in the `mysql` section. The same driver
 handles MySQL and MariaDB.
 
-Two tables are created: `chorus_homes` and `chorus_locations`. Warps and the spawn point
-share the second one under different categories.
+Three tables are created: `chorus_homes`, `chorus_locations` (warps and spawn points, under
+different categories) and `chorus_kit_uses`. Every query runs off the main thread, so the
+server never waits on the database.
 
-## A note about OneDrive
+## Building
 
-This project sits in a OneDrive-synced folder. OneDrive holds the files Gradle generates open
-and sometimes makes `gradlew clean` fail with "Unable to delete directory". If that happens,
-delete the `build` folder by hand, or move the project out of OneDrive.
+You need a JDK 21 or newer. Nothing else: Gradle downloads itself.
+
+```bash
+./gradlew build
+```
+
+The jar lands in `build/libs/`. The same command runs the checks in `src/test/java`, which
+hold the config files and the code to a single command list and exercise the SQL against a
+throwaway SQLite file.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
