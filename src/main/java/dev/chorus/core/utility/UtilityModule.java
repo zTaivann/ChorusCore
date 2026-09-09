@@ -7,6 +7,7 @@ import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.teleport.TeleportService;
+import dev.chorus.core.utility.command.BurnCommand;
 import dev.chorus.core.utility.command.DisposalCommand;
 import dev.chorus.core.utility.command.FeedCommand;
 import dev.chorus.core.utility.command.FlyCommand;
@@ -16,9 +17,12 @@ import dev.chorus.core.utility.command.MenuCommand;
 import dev.chorus.core.utility.command.MirrorCommand;
 import dev.chorus.core.utility.command.NearCommand;
 import dev.chorus.core.utility.command.PingCommand;
+import dev.chorus.core.utility.command.PositionCommand;
 import dev.chorus.core.utility.command.RepairCommand;
 import dev.chorus.core.utility.command.SpeedCommand;
+import dev.chorus.core.utility.command.SuicideCommand;
 import dev.chorus.core.utility.command.TopCommand;
+import dev.chorus.core.utility.command.TpsCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +59,8 @@ public final class UtilityModule implements ChorusModule {
     @Override
     public List<String> commandNames() {
         List<String> names = new ArrayList<>(List.of("heal", "feed", "fly", "god", "ping", "fix",
-                "trash", "speed", "top", "near", "invsee", "ecsee"));
+                "trash", "speed", "top", "near", "invsee", "ecsee", "tps", "getpos", "suicide",
+                "burn"));
         for (PortableMenu menu : PortableMenu.values()) {
             names.add(menu.command());
         }
@@ -79,6 +84,10 @@ public final class UtilityModule implements ChorusModule {
         commands.add(plugin.register(new SpeedCommand(support, utility)));
         commands.add(plugin.register(new TopCommand(support, utility, teleports)));
         commands.add(plugin.register(new NearCommand(support, utility)));
+        commands.add(plugin.register(new TpsCommand(support)));
+        commands.add(plugin.register(new PositionCommand(support)));
+        commands.add(plugin.register(new SuicideCommand(support)));
+        commands.add(plugin.register(new BurnCommand(support)));
         commands.add(plugin.register(new MirrorCommand(support, mirrors,
                 InventoryMirror.Kind.INVENTORY, "invsee")));
         commands.add(plugin.register(new MirrorCommand(support, mirrors,

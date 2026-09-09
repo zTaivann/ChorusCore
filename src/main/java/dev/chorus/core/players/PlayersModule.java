@@ -7,8 +7,12 @@ import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.players.command.AfkCommand;
+import dev.chorus.core.players.command.ListCommand;
+import dev.chorus.core.players.command.PlayerTimeCommand;
+import dev.chorus.core.players.command.PlayerWeatherCommand;
 import dev.chorus.core.players.command.PlaytimeCommand;
 import dev.chorus.core.players.command.SeenCommand;
+import dev.chorus.core.players.command.WhoisCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +45,7 @@ public final class PlayersModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("afk", "seen", "playtime");
+        return List.of("afk", "seen", "playtime", "whois", "list", "ptime", "pweather");
     }
 
     public AfkService afk() {
@@ -58,6 +62,10 @@ public final class PlayersModule implements ChorusModule {
         commands.add(plugin.register(new AfkCommand(support, afk)));
         commands.add(plugin.register(new SeenCommand(support, afk)));
         commands.add(plugin.register(new PlaytimeCommand(support)));
+        commands.add(plugin.register(new WhoisCommand(support, afk)));
+        commands.add(plugin.register(new ListCommand(support, afk)));
+        commands.add(plugin.register(new PlayerTimeCommand(support)));
+        commands.add(plugin.register(new PlayerWeatherCommand(support)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 

@@ -1,7 +1,7 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   P L A Y E R S                                                        │
-# │   /afk  /seen  /playtime                                               │
+# │   /afk  /seen  /playtime  /whois  /list  /ptime  /pweather             │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -105,3 +105,31 @@ commands:
       volume: 0.4
       pitch: 1.5
 
+
+  whois:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.5
+
+  list:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.5
+
+  # /ptime and /pweather only change what one client is shown. The world keeps
+  # its own time and weather, and so does everybody standing next to them.
+  ptime:
+    enabled: true
+    sound:
+      key: block.amethyst_block.chime
+      volume: 0.5
+      pitch: 1.2
+
+  pweather:
+    enabled: true
+    sound:
+      key: block.amethyst_block.chime
+      volume: 0.5
+      pitch: 0.9

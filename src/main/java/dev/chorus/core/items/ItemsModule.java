@@ -8,9 +8,15 @@ import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.items.command.ClearInventoryCommand;
 import dev.chorus.core.items.command.CondenseCommand;
+import dev.chorus.core.items.command.EnchantCommand;
+import dev.chorus.core.items.command.GlowCommand;
 import dev.chorus.core.items.command.HatCommand;
 import dev.chorus.core.items.command.ItemNameCommand;
 import dev.chorus.core.items.command.LoreCommand;
+import dev.chorus.core.items.command.MoreCommand;
+import dev.chorus.core.items.command.SkullCommand;
+import dev.chorus.core.items.command.StackCommand;
+import dev.chorus.core.items.command.UnbreakableCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +49,8 @@ public final class ItemsModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("hat", "condense", "clearinventory", "itemname", "lore");
+        return List.of("hat", "condense", "clearinventory", "itemname", "lore", "more", "skull",
+                "unbreakable", "glow", "enchant", "stack");
     }
 
     @Override
@@ -56,6 +63,12 @@ public final class ItemsModule implements ChorusModule {
         commands.add(plugin.register(new ClearInventoryCommand(support)));
         commands.add(plugin.register(new ItemNameCommand(support, items)));
         commands.add(plugin.register(new LoreCommand(support, items)));
+        commands.add(plugin.register(new MoreCommand(support)));
+        commands.add(plugin.register(new SkullCommand(support)));
+        commands.add(plugin.register(new UnbreakableCommand(support)));
+        commands.add(plugin.register(new GlowCommand(support)));
+        commands.add(plugin.register(new EnchantCommand(support)));
+        commands.add(plugin.register(new StackCommand(support)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 

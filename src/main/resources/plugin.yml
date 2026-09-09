@@ -143,6 +143,18 @@ commands:
   near:
     description: List the players around you.
     usage: /near [radius]
+  tps:
+    description: Show how the server is holding up.
+    usage: /tps
+  getpos:
+    description: Show where a player is standing.
+    usage: /getpos [player]
+  suicide:
+    description: Kill yourself.
+    usage: /suicide
+  burn:
+    description: Set a player on fire.
+    usage: /burn [player] [seconds]
   invsee:
     description: Look inside another player's inventory.
     usage: /invsee [player]
@@ -189,6 +201,18 @@ commands:
   playtime:
     description: Show how long a player has played.
     usage: /playtime [player]
+  whois:
+    description: Show everything known about a player.
+    usage: /whois [player]
+  list:
+    description: Show who is online.
+    usage: /list
+  ptime:
+    description: Change the time of day you alone see.
+    usage: /ptime [day|night|reset] [player]
+  pweather:
+    description: Change the weather you alone see.
+    usage: /pweather [clear|rain|reset] [player]
   hat:
     description: Wear the item you are holding.
     usage: /hat
@@ -204,6 +228,24 @@ commands:
   lore:
     description: Edit the lore of the item you are holding.
     usage: /lore [add|set|remove|clear]
+  more:
+    description: Fill the stack you are holding.
+    usage: /more [amount]
+  skull:
+    description: Give yourself a player head.
+    usage: /skull [player]
+  unbreakable:
+    description: Make the item you are holding unbreakable.
+    usage: /unbreakable
+  glow:
+    description: Give the item you are holding the enchanted shimmer.
+    usage: /glow
+  enchant:
+    description: Enchant the item you are holding.
+    usage: /enchant [enchantment] [level]
+  stack:
+    description: Merge the loose stacks in your inventory.
+    usage: /stack
 
   kit:
     description: Take a kit.
@@ -372,6 +414,21 @@ permissions:
   chorus.utility.near:
     description: Allows /near.
     default: op
+  chorus.utility.tps:
+    description: Allows /tps.
+    default: op
+  chorus.utility.getpos:
+    description: Allows /getpos.
+    default: op
+  chorus.utility.getpos.others:
+    description: Allows /getpos on another player.
+    default: op
+  chorus.utility.suicide:
+    description: Allows /suicide.
+    default: true
+  chorus.utility.burn:
+    description: Allows /burn.
+    default: op
   chorus.utility.near.exempt:
     description: Hides the holder from /near.
     default: false
@@ -438,6 +495,27 @@ permissions:
   chorus.players.playtime.others:
     description: Allows /playtime on another player.
     default: op
+  chorus.players.whois:
+    description: Allows /whois.
+    default: op
+  chorus.players.whois.ip:
+    description: Adds the address to /whois.
+    default: op
+  chorus.players.list:
+    description: Allows /list.
+    default: true
+  chorus.players.ptime:
+    description: Allows /ptime.
+    default: op
+  chorus.players.ptime.others:
+    description: Allows /ptime on another player.
+    default: op
+  chorus.players.pweather:
+    description: Allows /pweather.
+    default: op
+  chorus.players.pweather.others:
+    description: Allows /pweather on another player.
+    default: op
   chorus.items.hat:
     description: Allows /hat.
     default: op
@@ -458,6 +536,30 @@ permissions:
     default: op
   chorus.items.format:
     description: Allows MiniMessage tags in /itemname and /lore.
+    default: op
+  chorus.items.more:
+    description: Allows /more.
+    default: op
+  chorus.items.skull:
+    description: Allows /skull.
+    default: op
+  chorus.items.skull.others:
+    description: Allows taking the head of another player.
+    default: op
+  chorus.items.unbreakable:
+    description: Allows /unbreakable.
+    default: op
+  chorus.items.glow:
+    description: Allows /glow.
+    default: op
+  chorus.items.enchant:
+    description: Allows /enchant.
+    default: op
+  chorus.items.enchant.unsafe:
+    description: Allows enchantment levels beyond the vanilla maximum.
+    default: false
+  chorus.items.stack:
+    description: Allows /stack.
     default: op
   chorus.kits.use:
     description: Allows /kit.

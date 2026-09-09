@@ -1,7 +1,8 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   I T E M S                                                            │
-# │   /hat  /condense  /clearinventory  /itemname  /lore                   │
+# │   /hat  /condense  /clearinventory  /itemname  /lore  /more  /skull    │
+# │   /unbreakable  /glow  /enchant  /stack                                │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -130,3 +131,45 @@ commands:
     sound:
       pitch: 1.4
 
+
+  more:
+    enabled: true
+    sound:
+      key: entity.item.pickup
+      volume: 0.5
+      pitch: 1.2
+
+  skull:
+    enabled: true
+    sound:
+      key: entity.item.pickup
+      volume: 0.5
+      pitch: 0.9
+
+  unbreakable:
+    enabled: true
+    sound:
+      key: block.anvil_use
+      volume: 0.4
+      pitch: 1.4
+
+  glow:
+    enabled: true
+    sound:
+      key: block.amethyst_block.chime
+      volume: 0.5
+      pitch: 1.6
+
+  enchant:
+    enabled: true
+    sound:
+      key: block.enchantment_table.use
+      volume: 0.6
+      pitch: 1.0
+
+  stack:
+    enabled: true
+    sound:
+      key: entity.item.pickup
+      volume: 0.5
+      pitch: 1.0

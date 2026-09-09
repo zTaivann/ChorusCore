@@ -2,8 +2,9 @@
 # │                                                                        │
 # │   U T I L I T Y                                                        │
 # │   /heal  /feed  /fly  /god  /ping  /fix  /trash  /speed  /top  /near   │
-# │   /invsee  /ecsee  /craft  /anvil  /smithingtable  /grindstone         │
-# │   /stonecutter  /loom  /cartography  /enchanting  /enderchest          │
+# │   /invsee  /ecsee  /tps  /getpos  /suicide  /burn  /craft  /anvil      │
+# │   /smithingtable  /grindstone  /stonecutter  /loom  /cartography       │
+# │   /enchanting  /enderchest                                             │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -264,3 +265,38 @@ commands:
       volume: 0.6
       pitch: 1.0
 
+
+  # /tps reads the figures the server already keeps, so it costs nothing to run.
+  tps:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.5
+
+  getpos:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.5
+
+  # A cooldown here stops /suicide being used as a free ride back to spawn.
+  suicide:
+    enabled: true
+    cooldown-seconds: 30
+    sound:
+      key: entity.player.hurt
+      volume: 0.6
+      pitch: 0.8
+
+  burn:
+    enabled: true
+    sound:
+      key: entity.blaze.shoot
+      volume: 0.6
+      pitch: 1.0
+    particle:
+      name: FLAME
+      count: 30
+      spread: 0.4
+      height: 1.8
+      speed: 0.02

@@ -1,10 +1,10 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.core.items.Enchantments;
 import dev.chorus.core.locale.Messages;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -83,14 +83,13 @@ public final class KitReader {
     }
 
     /**
-     * Looked up by namespaced key rather than by field name: the constants were renamed
-     * between versions, but {@code minecraft:protection} means the same thing on all of them.
+     * Looked up by namespaced key rather than by field name, for the reasons set out on
+     * {@link Enchantments}.
      */
     private static void enchant(ItemMeta meta, Map<?, ?> entries, String kit,
                                 Consumer<String> onProblem) {
         entries.forEach((name, level) -> {
-            NamespacedKey key = NamespacedKey.minecraft(String.valueOf(name).toLowerCase(Locale.ROOT));
-            Enchantment enchantment = Enchantment.getByKey(key);
+            Enchantment enchantment = Enchantments.byName(String.valueOf(name));
             if (enchantment == null) {
                 onProblem.accept("kit '" + kit + "' asks for an enchantment called '" + name
                         + "', which this version does not have");
