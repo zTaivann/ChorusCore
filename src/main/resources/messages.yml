@@ -42,6 +42,21 @@ economy:
   transfer-failed: '%prefix%<red>The payment did not go through. Nothing was taken.'
   pay-sent: '%prefix%<gray>Sent <white>%amount%</white> to <white>%player%</white>.'
   pay-received: '%prefix%<gray>You received <white>%amount%</white> from <white>%player%</white>.'
+  eco-usage: '%prefix%<gray>Usage: <white>/eco [give|take|set] [player] [amount]</white>'
+  eco-failed: '%prefix%<red>The economy plugin refused that change to %player%.'
+  eco-give-done: '%prefix%<gray>Gave <white>%amount%</white> to <white>%player%</white>. They now have <white>%balance%</white>.'
+  eco-give-received: '%prefix%<green>You were given <white>%amount%</white></green><gray>. You now have <white>%balance%</white>.'
+  eco-take-done: '%prefix%<gray>Took <white>%amount%</white> from <white>%player%</white>. They now have <white>%balance%</white>.'
+  eco-take-received: '%prefix%<red>%amount% was taken from you</red><gray>. You now have <white>%balance%</white>.'
+  eco-set-done: '%prefix%<gray>Set <white>%player%</white> to <white>%balance%</white>.'
+  eco-set-received: '%prefix%<gray>Your balance was set to <white>%balance%</white>.'
+  baltop-header: '<dark_gray>» <gradient:#ffd76b:#fff3c3><bold>RICHEST ONLINE</bold></gradient> <dark_gray>« <gray>%count%'
+  baltop-entry: '<dark_gray>▪ <gray>%place%<dark_gray>. <white>%player% <dark_gray>» <gold>%amount%'
+  baltop-empty: '%prefix%<gray>There is nobody online to rank.'
+  paylog-header: '<dark_gray>» <gradient:#ffd76b:#fff3c3><bold>PAYMENTS</bold></gradient> <dark_gray>« <gray>%count%'
+  paylog-entry: '<dark_gray>▪ <white>%payer% <dark_gray>-> <white>%payee% <dark_gray>» <gold>%amount% <dark_gray>(<gray>%ago% ago<dark_gray>)'
+  paylog-empty: '%prefix%<gray>There is nothing in the payment log.'
+  paylog-disabled: '%prefix%<red>The payment log is switched off on this server.'
 
 home:
   none: '%prefix%<gray>You have no homes yet. Create one with <white>/sethome</white>.'
@@ -99,6 +114,7 @@ spawn:
   teleported: '%prefix%<gray>Welcome to spawn.'
   not-set: '%prefix%<red>No spawn has been set yet.'
   world-missing: '%prefix%<red>The spawn world <white>%world%</white> is not loaded right now.'
+  no-such-world: '%prefix%<red>This server has no world called <white>%world%</white>.'
 
 request:
   usage: '%prefix%<gray>Usage: <white>/%command% [player]</white>'
@@ -123,17 +139,23 @@ request:
   none-sent: '%prefix%<red>You have not sent any requests.'
   none-from: '%prefix%<red>You have no pending request from <white>%player%</white>.'
   none-to: '%prefix%<red>You have no pending request to <white>%player%</white>.'
+  toggle-off: '%prefix%<gray>Teleport requests are now <red>blocked</red>.'
+  toggle-on: '%prefix%<gray>Teleport requests are <green>accepted</green> again.'
+  blocked: '%prefix%<red>%player% is not accepting teleport requests.'
 
 back:
   teleported: '%prefix%<gray>Returned to where you were.'
   none: '%prefix%<red>There is nowhere to go back to.'
   world-missing: '%prefix%<red>That world is not loaded any more.'
+  out-of-range: '%prefix%<red>You can only go <white>%depth%</white> steps back.'
 
 teleport:
   warmup: '%prefix%<gray>Do not move for <white>%seconds%</white> seconds.'
   cancelled-move: '%prefix%<red>Teleport cancelled: you moved.'
   cancelled-damage: '%prefix%<red>Teleport cancelled: you took damage.'
   failed: '%prefix%<red>The teleport could not be completed.'
+  warmup-countdown: '<gray>Teleporting in <white><bold>%seconds%</bold></white>'
+  unsafe: '%prefix%<red>There is nowhere safe to land there.'
 
 utility:
   healed: '%prefix%<gray>You are back to full health.'

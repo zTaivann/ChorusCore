@@ -4,8 +4,15 @@ import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.teleport.TeleportService;
 import org.bukkit.Location;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/** {@code /back}, or {@code /back <n>} to go further than one step down the history. */
 public final class BackCommand extends PlayerCommand {
 
     private final TeleportService teleports;
@@ -17,7 +24,19 @@ public final class BackCommand extends PlayerCommand {
 
     @Override
     protected void execute(Player player, String[] args) {
-        Location previous = teleports.previousLocation(player.getUniqueId()).orElse(null);
+        int depth = teleports.historyDepth(player.getUniqueId());
+        if (depth == 0) {
+            messages.send(player, "back.none");
+            return;
+        }
+
+        int steps = args.length == 0 ? 1 : parse(args[0]);
+        if (steps < 1 || steps > depth) {
+            messages.send(player, "back.out-of-range", "depth", String.valueOf(depth));
+            return;
+        }
+
+        Location previous = teleports.previousLocation(player.getUniqueId(), steps).orElse(null);
         if (previous == null) {
             messages.send(player, "back.none");
             return;
@@ -30,10 +49,36 @@ public final class BackCommand extends PlayerCommand {
             return;
         }
 
-        // The teleport itself records where the player is standing now, so /back toggles.
-        teleports.teleport(player, previous, rules(), name(), () -> {
+        // Taken off the history only now that the command is going through, so a refusal
+        // further up leaves the player's trail exactly as it was.
+        Location destination = teleports.takePrevious(player.getUniqueId(), steps).orElse(previous);
+
+        // The teleport itself records where the player is standing now, so a bare /back
+        // toggles between here and there.
+        teleports.teleport(player, destination, rules(), name(), () -> {
             settle(player);
             messages.send(player, "back.teleported");
         });
+    }
+
+    private static int parse(String raw) {
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException notANumber) {
+            return -1;
+        }
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
+                                      @NotNull String label, @NotNull String[] args) {
+        if (args.length != 1 || !(sender instanceof Player player)) {
+            return List.of();
+        }
+        List<String> steps = new ArrayList<>();
+        for (int step = 1; step <= teleports.historyDepth(player.getUniqueId()); step++) {
+            steps.add(String.valueOf(step));
+        }
+        return startingWith(args[0], steps);
     }
 }

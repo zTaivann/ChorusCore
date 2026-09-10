@@ -38,6 +38,7 @@ tpaccept: [ tpyes, tpacc ]
 tpdeny: [ tpno ]
 tpcancel: [ ]
 back: [ return ]
+tptoggle: [ tpblock, toggletp ]
 
 # Utility
 heal: [ ]
@@ -60,6 +61,9 @@ enderchest: [ ec, echest ]
 # Economy
 pay: [ ]
 balance: [ bal, money ]
+baltop: [ balancetop, topbalance ]
+eco: [ economy ]
+paylog: [ payments ]
 
 # Chat
 msg: [ w, tell, whisper, pm ]

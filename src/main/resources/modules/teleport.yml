@@ -1,7 +1,7 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   T E L E P O R T                                                      │
-# │   /tpa  /tpahere  /tpaccept  /tpdeny  /tpcancel  /back                 │
+# │   /tpa  /tpahere  /tpaccept  /tpdeny  /tpcancel  /tptoggle  /back      │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -62,6 +62,20 @@ teleport:
   # Remember where players came from so /back works.
   # chorus.back.ondeath additionally lets /back return to a death point.
   remember-previous-location: true
+
+  # How many places back /back can reach. /back on its own goes to the most
+  # recent one, /back 3 goes three steps down the trail and forgets the two it
+  # passed. Maximum 20.
+  history-size: 5
+
+  # Show the seconds left in the action bar while a warmup runs.
+  warmup-countdown: true
+
+  # Refuse to drop a player inside a wall, over a void or into lava, looking for
+  # somewhere to stand within this many blocks above or below instead. Turn it
+  # off if your warps are deliberately in mid-air. Maximum radius 16.
+  safe-landing: true
+  safe-landing-radius: 5
 
 # ── Requests ──────────────────────────────────────────────────────────────
 requests:
@@ -140,3 +154,11 @@ commands:
       height: 2.0
       speed: 0.04
 
+
+  # The choice is remembered between sessions.
+  tptoggle:
+    enabled: true
+    sound:
+      key: block.lever.click
+      volume: 0.5
+      pitch: 1.2

@@ -6,11 +6,13 @@ import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
+import dev.chorus.core.flags.PlayerFlagService;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.request.command.BackCommand;
 import dev.chorus.core.request.command.TeleportRequestCommand;
 import dev.chorus.core.request.command.TeleportResponseCommand;
 import dev.chorus.core.request.command.TpCancelCommand;
+import dev.chorus.core.request.command.TpToggleCommand;
 import dev.chorus.core.teleport.TeleportService;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
@@ -26,16 +28,19 @@ public final class TeleportRequestModule implements ChorusModule {
     private final ChorusPlugin plugin;
     private final CommandSupport support;
     private final TeleportService teleports;
+    private final PlayerFlagService flags;
     private final List<ChorusCommand> commands = new ArrayList<>();
 
     private ConfigFile config;
     private TeleportRequestService requests;
     private BukkitTask sweeper;
 
-    public TeleportRequestModule(ChorusPlugin plugin, CommandSupport support, TeleportService teleports) {
+    public TeleportRequestModule(ChorusPlugin plugin, CommandSupport support,
+                                 TeleportService teleports, PlayerFlagService flags) {
         this.plugin = plugin;
         this.support = support;
         this.teleports = teleports;
+        this.flags = flags;
     }
 
     @Override
@@ -50,7 +55,7 @@ public final class TeleportRequestModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("tpa", "tpahere", "tpaccept", "tpdeny", "tpcancel", "back");
+        return List.of("tpa", "tpahere", "tpaccept", "tpdeny", "tpcancel", "tptoggle", "back");
     }
 
     @Override
@@ -60,14 +65,15 @@ public final class TeleportRequestModule implements ChorusModule {
 
         plugin.register(new RequestListener(requests));
         commands.add(plugin.register(new TeleportRequestCommand(support, requests,
-                TeleportRequest.Direction.TO_TARGET, "tpa", "chorus.tpa.use")));
+                TeleportRequest.Direction.TO_TARGET, "tpa", "chorus.tpa.use", flags)));
         commands.add(plugin.register(new TeleportRequestCommand(support, requests,
-                TeleportRequest.Direction.TO_SENDER, "tpahere", "chorus.tpa.here")));
+                TeleportRequest.Direction.TO_SENDER, "tpahere", "chorus.tpa.here", flags)));
         commands.add(plugin.register(new TeleportResponseCommand(support, requests, teleports,
                 true, "tpaccept", "chorus.tpa.accept")));
         commands.add(plugin.register(new TeleportResponseCommand(support, requests, teleports,
                 false, "tpdeny", "chorus.tpa.deny")));
         commands.add(plugin.register(new TpCancelCommand(support, requests)));
+        commands.add(plugin.register(new TpToggleCommand(support, flags)));
         commands.add(plugin.register(new BackCommand(support, teleports)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 

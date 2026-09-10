@@ -16,6 +16,9 @@ import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.config.ConfigFiles;
 import dev.chorus.core.custom.CustomCommandsModule;
 import dev.chorus.core.economy.Economy;
+import dev.chorus.core.flags.PlayerFlagListener;
+import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.flags.SqlPlayerFlagRepository;
 import dev.chorus.core.economy.EconomyModule;
 import dev.chorus.core.economy.NoEconomy;
 import dev.chorus.core.economy.VaultEconomy;
@@ -41,6 +44,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -70,6 +74,7 @@ public final class ChorusPlugin extends JavaPlugin {
     private Economy economy;
     private Storage storage;
     private TeleportService teleports;
+    private PlayerFlagService flags;
     private CommandSupport support;
     private ChorusServices services;
 
@@ -102,6 +107,17 @@ public final class ChorusPlugin extends JavaPlugin {
             return;
         }
 
+        SqlPlayerFlagRepository flagStore = new SqlPlayerFlagRepository(storage);
+        try {
+            flagStore.createTables();
+        } catch (SQLException exception) {
+            getLogger().log(Level.SEVERE, "The player settings table could not be created", exception);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        flags = new PlayerFlagService(flagStore, worker, getLogger());
+        register(new PlayerFlagListener(flags, messages, getLogger()));
+
         teleports = new TeleportService(this, messages, mainThread,
                 TeleportSettings.read(configs.get(TELEPORT_CONFIG).section("teleport")));
         register(teleports);
@@ -113,7 +129,7 @@ public final class ChorusPlugin extends JavaPlugin {
         install(new HomeModule(this, support, teleports));
         install(new WarpModule(this, support, teleports));
         install(new SpawnModule(this, support, teleports));
-        install(new TeleportRequestModule(this, support, teleports));
+        install(new TeleportRequestModule(this, support, teleports, flags));
         install(new UtilityModule(this, support, teleports));
         install(new EconomyModule(this, support));
         install(new ChatModule(this, support));
@@ -153,6 +169,9 @@ public final class ChorusPlugin extends JavaPlugin {
         }
 
         cooldowns.clear();
+        if (flags != null) {
+            flags.clearAll();
+        }
         if (teleports != null) {
             teleports.shutdown();
         }
@@ -194,6 +213,10 @@ public final class ChorusPlugin extends JavaPlugin {
 
     public Storage storage() {
         return storage;
+    }
+
+    public PlayerFlagService flags() {
+        return flags;
     }
 
     /** Runs tasks on the server thread, dropping them once the plugin is gone. */

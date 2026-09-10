@@ -1,5 +1,6 @@
 package dev.chorus.core.location;
 
+import dev.chorus.core.storage.Schema;
 import dev.chorus.core.storage.SqlDialect;
 import dev.chorus.core.storage.Storage;
 
@@ -22,21 +23,18 @@ public final class SqlLocationRepository implements LocationRepository {
     private static final String DELETE = "DELETE FROM chorus_locations WHERE category = ? AND name = ?";
 
     private final Storage storage;
-    private final String createTable;
+    private final List<String> steps;
     private final String upsert;
 
     public SqlLocationRepository(Storage storage) {
         this.storage = storage;
-        this.createTable = createTable(storage.dialect());
+        this.steps = List.of(createTable(storage.dialect()));
         this.upsert = upsert(storage.dialect());
     }
 
     @Override
     public void createTables() throws SQLException {
-        try (Connection connection = storage.connection();
-             Statement statement = connection.createStatement()) {
-            statement.execute(createTable);
-        }
+        Schema.apply(storage, "locations", steps);
     }
 
     @Override

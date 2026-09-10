@@ -6,6 +6,7 @@ import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.economy.EconomyService;
 import dev.chorus.core.economy.EconomySettings;
+import dev.chorus.core.economy.PaymentLog;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,12 +19,15 @@ public final class PayCommand extends PlayerCommand {
 
     private final Economy economy;
     private final EconomyService service;
+    private final PaymentLog log;
     private final Logger logger;
 
-    public PayCommand(CommandSupport support, Economy economy, EconomyService service, Logger logger) {
+    public PayCommand(CommandSupport support, Economy economy, EconomyService service,
+                      PaymentLog log, Logger logger) {
         super(support, "pay", "chorus.economy.pay");
         this.economy = economy;
         this.service = service;
+        this.log = log;
         this.logger = logger;
     }
 
@@ -98,6 +102,7 @@ public final class PayCommand extends PlayerCommand {
 
         settle(player);
         rules().feedback().play(target);
+        log.record(player, target, amount);
 
         String formatted = economy.format(amount);
         messages.send(player, "economy.pay-sent", "player", target.getName(), "amount", formatted);

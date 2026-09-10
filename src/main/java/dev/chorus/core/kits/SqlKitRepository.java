@@ -1,5 +1,6 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.core.storage.Schema;
 import dev.chorus.core.storage.SqlDialect;
 import dev.chorus.core.storage.Storage;
 
@@ -7,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,21 +20,18 @@ final class SqlKitRepository implements KitRepository {
     private static final String DELETE = "DELETE FROM chorus_kit_uses WHERE owner = ? AND kit = ?";
 
     private final Storage storage;
-    private final String createTable;
+    private final List<String> steps;
     private final String upsert;
 
     SqlKitRepository(Storage storage) {
         this.storage = storage;
-        this.createTable = createTable(storage.dialect());
+        this.steps = List.of(createTable(storage.dialect()));
         this.upsert = upsert(storage.dialect());
     }
 
     @Override
     public void createTables() throws SQLException {
-        try (Connection connection = storage.connection();
-             Statement statement = connection.createStatement()) {
-            statement.execute(createTable);
-        }
+        Schema.apply(storage, "kits", steps);
     }
 
     @Override

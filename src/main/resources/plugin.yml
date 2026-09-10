@@ -46,7 +46,7 @@ commands:
     usage: /delwarp [name]
   spawn:
     description: Teleport to spawn.
-    usage: /spawn
+    usage: /spawn [world]
   setspawn:
     description: Set the spawn point to your position.
     usage: /setspawn
@@ -65,9 +65,12 @@ commands:
   tpcancel:
     description: Cancel a request you sent.
     usage: /tpcancel [player]
+  tptoggle:
+    description: Stop accepting teleport requests.
+    usage: /tptoggle
   back:
     description: Return to where you were before your last teleport.
-    usage: /back
+    usage: /back [steps]
 
   heal:
     description: Restore health.
@@ -124,6 +127,15 @@ commands:
   balance:
     description: Show a money balance.
     usage: /balance [player]
+  baltop:
+    description: Show the richest players online.
+    usage: /baltop
+  eco:
+    description: Give, take or set a balance.
+    usage: /eco [give|take|set] [player] [amount]
+  paylog:
+    description: Show recent payments.
+    usage: /paylog [player]
   msg:
     description: Send a private message.
     usage: /msg [player] [message]
@@ -291,6 +303,9 @@ permissions:
   chorus.spawn.set:
     description: Allows /setspawn.
     default: op
+  chorus.spawn.world:
+    description: Allows /spawn on a named world.
+    default: op
   chorus.tpa.use:
     description: Allows /tpa and /tpcancel.
     default: true
@@ -300,6 +315,12 @@ permissions:
   chorus.tpa.accept:
     description: Allows /tpaccept.
     default: true
+  chorus.tpa.toggle:
+    description: Allows /tptoggle.
+    default: true
+  chorus.tpa.toggle.bypass:
+    description: Sends requests to players who have /tptoggle on.
+    default: op
   chorus.tpa.deny:
     description: Allows /tpdeny.
     default: true
@@ -392,6 +413,18 @@ permissions:
     default: true
   chorus.economy.balance.others:
     description: Allows /balance on another player.
+    default: op
+  chorus.economy.baltop:
+    description: Allows /baltop.
+    default: true
+  chorus.economy.admin:
+    description: Allows /eco.
+    default: op
+  chorus.economy.paylog:
+    description: Allows /paylog on yourself.
+    default: true
+  chorus.economy.paylog.others:
+    description: Allows /paylog on another player, and on the whole server.
     default: op
   chorus.chat.msg:
     description: Allows /msg.

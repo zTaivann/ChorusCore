@@ -1,7 +1,7 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   E C O N O M Y                                                        │
-# │   /pay  /balance                                                       │
+# │   /pay  /balance  /baltop  /eco  /paylog                               │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -63,6 +63,20 @@ economy:
   # Largest amount a single /pay may move. 0 means no ceiling.
   maximum-payment: 0.0
 
+  # How many places /baltop lists. Maximum 50.
+  top-size: 10
+
+  # Every /pay is written down, so a dispute about a trade has an answer.
+  log:
+    enabled: true
+
+    # Entries older than this are dropped when the server starts. 0 keeps them
+    # for ever, which on a busy server means a table that only ever grows.
+    keep-days: 30
+
+    # How many entries one /paylog prints. Maximum 50.
+    page-size: 10
+
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 
@@ -95,3 +109,23 @@ commands:
     sound:
       pitch: 1.4
 
+
+  baltop:
+    enabled: true
+    cooldown-seconds: 5
+    sound:
+      pitch: 1.4
+
+  # Creating and destroying money, rather than moving it. Staff only.
+  eco:
+    enabled: true
+    sound:
+      key: entity.player.levelup
+      volume: 0.5
+      pitch: 1.2
+
+  paylog:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.5

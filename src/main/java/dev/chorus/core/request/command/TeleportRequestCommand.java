@@ -2,6 +2,8 @@ package dev.chorus.core.request.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
+import dev.chorus.core.flags.PlayerFlag;
+import dev.chorus.core.flags.PlayerFlagService;
 import dev.chorus.core.request.TeleportRequest;
 import dev.chorus.core.request.TeleportRequestService;
 import net.kyori.adventure.text.Component;
@@ -18,14 +20,19 @@ import java.util.List;
 /** Backs both /tpa and /tpahere; only the direction of travel differs. */
 public final class TeleportRequestCommand extends PlayerCommand {
 
+    private static final String IGNORE_TOGGLE_PERMISSION = "chorus.tpa.toggle.bypass";
+
     private final TeleportRequestService requests;
     private final TeleportRequest.Direction direction;
+    private final PlayerFlagService flags;
 
     public TeleportRequestCommand(CommandSupport support, TeleportRequestService requests,
-                                  TeleportRequest.Direction direction, String name, String permission) {
+                                  TeleportRequest.Direction direction, String name,
+                                  String permission, PlayerFlagService flags) {
         super(support, name, permission);
         this.requests = requests;
         this.direction = direction;
+        this.flags = flags;
     }
 
     @Override
@@ -42,6 +49,11 @@ public final class TeleportRequestCommand extends PlayerCommand {
         }
         if (target.equals(player)) {
             messages.send(player, "request.self");
+            return;
+        }
+        if (flags.isSet(target.getUniqueId(), PlayerFlag.TELEPORTS_BLOCKED)
+                && !player.hasPermission(IGNORE_TOGGLE_PERMISSION)) {
+            messages.send(player, "request.blocked", "player", target.getName());
             return;
         }
         if (!ready(player)) {
