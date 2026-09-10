@@ -4,30 +4,42 @@ import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.location.NamedLocation;
 import dev.chorus.core.menu.ListMenu;
+import dev.chorus.core.warp.WarpDetails;
+import dev.chorus.core.warp.WarpDetailsService;
 import dev.chorus.core.warp.WarpService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public final class WarpListCommand extends ChorusCommand {
 
-    private final WarpService warps;
+    /** Warps with a section come first, in section order; the loose ones follow. */
+    private static final Comparator<NamedLocation> BY_NAME =
+            Comparator.comparing(NamedLocation::name, String.CASE_INSENSITIVE_ORDER);
 
-    public WarpListCommand(CommandSupport support, WarpService warps) {
+    private final WarpService warps;
+    private final WarpDetailsService details;
+
+    public WarpListCommand(CommandSupport support, WarpService warps, WarpDetailsService details) {
         super(support, "warps", "chorus.warp.list");
         this.warps = warps;
+        this.details = details;
     }
 
     @Override
     protected void run(CommandSender sender, String[] args) {
-        List<NamedLocation> visible = warps.visibleTo(sender);
+        List<NamedLocation> visible = new ArrayList<>(warps.visibleTo(sender));
         if (visible.isEmpty()) {
             messages.send(sender, "warp.none");
             return;
@@ -36,6 +48,10 @@ public final class WarpListCommand extends ChorusCommand {
             return;
         }
         settle(sender);
+
+        visible.sort(Comparator
+                .comparing((NamedLocation warp) -> section(warp), Comparator.nullsLast(String::compareTo))
+                .thenComparing(BY_NAME));
 
         // The console has no screen to open, so it always gets the written list.
         if (warps.settings().menu().enabled() && sender instanceof Player player) {
@@ -48,15 +64,11 @@ public final class WarpListCommand extends ChorusCommand {
     private void openMenu(Player player, List<NamedLocation> visible) {
         List<ListMenu.Entry> entries = new ArrayList<>(visible.size());
         for (NamedLocation warp : visible) {
+            WarpDetails detail = details.of(warp.name());
             entries.add(new ListMenu.Entry(
-                    warps.settings().menu().icon(),
+                    icon(detail),
                     messages.render("warp.menu.entry", "warp", warp.name()),
-                    List.of(
-                            messages.render("warp.menu.lore-world", "world", warp.worldName()),
-                            messages.render("warp.menu.lore-position",
-                                    "x", round(warp.x()), "y", round(warp.y()), "z", round(warp.z())),
-                            messages.render("warp.menu.lore-divider"),
-                            messages.render("warp.menu.lore-action")),
+                    lore(warp, detail),
                     clicker -> {
                         clicker.closeInventory();
                         clicker.performCommand("warp " + warp.name());
@@ -65,26 +77,82 @@ public final class WarpListCommand extends ChorusCommand {
         ListMenu.open(player, messages, warps.settings().menu(), "warp.menu.title", entries, 0);
     }
 
+    private List<Component> lore(NamedLocation warp, WarpDetails detail) {
+        List<Component> lore = new ArrayList<>(6);
+        if (detail.description() != null) {
+            lore.add(messages.render("warp.menu.lore-description",
+                    "description", detail.description()));
+        }
+        lore.add(messages.render("warp.menu.lore-world", "world", warp.worldName()));
+        lore.add(messages.render("warp.menu.lore-position",
+                "x", round(warp.x()), "y", round(warp.y()), "z", round(warp.z())));
+        if (detail.uses() > 0) {
+            lore.add(messages.render("warp.menu.lore-uses", "uses", String.valueOf(detail.uses())));
+        }
+        lore.add(messages.render("warp.menu.lore-divider"));
+        lore.add(messages.render("warp.menu.lore-action"));
+        return lore;
+    }
+
     private void sendList(CommandSender sender, List<NamedLocation> visible) {
         messages.send(sender, "warp.list.header", "count", String.valueOf(visible.size()));
 
-        List<Component> entries = new ArrayList<>(visible.size());
+        // Grouped in place: the list arrives sorted by section, so one pass builds the map
+        // and keeps the order it was sorted into.
+        Map<String, List<NamedLocation>> sections = new LinkedHashMap<>();
         for (NamedLocation warp : visible) {
-            entries.add(messages.render("warp.list.entry", "warp", warp.name())
-                    .clickEvent(ClickEvent.runCommand("/warp " + warp.name()))
-                    .hoverEvent(HoverEvent.showText(location(warp))));
+            String section = section(warp);
+            sections.computeIfAbsent(section == null ? "" : section, key -> new ArrayList<>()).add(warp);
         }
-        sender.sendMessage(Component.join(
-                JoinConfiguration.separator(messages.render("warp.list.separator")), entries));
+
+        boolean grouped = sections.size() > 1 || !sections.containsKey("");
+        for (Map.Entry<String, List<NamedLocation>> group : sections.entrySet()) {
+            if (grouped && !group.getKey().isEmpty()) {
+                messages.send(sender, "warp.list.section", "section", group.getKey());
+            }
+            sender.sendMessage(Component.join(
+                    JoinConfiguration.separator(messages.render("warp.list.separator")),
+                    line(group.getValue())));
+        }
     }
 
-    private Component location(NamedLocation warp) {
+    private List<Component> line(List<NamedLocation> group) {
+        List<Component> entries = new ArrayList<>(group.size());
+        for (NamedLocation warp : group) {
+            entries.add(messages.render("warp.list.entry", "warp", warp.name())
+                    .clickEvent(ClickEvent.runCommand("/warp " + warp.name()))
+                    .hoverEvent(HoverEvent.showText(hover(warp))));
+        }
+        return entries;
+    }
+
+    private Component hover(NamedLocation warp) {
+        WarpDetails detail = details.of(warp.name());
+        if (detail.description() != null) {
+            return messages.render("warp.list.hover-description",
+                    "warp", warp.name(),
+                    "description", detail.description(),
+                    "world", warp.worldName());
+        }
         return messages.render("warp.list.hover",
                 "warp", warp.name(),
                 "world", warp.worldName(),
                 "x", round(warp.x()),
                 "y", round(warp.y()),
                 "z", round(warp.z()));
+    }
+
+    private String section(NamedLocation warp) {
+        return details.of(warp.name()).section();
+    }
+
+    /** The warp's own icon when it has one, and the one from the config when it does not. */
+    private Material icon(WarpDetails detail) {
+        if (detail.icon() == null) {
+            return warps.settings().menu().icon();
+        }
+        Material own = Material.matchMaterial(detail.icon());
+        return own != null && own.isItem() ? own : warps.settings().menu().icon();
     }
 
     private static String round(double value) {

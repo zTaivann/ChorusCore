@@ -42,9 +42,9 @@ class HomeStorageTest {
         UUID world = UUID.randomUUID();
         long created = System.currentTimeMillis();
 
-        repository.save(new Home(owner, "home", world, "world", 1.5, 64, -2.5, 90f, 0f, created));
-        repository.save(new Home(owner, "mine", world, "world_nether", 8, 31, 8, 0f, 12f, created));
-        repository.save(new Home(owner, "home", world, "world", 100, 70, 200, 45f, 5f, created + 1000));
+        repository.save(new Home(owner, "home", world, "world", 1.5, 64, -2.5, 90f, 0f, created, null));
+        repository.save(new Home(owner, "mine", world, "world_nether", 8, 31, 8, 0f, 12f, created, "COMPASS"));
+        repository.save(new Home(owner, "home", world, "world", 100, 70, 200, 45f, 5f, created + 1000, "BEACON"));
 
         List<Home> stored = repository.findByOwner(owner);
         assertEquals(2, stored.size(), "the second save of 'home' should have moved it");
@@ -54,12 +54,13 @@ class HomeStorageTest {
         assertEquals(200, home.z());
         assertEquals(world, home.worldId(), "the world id should round-trip");
         assertEquals(created, home.createdAt(), "moving a home must not reset when it was made");
+        assertEquals("BEACON", home.icon(), "the icon column should round-trip");
     }
 
     @Test
     void deletingReportsWhetherAnythingWent() throws SQLException {
         UUID owner = UUID.randomUUID();
-        repository.save(new Home(owner, "home", UUID.randomUUID(), "world", 0, 64, 0, 0f, 0f, 1));
+        repository.save(new Home(owner, "home", UUID.randomUUID(), "world", 0, 64, 0, 0f, 0f, 1, null));
 
         assertTrue(repository.delete(owner, "home"));
         assertFalse(repository.delete(owner, "home"), "a second delete should report nothing");

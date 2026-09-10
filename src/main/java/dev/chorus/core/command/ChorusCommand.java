@@ -60,7 +60,16 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
      * costs anything. The console is never charged and never waits.
      */
     protected final boolean ready(CommandSender sender) {
-        return !(sender instanceof Player player) || guard.allow(player, name, rules);
+        return ready(sender, name, rules);
+    }
+
+    /**
+     * The same check against a rule set worked out at the time and a cooldown of its own.
+     * A warp with its own price and its own wait needs both: the command block still holds
+     * what /warp costs in general, and this holds what that one warp costs.
+     */
+    protected final boolean ready(CommandSender sender, String key, CommandRules against) {
+        return !(sender instanceof Player player) || guard.allow(player, key, against);
     }
 
     /**
@@ -68,9 +77,13 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
      * really happened, which for a teleport means on arrival rather than on the command.
      */
     protected final void settle(CommandSender sender) {
+        settle(sender, name, rules);
+    }
+
+    protected final void settle(CommandSender sender, String key, CommandRules against) {
         if (sender instanceof Player player) {
-            guard.charge(player, name, rules);
-            rules.feedback().play(player);
+            guard.charge(player, key, against);
+            against.feedback().play(player);
         }
     }
 

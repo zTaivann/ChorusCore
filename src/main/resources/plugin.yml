@@ -32,15 +32,27 @@ commands:
   homes:
     description: List your homes.
     usage: /homes
+  renamehome:
+    description: Rename one of your homes.
+    usage: /renamehome [old] [new]
+  homeicon:
+    description: Choose how a home looks in the menu.
+    usage: /homeicon [home] [item]
   warp:
     description: Teleport to a warp.
-    usage: /warp [name]
+    usage: /warp [name] [player]
   warps:
     description: List the warps you can use.
     usage: /warps
   setwarp:
     description: Create a warp or move an existing one.
     usage: /setwarp [name]
+  warpinfo:
+    description: Show everything about a warp.
+    usage: /warpinfo [warp]
+  warpset:
+    description: Change the settings of a warp.
+    usage: /warpset [warp] [setting] [value]
   delwarp:
     description: Delete a warp.
     usage: /delwarp [name]
@@ -300,6 +312,12 @@ permissions:
   chorus.home.list:
     description: Allows /homes.
     default: true
+  chorus.home.rename:
+    description: Allows /renamehome.
+    default: true
+  chorus.home.icon:
+    description: Allows /homeicon.
+    default: true
   chorus.home.unlimited:
     description: Ignores the home limit.
     default: op
@@ -315,6 +333,21 @@ permissions:
   chorus.warp.delete:
     description: Allows /delwarp.
     default: op
+  chorus.warp.use.others:
+    description: Allows sending another player to a warp.
+    default: op
+  chorus.warp.info:
+    description: Allows /warpinfo.
+    default: true
+  chorus.warp.info.full:
+    description: Adds the permission a warp needs to /warpinfo.
+    default: op
+  chorus.warp.sign.create:
+    description: Allows making a [Warp] sign.
+    default: op
+  chorus.warp.sign.use:
+    description: Allows using a [Warp] sign.
+    default: true
   chorus.spawn.use:
     description: Allows /spawn.
     default: true

@@ -1,7 +1,7 @@
 # ChorusCore
 
 A modular core for Paper servers: homes, warps, spawn, teleport requests, economy, private
-messages, staff tools, item tools, kits and the usual utilities. Sixty-three commands across
+messages, staff tools, item tools, kits and the usual utilities. Ninety-one commands across
 twelve modules, every one of them switchable, priced and themed from its own config file, plus
 as many commands of your own as you care to write.
 
@@ -25,25 +25,30 @@ PlaceholderAPI is optional too, and the expansion registers itself when it is th
 
 ```
 plugins/ChorusCore/
-├── config.yml            storage, economy switch
+├── config.yml            storage, economy switch, staff log
 ├── aliases.yml           extra names for every command
 ├── messages.yml          every line the plugin sends
 └── modules/
-    ├── homes.yml             /home /sethome /delhome /homes
-    ├── warps.yml             /warp /warps /setwarp /delwarp
+    ├── homes.yml             /home /sethome /delhome /homes /renamehome
+    │                         /homeicon
+    ├── warps.yml             /warp /warps /setwarp /delwarp /warpinfo /warpset
     ├── spawn.yml             /spawn /setspawn
-    ├── teleport.yml          /tpa /tpahere /tpaccept /tpdeny /tpcancel /back
-    ├── economy.yml           /pay /balance
+    ├── teleport.yml          /tpa /tpahere /tpaccept /tpdeny /tpcancel
+    │                         /tptoggle /back
+    ├── economy.yml           /pay /balance /baltop /eco /paylog
     ├── chat.yml              /msg /reply /socialspy
-    ├── players.yml           /afk /seen /playtime
+    ├── players.yml           /afk /seen /playtime /whois /list /ptime /pweather
     ├── items.yml             /hat /condense /clearinventory /itemname /lore
+    │                         /more /skull /unbreakable /glow /enchant /stack
     ├── kits.yml              /kit /kits
-    ├── staff.yml             /tp /tphere /tppos /tpall /vanish
-    │                         /gamemode /gmc /gms /gma /gmsp
+    ├── staff.yml             /tp /tphere /tppos /tpall /vanish /gamemode /gmc
+    │                         /gms /gma /gmsp /freeze /sudo /lockdown /tempfly
+    │                         /note /stafflog
     ├── utility.yml           /heal /feed /fly /god /ping /fix /trash /speed
-    │                         /top /near /invsee /ecsee /craft /anvil
-    │                         /smithingtable /grindstone /stonecutter /loom
-    │                         /cartography /enchanting /enderchest
+    │                         /tps /getpos /suicide /burn /top /near /invsee
+    │                         /ecsee /craft /anvil /smithingtable /grindstone
+    │                         /stonecutter /loom /cartography /enchanting
+    │                         /enderchest
     └── custom-commands.yml   the /discord and /rules of your server
 ```
 
@@ -135,25 +140,62 @@ An alias another plugin already owns is skipped rather than fought over.
 | `/home [name]` | `chorus.home.use` | everyone |
 | `/delhome <name>` | `chorus.home.delete` | everyone |
 | `/homes` | `chorus.home.list` | everyone |
+| `/renamehome <old> <new>` | `chorus.home.rename` | everyone |
+| `/homeicon <home> [item]` | `chorus.home.icon` | everyone |
 
 With no name, `/home` and `/sethome` fall back to `homes.default-name`. A player with exactly
 one home gets sent to it by a bare `/home` whatever it is called, unless you turn
 `fallback-to-only-home` off.
 
+`homes.price-per-home` adds to the price of `/sethome` for every home the player already has,
+so the first is whatever the command block says and each one after costs more. Moving a home
+you already have is never surcharged. `homes.world-limits` caps one world on top of the
+overall limit, for the worlds where homes should be rare.
+
+`/homeicon` sets what one home looks like in the grid. Renaming or moving a home keeps its
+icon and the day it was made.
+
 ### Warps
 
 | Command | Permission | Default |
 | --- | --- | --- |
-| `/warp <name>` | `chorus.warp.use` | everyone |
+| `/warp <name> [player]` | `chorus.warp.use` | everyone |
 | `/warps` | `chorus.warp.list` | everyone |
+| `/warpinfo <name>` | `chorus.warp.info` | everyone |
 | `/setwarp <name>` | `chorus.warp.set` | op |
+| `/warpset <name> <setting> [value]` | `chorus.warp.set` | op |
 | `/delwarp <name>` | `chorus.warp.delete` | op |
+
+Everything a single warp overrides lives in the database rather than in a file, because warps
+are made in game and a server owner should not have to edit a file and restart to say that
+the one they just made costs money:
+
+```
+/warpset shop icon EMERALD          how it looks in /warps
+/warpset shop price 100             what that one warp costs
+/warpset shop cooldown 60           the wait after using that one
+/warpset shop permission group.vip  who may use it
+/warpset shop description The shop  a line under its name
+/warpset shop section Towns         groups it in /warps
+```
+
+Leaving the value off puts a setting back to what `warps.yml` says. A permission set on the
+warp itself wins outright, so one warp can be locked without turning on per-warp permissions
+for every other one. Warps count how often they are used, and `/warpinfo` shows the number.
+
+`/warp <name> <player>` sends somebody else, and needs `chorus.warp.use.others`. Their trip
+is free and starts no cooldown: paying for it out of your own pocket is nobody's idea of how
+that should work.
+
+A sign reading `[Warp]` on the first line and a warp name on the second sends whoever
+right-clicks it, honouring that warp's price, wait and permission exactly as `/warp` would.
+Making one needs `chorus.warp.sign.create`; `warps.signs` turns the whole thing off.
 
 ### Spawn
 
 | Command | Permission | Default |
 | --- | --- | --- |
-| `/spawn` | `chorus.spawn.use` | everyone |
+| `/spawn [world]` | `chorus.spawn.use` | everyone |
 | `/setspawn` | `chorus.spawn.set` | op |
 
 Set `per-world` in `spawn.yml` and `/setspawn` sets the spawn of the world you are standing
@@ -169,10 +211,17 @@ their own fall back to `fallback-world`, and then to the single spawn.
 | `/tpaccept [player]` | `chorus.tpa.accept` | everyone |
 | `/tpdeny [player]` | `chorus.tpa.deny` | everyone |
 | `/tpcancel [player]` | `chorus.tpa.use` | everyone |
-| `/back` | `chorus.back.use` | everyone |
+| `/tptoggle` | `chorus.tpa.toggle` | everyone |
+| `/back [steps]` | `chorus.back.use` | everyone |
 
 `/tpaccept` and `/tpdeny` answer the most recent request when no name is given. `/tpcancel`
-with no name withdraws every request you sent.
+with no name withdraws every request you sent. `/tptoggle` turns incoming requests down
+without the sender having to be told twice, and is remembered between sessions.
+
+`/back` walks a trail rather than a single step: `teleport.history-size` says how deep it
+goes, and `/back 3` goes three places down it. During a warmup the seconds left show in the
+action bar, and `teleport.safe-landing` stops a teleport dropping a player inside a wall,
+over a void or into lava, looking for somewhere to stand nearby instead.
 
 ### Utility
 
@@ -190,6 +239,10 @@ with no name withdraws every request you sent.
 | `/ping [player]` | `chorus.utility.ping` | everyone |
 | `/fix [all]` | `chorus.utility.fix` | op |
 | `/trash` | `chorus.utility.trash` | op |
+| `/tps` | `chorus.utility.tps` | op |
+| `/getpos [player]` | `chorus.utility.getpos` | op |
+| `/suicide` | `chorus.utility.suicide` | everyone |
+| `/burn <player> <seconds>` | `chorus.utility.burn` | op |
 
 Portable screens, all `chorus.utility.<command>`, op by default:
 
@@ -213,6 +266,9 @@ Whatever is left in the `/trash` window when it closes is gone for good.
 | --- | --- | --- |
 | `/pay <player> <amount>` | `chorus.economy.pay` | everyone |
 | `/balance [player]` | `chorus.economy.balance` | everyone |
+| `/baltop` | `chorus.economy.baltop` | everyone |
+| `/eco <give|take|set> <player> <amount>` | `chorus.economy.admin` | op |
+| `/paylog [player]` | `chorus.economy.paylog` | everyone |
 
 Both need Vault plus an economy plugin; without one they say so and nothing else changes.
 Payments go to online players only, are rounded to two decimals, and honour the minimum and
@@ -220,6 +276,17 @@ maximum in `economy.yml`. If the deposit fails after the money left the sender i
 straight back.
 
 `/balance <player>` needs `chorus.economy.balance.others`.
+
+Every payment is written down, and `/paylog` reads it back. `/paylog <player>` and
+`/paylog *` need `chorus.economy.paylog.others`. How long entries are kept is
+`economy.log.keep-days`.
+
+`/eco` creates and destroys money rather than moving it, and every use of it goes in the
+staff log. Taking more than somebody has empties the account rather than going negative.
+
+`/baltop` ranks the players who are online, deliberately not the whole server: balances
+belong to whichever economy plugin is installed, and ranking everyone who ever played would
+mean asking it about each of them in turn, on the server thread.
 
 ### Chat
 
@@ -247,6 +314,12 @@ formatting into someone else's screen.
 | `/vanish` | `chorus.staff.vanish` | op |
 | `/gamemode <mode> [player]` | `chorus.staff.gamemode` | op |
 | `/gmc` `/gms` `/gma` `/gmsp` | `chorus.staff.gamemode` | op |
+| `/freeze <player>` | `chorus.staff.freeze` | op |
+| `/sudo <player> <command>` | `chorus.staff.sudo` | op |
+| `/lockdown <on\|off> [reason]` | `chorus.staff.lockdown` | op |
+| `/tempfly <player> <minutes>` | `chorus.staff.tempfly` | op |
+| `/note <add\|list\|clear> <player> [text]` | `chorus.staff.note` | op |
+| `/stafflog [player]` | `chorus.staff.log` | op |
 
 Each mode also needs its own permission, so a rank can have creative without spectator:
 `chorus.staff.gamemode.creative`, `.survival`, `.adventure`, `.spectator`. Changing somebody
@@ -255,6 +328,22 @@ else needs `chorus.staff.gamemode.others`.
 `chorus.staff.vanish.see` keeps a player able to see anyone vanished, and vanish is reapplied
 when either side reconnects.
 
+Frozen players cannot move, teleport or run commands; `/msg` and `/reply` stay open so they
+can answer whoever froze them, and the freeze survives a reconnect because logging out is the
+first thing anybody tries. `chorus.staff.freeze.exempt` protects the holder.
+
+`/lockdown` closes the door to everyone without `chorus.staff.lockdown.bypass`. Nobody already
+on the server is thrown out, and it is not remembered across a restart: coming back up already
+closed, with nobody having said so, is how a server stays empty all evening by accident.
+
+`/sudo` runs a command as somebody else, with their permissions rather than yours.
+`chorus.staff.sudo.exempt` protects the holder, and every use goes in the staff log.
+
+`/note` keeps a line about a player for whoever deals with them next, and works on somebody
+who has logged off. `/stafflog` reads back what staff have been doing: freezes, `/sudo`,
+`/lockdown`, `/tempfly`, notes and every `/eco`. Both are set up in the `staff-log` section
+of `config.yml`.
+
 ### Players
 
 | Command | Permission | Default |
@@ -262,10 +351,21 @@ when either side reconnects.
 | `/afk` | `chorus.players.afk` | everyone |
 | `/seen <player>` | `chorus.players.seen` | everyone |
 | `/playtime [player]` | `chorus.players.playtime` | everyone |
+| `/whois <player>` | `chorus.players.whois` | op |
+| `/list` | `chorus.players.list` | everyone |
+| `/ptime <time> [player]` | `chorus.players.ptime` | op |
+| `/pweather <clear|rain|reset> [player]` | `chorus.players.pweather` | op |
 
 Players are marked away on their own after `auto-afk-minutes` of standing still, and come
 back the moment they move, interact or type a command. `/playtime` reads the figure the
 server already keeps, the same one the vanilla statistics screen shows.
+
+`/whois` gathers everything the server already knows about a player into one card, and works
+on somebody who has logged off. The address is behind `chorus.players.whois.ip`. `/list`
+respects vanish: a player hidden from you is missing from both the names and the count.
+
+`/ptime` and `/pweather` change only what one client is shown; the world keeps its own time
+and weather, and so does everybody standing next to them.
 
 ### Items
 
@@ -276,6 +376,12 @@ server already keeps, the same one the vanilla statistics screen shows.
 | `/clearinventory [player]` | `chorus.items.clearinventory` | op |
 | `/itemname <text>` | `chorus.items.itemname` | op |
 | `/lore <add\|set\|remove\|clear>` | `chorus.items.lore` | op |
+| `/more [amount]` | `chorus.items.more` | op |
+| `/skull [player]` | `chorus.items.skull` | op |
+| `/unbreakable` | `chorus.items.unbreakable` | op |
+| `/glow` | `chorus.items.glow` | op |
+| `/enchant <enchantment> [level]` | `chorus.items.enchant` | op |
+| `/stack` | `chorus.items.stack` | op |
 
 `/condense` only takes untouched stacks: anything named, enchanted or damaged is left alone,
 so a mistyped command can never eat a special item. What packs into what is listed in
@@ -283,6 +389,15 @@ so a mistyped command can never eat a special item. What packs into what is list
 
 `chorus.items.format` lets a player use MiniMessage tags in `/itemname` and `/lore`. Without
 it their text is used exactly as typed.
+
+`/enchant` writes enchantments the way the game writes them today — `protection`, `sharpness`,
+`unbreaking` — and tab completion only offers the ones this version actually has. Level `0`
+takes one off, and levels beyond the vanilla maximum need `chorus.items.enchant.unsafe`.
+
+`/glow` gives an item the enchanted shimmer without an enchantment behind it, and says so
+rather than hiding the enchantments of an item that already has some. `/stack` merges the
+loose piles in your bags, matching on name, lore, enchantments and damage, so a renamed sword
+never disappears into an ordinary one.
 
 ### Kits
 
@@ -335,6 +450,12 @@ says or does is picked up by `/chorus reload`.
 | `chorus.back.ondeath` | Lets `/back` return to where the player died. |
 | `chorus.economy.balance.others` | Reads someone else's balance. |
 | `chorus.utility.invsee.edit` | Allows editing through `/invsee`, `/ecsee` needs its own. |
+| `chorus.warp.use.others` | Sends another player to a warp. |
+| `chorus.warp.sign.create` | Makes a `[Warp]` sign. |
+| `chorus.staff.lockdown.bypass` | Logs in during a lockdown. |
+| `chorus.staff.freeze.exempt` | Cannot be frozen. |
+| `chorus.staff.sudo.exempt` | Cannot be sudoed. |
+| `chorus.tpa.toggle.bypass` | Reaches players who have `/tptoggle` on. |
 | `chorus.chat.spy` | Uses /socialspy and receives the copies. |
 | `chorus.kits.use.<name>` | Required per kit, unless that kit sets its own permission. |
 
@@ -412,9 +533,16 @@ SQLite by default: one file in the plugin folder, nothing to configure. For seve
 sharing data, set `storage.type` to `mysql` and fill in the `mysql` section. The same driver
 handles MySQL and MariaDB.
 
-Three tables are created: `chorus_homes`, `chorus_locations` (warps and spawn points, under
-different categories) and `chorus_kit_uses`. Every query runs off the main thread, so the
-server never waits on the database.
+Every query runs off the main thread, so the server never waits on the database.
+
+The tables are `chorus_homes`, `chorus_locations` (warps and spawn points, under different
+categories), `chorus_warp_details`, `chorus_kit_uses`, `chorus_player_flags`,
+`chorus_payments`, `chorus_notes` and `chorus_staff_log`.
+
+`chorus_schema_version` records how far each of them has been brought up to date.
+`CREATE TABLE IF NOT EXISTS` cannot add a column to a table that already exists, so each one
+is written as an ordered list of steps and a server upgrading from an older release runs only
+the steps it has not seen. A step that fails rolls back and is not recorded as done.
 
 ## Building
 

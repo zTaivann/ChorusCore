@@ -1,5 +1,6 @@
 package dev.chorus.core.home.command;
 
+import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.home.Home;
@@ -46,11 +47,31 @@ public final class SetHomeCommand extends PlayerCommand {
             messages.send(player, "home.limit-reached", "limit", String.valueOf(limit));
             return;
         }
-        if (!ready(player)) {
+
+        String world = player.getWorld().getName();
+        int worldLimit = homes.settings().limitIn(world);
+        if (!replacing && worldLimit >= 0 && homes.countIn(playerId, world) >= worldLimit) {
+            messages.send(player, "home.world-limit-reached",
+                    "world", world, "limit", String.valueOf(worldLimit));
             return;
         }
 
-        homes.save(Home.create(playerId, key, player.getLocation()))
+        // The price grows with the number already owned, so the tenth home can cost real
+        // money while the first stays free. Moving one you have is never surcharged.
+        CommandRules against = new CommandRules(rules().enabled(), rules().warmupSeconds(),
+                rules().cooldownSeconds(),
+                homes.settings().priceFor(rules().price(), homes.count(playerId), replacing),
+                rules().feedback());
+        if (!ready(player, name(), against)) {
+            return;
+        }
+
+        // Moving a home the player already has keeps its icon and the day it was made.
+        Home saved = homes.find(playerId, key)
+                .map(existing -> existing.movedTo(player.getLocation()))
+                .orElseGet(() -> Home.create(playerId, key, player.getLocation()));
+
+        homes.save(saved)
                 .whenComplete((ignored, failure) -> {
                     // A plugin cancelling the event is a decision, not a fault: it has
                     // already told the player whatever it wanted to.
@@ -64,7 +85,7 @@ public final class SetHomeCommand extends PlayerCommand {
                         messages.send(player, "error.storage");
                         return;
                     }
-                    settle(player);
+                    settle(player, name(), against);
                     messages.send(player, replacing ? "home.updated" : "home.created", "home", key);
                 });
     }

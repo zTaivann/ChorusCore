@@ -9,6 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public final class HomeListCommand extends PlayerCommand {
         List<ListMenu.Entry> entries = new ArrayList<>(owned.size());
         for (Home home : owned) {
             entries.add(new ListMenu.Entry(
-                    homes.settings().menu().icon(),
+                    icon(home),
                     messages.render("home.menu.entry", "home", home.name()),
                     List.of(
                             messages.render("home.menu.lore-world", "world", home.worldName()),
@@ -101,6 +102,15 @@ public final class HomeListCommand extends PlayerCommand {
                 "x", round(home.x()),
                 "y", round(home.y()),
                 "z", round(home.z()));
+    }
+
+    /** The home's own icon when it has one, and the one from the config when it does not. */
+    private Material icon(Home home) {
+        if (home.icon() == null) {
+            return homes.settings().menu().icon();
+        }
+        Material own = Material.matchMaterial(home.icon());
+        return own != null && own.isItem() ? own : homes.settings().menu().icon();
     }
 
     private static String round(double value) {

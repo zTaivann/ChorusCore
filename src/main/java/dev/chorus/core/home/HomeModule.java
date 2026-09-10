@@ -8,7 +8,9 @@ import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.home.command.DelHomeCommand;
 import dev.chorus.core.home.command.HomeCommand;
+import dev.chorus.core.home.command.HomeIconCommand;
 import dev.chorus.core.home.command.HomeListCommand;
+import dev.chorus.core.home.command.RenameHomeCommand;
 import dev.chorus.core.home.command.SetHomeCommand;
 import dev.chorus.core.teleport.TeleportService;
 import org.bukkit.entity.Player;
@@ -53,7 +55,7 @@ public final class HomeModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("home", "sethome", "delhome", "homes");
+        return List.of("home", "sethome", "delhome", "homes", "renamehome", "homeicon");
     }
 
     @Override
@@ -78,6 +80,8 @@ public final class HomeModule implements ChorusModule {
         commands.add(plugin.register(new SetHomeCommand(support, homes, logger)));
         commands.add(plugin.register(new DelHomeCommand(support, homes, logger)));
         commands.add(plugin.register(new HomeListCommand(support, homes)));
+        commands.add(plugin.register(new RenameHomeCommand(support, homes, logger)));
+        commands.add(plugin.register(new HomeIconCommand(support, homes, logger)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 
         reaper = plugin.getServer().getScheduler().runTaskTimer(plugin,

@@ -20,12 +20,16 @@ home: [ ]
 sethome: [ ]
 delhome: [ removehome, remhome ]
 homes: [ listhomes, homelist ]
+renamehome: [ movehome ]
+homeicon: [ sethomeicon ]
 
 # Warps
 warp: [ ]
 warps: [ listwarps, warplist ]
 setwarp: [ createwarp ]
 delwarp: [ removewarp, remwarp ]
+warpinfo: [ winfo ]
+warpset: [ warpedit ]
 
 # Spawn
 spawn: [ ]

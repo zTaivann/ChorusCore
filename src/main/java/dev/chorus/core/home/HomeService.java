@@ -129,6 +129,21 @@ public final class HomeService implements HomeApi {
         return homes == null ? 0 : homes.size();
     }
 
+    /** How many of their homes are in one world, for the per-world caps. */
+    public int countIn(UUID owner, String world) {
+        Map<String, Home> homes = cache.get(owner);
+        if (homes == null) {
+            return 0;
+        }
+        int found = 0;
+        for (Home home : homes.values()) {
+            if (home.worldName().equalsIgnoreCase(world)) {
+                found++;
+            }
+        }
+        return found;
+    }
+
     public CompletableFuture<Void> save(Home home) {
         Map<String, Home> owned = cache.get(home.owner());
         ChorusHomeSaveEvent event = new ChorusHomeSaveEvent(home,

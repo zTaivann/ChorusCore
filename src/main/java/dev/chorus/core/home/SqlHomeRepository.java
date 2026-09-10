@@ -16,7 +16,7 @@ import java.util.UUID;
 final class SqlHomeRepository implements HomeRepository {
 
     private static final String SELECT_BY_OWNER = """
-            SELECT name, world_id, world_name, x, y, z, yaw, pitch, created_at
+            SELECT name, world_id, world_name, x, y, z, yaw, pitch, created_at, icon
             FROM chorus_homes
             WHERE owner = ?""";
 
@@ -28,7 +28,7 @@ final class SqlHomeRepository implements HomeRepository {
 
     SqlHomeRepository(Storage storage) {
         this.storage = storage;
-        this.steps = List.of(createTable(storage.dialect()));
+        this.steps = List.of(createTable(storage.dialect()), addIcon(storage.dialect()));
         this.upsert = upsert(storage.dialect());
     }
 
@@ -67,6 +67,7 @@ final class SqlHomeRepository implements HomeRepository {
             statement.setFloat(8, home.yaw());
             statement.setFloat(9, home.pitch());
             statement.setLong(10, home.createdAt());
+            statement.setString(11, home.icon());
             statement.executeUpdate();
         }
     }
@@ -92,7 +93,8 @@ final class SqlHomeRepository implements HomeRepository {
                 rows.getDouble("z"),
                 rows.getFloat("yaw"),
                 rows.getFloat("pitch"),
-                rows.getLong("created_at"));
+                rows.getLong("created_at"),
+                rows.getString("icon"));
     }
 
     private static String createTable(SqlDialect dialect) {
@@ -128,13 +130,24 @@ final class SqlHomeRepository implements HomeRepository {
         };
     }
 
+    /**
+     * The second step, added after the first release. A server upgrading from it runs only
+     * this one; a fresh install runs both, in order, and ends up with the same table.
+     */
+    private static String addIcon(SqlDialect dialect) {
+        return switch (dialect) {
+            case SQLITE -> "ALTER TABLE chorus_homes ADD COLUMN icon TEXT";
+            case MYSQL -> "ALTER TABLE chorus_homes ADD COLUMN icon VARCHAR(64) NULL";
+        };
+    }
+
     /** Overwriting a home keeps its original creation time, so created_at is never updated. */
     private static String upsert(SqlDialect dialect) {
         return switch (dialect) {
             case SQLITE -> """
                     INSERT INTO chorus_homes
-                        (owner, name, world_id, world_name, x, y, z, yaw, pitch, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        (owner, name, world_id, world_name, x, y, z, yaw, pitch, created_at, icon)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT (owner, name) DO UPDATE SET
                         world_id   = excluded.world_id,
                         world_name = excluded.world_name,
@@ -142,11 +155,12 @@ final class SqlHomeRepository implements HomeRepository {
                         y          = excluded.y,
                         z          = excluded.z,
                         yaw        = excluded.yaw,
-                        pitch      = excluded.pitch""";
+                        pitch      = excluded.pitch,
+                        icon       = excluded.icon""";
             case MYSQL -> """
                     INSERT INTO chorus_homes
-                        (owner, name, world_id, world_name, x, y, z, yaw, pitch, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        (owner, name, world_id, world_name, x, y, z, yaw, pitch, created_at, icon)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE
                         world_id   = VALUES(world_id),
                         world_name = VALUES(world_name),
@@ -154,7 +168,8 @@ final class SqlHomeRepository implements HomeRepository {
                         y          = VALUES(y),
                         z          = VALUES(z),
                         yaw        = VALUES(yaw),
-                        pitch      = VALUES(pitch)""";
+                        pitch      = VALUES(pitch),
+                        icon       = VALUES(icon)""";
         };
     }
 }

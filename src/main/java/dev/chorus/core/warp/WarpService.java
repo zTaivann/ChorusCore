@@ -13,11 +13,13 @@ import java.util.concurrent.CompletableFuture;
 public final class WarpService implements WarpApi {
 
     private final LocationService locations;
+    private final WarpDetailsService details;
 
     private volatile WarpSettings settings;
 
-    WarpService(LocationService locations, WarpSettings settings) {
+    WarpService(LocationService locations, WarpDetailsService details, WarpSettings settings) {
         this.locations = locations;
+        this.details = details;
         this.settings = settings;
     }
 
@@ -37,10 +39,24 @@ public final class WarpService implements WarpApi {
         return locations.all();
     }
 
-    /** The warps this sender is allowed to use. Everything when per-warp permissions are off. */
+    /**
+     * Whether this sender may use one warp.
+     *
+     * <p>A permission set on the warp itself wins outright, so a single warp can be locked
+     * without turning on per-warp permissions for every other one, and an open warp can be
+     * left open on a server where they are on.
+     */
+    public boolean canUse(Permissible who, String warp) {
+        String own = details.of(warp).permission();
+        if (own != null) {
+            return own.isEmpty() || who.hasPermission(own);
+        }
+        return settings.canUse(who, warp);
+    }
+
+    /** The warps this sender is allowed to use. */
     public List<NamedLocation> visibleTo(Permissible who) {
-        WarpSettings current = settings;
-        return locations.all().stream().filter(warp -> current.canUse(who, warp.name())).toList();
+        return locations.all().stream().filter(warp -> canUse(who, warp.name())).toList();
     }
 
     public boolean isValidName(String name) {

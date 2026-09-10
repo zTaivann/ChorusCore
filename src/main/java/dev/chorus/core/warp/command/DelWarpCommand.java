@@ -4,6 +4,7 @@ import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.location.NamedLocation;
 import dev.chorus.core.location.Names;
+import dev.chorus.core.warp.WarpDetailsService;
 import dev.chorus.core.warp.WarpService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,11 +17,14 @@ import java.util.logging.Logger;
 public final class DelWarpCommand extends ChorusCommand {
 
     private final WarpService warps;
+    private final WarpDetailsService details;
     private final Logger logger;
 
-    public DelWarpCommand(CommandSupport support, WarpService warps, Logger logger) {
+    public DelWarpCommand(CommandSupport support, WarpService warps, WarpDetailsService details,
+                          Logger logger) {
         super(support, "delwarp", "chorus.warp.delete");
         this.warps = warps;
+        this.details = details;
         this.logger = logger;
     }
 
@@ -54,6 +58,9 @@ public final class DelWarpCommand extends ChorusCommand {
                 messages.send(sender, "warp.unknown", "warp", key);
                 return;
             }
+            // The icon, price and the rest go with it. Leaving them would mean a warp
+            // made later with the same name quietly inheriting whatever the old one had.
+            details.forget(key);
             settle(sender);
             messages.send(sender, "warp.deleted", "warp", key);
         });

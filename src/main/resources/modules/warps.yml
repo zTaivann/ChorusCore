@@ -1,7 +1,7 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   W A R P S                                                            │
-# │   /warp  /warps  /setwarp  /delwarp                                    │
+# │   /warp  /warps  /setwarp  /delwarp  /warpinfo  /warpset               │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -61,6 +61,11 @@ warps:
 
   # Names accept letters, numbers, hyphens and underscores.
   max-name-length: 24
+
+  # Signs reading [Warp] on the first line and a warp name on the second send
+  # whoever right-clicks them, honouring that warp's price, wait and permission
+  # exactly as /warp would. Making one needs chorus.warp.sign.create.
+  signs: true
 
   # /warps opens a clickable grid instead of printing a line of names.
   menu:
@@ -124,3 +129,27 @@ commands:
       volume: 0.7
       pitch: 0.8
 
+
+  # Everything a single warp overrides lives in the database rather than here,
+  # because warps are made in game. Set them with /warpset:
+  #
+  #   /warpset shop icon EMERALD          how it looks in /warps
+  #   /warpset shop price 100             what that one warp costs
+  #   /warpset shop cooldown 60           the wait after using that one
+  #   /warpset shop permission group.vip  who may use it
+  #   /warpset shop description The shop  a line under its name
+  #   /warpset shop section Towns         groups it in /warps
+  #
+  # Leaving the value off puts a setting back to what this file says.
+  warpinfo:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.5
+
+  warpset:
+    enabled: true
+    sound:
+      key: block.note_block.pling
+      volume: 0.5
+      pitch: 1.2

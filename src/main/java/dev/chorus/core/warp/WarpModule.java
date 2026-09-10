@@ -13,7 +13,9 @@ import dev.chorus.core.teleport.TeleportService;
 import dev.chorus.core.warp.command.DelWarpCommand;
 import dev.chorus.core.warp.command.SetWarpCommand;
 import dev.chorus.core.warp.command.WarpCommand;
+import dev.chorus.core.warp.command.WarpInfoCommand;
 import dev.chorus.core.warp.command.WarpListCommand;
+import dev.chorus.core.warp.command.WarpSetCommand;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -32,6 +34,8 @@ public final class WarpModule implements ChorusModule {
 
     private ConfigFile config;
     private WarpService warps;
+    private WarpDetailsService details;
+    private WarpSignListener signs;
 
     public WarpModule(ChorusPlugin plugin, CommandSupport support, TeleportService teleports) {
         this.plugin = plugin;
@@ -51,7 +55,7 @@ public final class WarpModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("warp", "warps", "setwarp", "delwarp");
+        return List.of("warp", "warps", "setwarp", "delwarp", "warpinfo", "warpset");
     }
 
     @Override
@@ -61,22 +65,39 @@ public final class WarpModule implements ChorusModule {
         LocationRepository repository = new SqlLocationRepository(plugin.storage());
         LocationService locations = new LocationService(CATEGORY, repository,
                 plugin.worker(), plugin.mainThread());
+        WarpDetailsRepository detailStore = new SqlWarpDetailsRepository(plugin.storage());
         try {
             repository.createTables();
             locations.loadAll();
+            detailStore.createTables();
         } catch (SQLException exception) {
             throw new IllegalStateException("The warps could not be loaded", exception);
         }
 
-        warps = new WarpService(locations, readSettings());
-        plugin.provide(warps);
         Logger logger = plugin.getLogger();
+        details = new WarpDetailsService(detailStore, plugin.worker(), logger);
+        try {
+            details.load();
+        } catch (SQLException exception) {
+            throw new IllegalStateException("The warp settings could not be loaded", exception);
+        }
 
-        commands.add(plugin.register(new WarpCommand(support, warps, teleports)));
-        commands.add(plugin.register(new WarpListCommand(support, warps)));
+        warps = new WarpService(locations, details, readSettings());
+        plugin.provide(warps);
+
+        commands.add(plugin.register(new WarpCommand(support, warps, details, teleports)));
+        commands.add(plugin.register(new WarpListCommand(support, warps, details)));
         commands.add(plugin.register(new SetWarpCommand(support, warps, logger)));
-        commands.add(plugin.register(new DelWarpCommand(support, warps, logger)));
-        CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
+        commands.add(plugin.register(new DelWarpCommand(support, warps, details, logger)));
+        commands.add(plugin.register(new WarpInfoCommand(support, warps, details, plugin.economy())));
+        commands.add(plugin.register(new WarpSetCommand(support, warps, details)));
+        CommandRules.applyAll(config.section("commands"), commands, logger);
+
+        if (config.section("warps").getBoolean("signs", true)) {
+            signs = new WarpSignListener(warps, details, teleports, plugin.messages(), support);
+            plugin.register(signs);
+            signs.apply(CommandRules.read(config.section("commands"), "warp", logger));
+        }
     }
 
     @Override
@@ -90,6 +111,9 @@ public final class WarpModule implements ChorusModule {
         }
         warps.apply(readSettings());
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
+        if (signs != null) {
+            signs.apply(CommandRules.read(config.section("commands"), "warp", plugin.getLogger()));
+        }
     }
 
     private WarpSettings readSettings() {
