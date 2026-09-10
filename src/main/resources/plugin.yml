@@ -204,6 +204,24 @@ commands:
   gmsp:
     description: Switch to spectator.
     usage: /gmsp [player]
+  freeze:
+    description: Hold a player still.
+    usage: /freeze [player]
+  sudo:
+    description: Run a command as another player.
+    usage: /sudo [player] [command]
+  lockdown:
+    description: Close the server to everyone but staff.
+    usage: /lockdown [on|off] [reason]
+  tempfly:
+    description: Give a player flight that runs out.
+    usage: /tempfly [player] [minutes]
+  note:
+    description: Keep notes about a player.
+    usage: /note [add|list|clear] [player] [text]
+  stafflog:
+    description: Show what staff have been doing.
+    usage: /stafflog [player]
   afk:
     description: Mark yourself away.
     usage: /afk
@@ -515,6 +533,36 @@ permissions:
     default: op
   chorus.staff.gamemode.spectator:
     description: Allows switching to spectator.
+    default: op
+  chorus.staff.freeze:
+    description: Allows /freeze.
+    default: op
+  chorus.staff.freeze.exempt:
+    description: Protects the holder from /freeze.
+    default: false
+  chorus.staff.sudo:
+    description: Allows /sudo.
+    default: op
+  chorus.staff.sudo.exempt:
+    description: Protects the holder from /sudo.
+    default: false
+  chorus.staff.lockdown:
+    description: Allows /lockdown.
+    default: op
+  chorus.staff.lockdown.bypass:
+    description: Lets the holder log in during a lockdown.
+    default: op
+  chorus.staff.tempfly:
+    description: Allows /tempfly.
+    default: op
+  chorus.staff.note:
+    description: Allows /note add and /note list.
+    default: op
+  chorus.staff.note.clear:
+    description: Allows /note clear.
+    default: op
+  chorus.staff.log:
+    description: Allows /stafflog.
     default: op
   chorus.players.afk:
     description: Allows /afk.

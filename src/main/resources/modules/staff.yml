@@ -1,8 +1,8 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   S T A F F                                                            │
-# │   /tp  /tphere  /tppos  /tpall  /vanish                                │
-# │   /gamemode  /gmc  /gms  /gma  /gmsp                                   │
+# │   /tp  /tphere  /tppos  /tpall  /vanish  /gamemode  /gmc  /gms         │
+# │   /gma  /gmsp  /freeze  /sudo  /lockdown  /tempfly  /note  /stafflog   │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -161,3 +161,44 @@ commands:
     sound:
       pitch: 1.3
 
+
+  # Frozen players cannot move, teleport or run commands. /msg and /reply stay
+  # open so they can answer the staff member who froze them.
+  freeze:
+    enabled: true
+    sound:
+      key: block.glass.break
+      volume: 0.6
+      pitch: 0.8
+
+  sudo:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.0
+
+  lockdown:
+    enabled: true
+    sound:
+      key: block.iron_door.close
+      volume: 0.6
+      pitch: 1.0
+
+  tempfly:
+    enabled: true
+    sound:
+      key: entity.phantom.flap
+      volume: 0.5
+      pitch: 1.2
+
+  note:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.5
+
+  stafflog:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.5

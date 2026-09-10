@@ -92,6 +92,12 @@ gmc: [ ]
 gms: [ ]
 gma: [ ]
 gmsp: [ ]
+freeze: [ ice ]
+sudo: [ ]
+lockdown: [ maintenance ]
+tempfly: [ timedfly ]
+note: [ notes, playernote ]
+stafflog: [ modlog, actionlog ]
 
 # Players
 afk: [ away ]

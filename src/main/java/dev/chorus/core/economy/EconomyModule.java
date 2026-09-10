@@ -68,7 +68,7 @@ public final class EconomyModule implements ChorusModule {
         commands.add(plugin.register(new PayCommand(support, economy, service, log, plugin.getLogger())));
         commands.add(plugin.register(new BalanceCommand(support, economy)));
         commands.add(plugin.register(new BalanceTopCommand(support, economy, service)));
-        commands.add(plugin.register(new EcoCommand(support, economy)));
+        commands.add(plugin.register(new EcoCommand(support, economy, plugin.audit())));
         commands.add(plugin.register(new PayLogCommand(support, log, economy)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 

@@ -1,7 +1,7 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   C H O R U S   C O R E                                                │
-# │   storage  -  economy                                                  │
+# │   storage  -  economy  -  staff log                                    │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -12,10 +12,15 @@
 #   modules/homes.yml     /home /sethome /delhome /homes
 #   modules/warps.yml     /warp /warps /setwarp /delwarp
 #   modules/spawn.yml     /spawn /setspawn
-#   modules/teleport.yml  /tpa /tpahere /tpaccept /tpdeny /tpcancel /back
+#   modules/teleport.yml  /tpa /tpahere /tpaccept /tpdeny /tpcancel /tptoggle /back
 #   modules/utility.yml   /heal /feed /fly /god /ping /fix /trash and the portable screens
-#   modules/economy.yml   /pay /balance
+#   modules/economy.yml   /pay /balance /baltop /eco /paylog
 #   modules/chat.yml      /msg /reply /socialspy
+#   modules/players.yml   /afk /seen /playtime /whois /list /ptime /pweather
+#   modules/items.yml     /hat /condense /clearinventory and the rest of the item tools
+#   modules/kits.yml      /kit /kits, and the kits themselves
+#   modules/staff.yml     /tp /vanish /gamemode /freeze /sudo /lockdown and the rest
+#   modules/custom-commands.yml   the /discord and /rules of your server
 #
 # /chorus reload re-reads all of them. Only the storage section and aliases.yml
 # need a full server restart.
@@ -48,3 +53,17 @@ economy:
   # every price is simply ignored and nothing else changes.
   # Set this to false to switch prices off even when Vault is installed.
   enabled: true
+
+# ── Staff log ────────────────────────────────────────────────────────────
+staff-log:
+  # Writes down the staff actions worth being able to look up later: freezing
+  # and unfreezing, /sudo, /lockdown, /tempfly, notes, and every /eco. Read it
+  # in game with /stafflog.
+  enabled: true
+
+  # Entries older than this are dropped when the server starts. 0 keeps them
+  # for ever, which on a busy server means a table that only ever grows.
+  keep-days: 60
+
+  # How many entries one /stafflog prints. Maximum 50.
+  page-size: 10

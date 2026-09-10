@@ -1,5 +1,6 @@
 package dev.chorus.core.economy.command;
 
+import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.economy.Economy;
@@ -22,10 +23,12 @@ public final class EcoCommand extends ChorusCommand {
     private static final List<String> ACTIONS = List.of("give", "take", "set");
 
     private final Economy economy;
+    private final AuditLog audit;
 
-    public EcoCommand(CommandSupport support, Economy economy) {
+    public EcoCommand(CommandSupport support, Economy economy, AuditLog audit) {
         super(support, "eco", "chorus.economy.admin");
         this.economy = economy;
+        this.audit = audit;
     }
 
     @Override
@@ -72,6 +75,8 @@ public final class EcoCommand extends ChorusCommand {
         }
 
         settle(sender);
+        audit.record(sender, "eco-" + action, name, economy.format(amount));
+
         // Both keys are written out in full rather than pasted together from the action, so
         // the check that nothing in messages.yml is orphaned can actually find them.
         String toSender = switch (action) {

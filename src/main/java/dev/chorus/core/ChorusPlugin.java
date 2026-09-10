@@ -4,6 +4,8 @@ import dev.chorus.core.api.ChorusApi;
 import dev.chorus.core.api.HomeApi;
 import dev.chorus.core.api.SpawnApi;
 import dev.chorus.core.api.WarpApi;
+import dev.chorus.core.audit.AuditLog;
+import dev.chorus.core.audit.SqlAuditRepository;
 import dev.chorus.core.chat.ChatModule;
 import dev.chorus.core.command.ActionGuard;
 import dev.chorus.core.command.ChorusCommand;
@@ -75,6 +77,7 @@ public final class ChorusPlugin extends JavaPlugin {
     private Storage storage;
     private TeleportService teleports;
     private PlayerFlagService flags;
+    private AuditLog audit;
     private CommandSupport support;
     private ChorusServices services;
 
@@ -117,6 +120,18 @@ public final class ChorusPlugin extends JavaPlugin {
         }
         flags = new PlayerFlagService(flagStore, worker, getLogger());
         register(new PlayerFlagListener(flags, messages, getLogger()));
+
+        SqlAuditRepository auditStore = new SqlAuditRepository(storage);
+        try {
+            auditStore.createTables();
+        } catch (SQLException exception) {
+            getLogger().log(Level.SEVERE, "The staff log table could not be created", exception);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        audit = new AuditLog(auditStore, worker, mainThread, getLogger());
+        audit.apply(core.section("staff-log"));
+        audit.prune();
 
         teleports = new TeleportService(this, messages, mainThread,
                 TeleportSettings.read(configs.get(TELEPORT_CONFIG).section("teleport")));
@@ -187,6 +202,7 @@ public final class ChorusPlugin extends JavaPlugin {
         configs.reloadAll();
         messages.reload();
         economy.refresh();
+        audit.apply(configs.get("config.yml").section("staff-log"));
         teleports.apply(TeleportSettings.read(configs.get(TELEPORT_CONFIG).section("teleport")));
         modules.forEach(ChorusModule::reload);
     }
@@ -217,6 +233,10 @@ public final class ChorusPlugin extends JavaPlugin {
 
     public PlayerFlagService flags() {
         return flags;
+    }
+
+    public AuditLog audit() {
+        return audit;
     }
 
     /** Runs tasks on the server thread, dropping them once the plugin is gone. */
