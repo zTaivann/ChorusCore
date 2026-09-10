@@ -30,12 +30,8 @@ public final class SkullCommand extends PlayerCommand {
                 messages.send(player, "error.no-permission");
                 return;
             }
-            Player online = player.getServer().getPlayerExact(args[0]);
-            // Only names the server already knows: asking Mojang about an unknown one would
-            // block the main thread on a web request.
-            owner = online != null ? online : player.getServer().getOfflinePlayerIfCached(args[0]);
-            if (owner == null || (owner.getName() == null && !owner.hasPlayedBefore())) {
-                messages.send(player, "error.player-not-found", "player", args[0]);
+            owner = known(player, args[0]);
+            if (owner == null) {
                 return;
             }
         }

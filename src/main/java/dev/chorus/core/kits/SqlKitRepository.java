@@ -8,15 +8,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.sql.Statement;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 final class SqlKitRepository implements KitRepository {
 
-    private static final String SELECT = "SELECT kit, used_at FROM chorus_kit_uses WHERE owner = ?";
+    private static final String SELECT =
+            "SELECT kit, used_at, times FROM chorus_kit_uses WHERE owner = ?";
+
     private static final String DELETE = "DELETE FROM chorus_kit_uses WHERE owner = ? AND kit = ?";
 
     private final Storage storage;
@@ -25,7 +26,7 @@ final class SqlKitRepository implements KitRepository {
 
     SqlKitRepository(Storage storage) {
         this.storage = storage;
-        this.steps = List.of(createTable(storage.dialect()));
+        this.steps = List.of(createTable(storage.dialect()), addTimes(storage.dialect()));
         this.upsert = upsert(storage.dialect());
     }
 
@@ -35,15 +36,16 @@ final class SqlKitRepository implements KitRepository {
     }
 
     @Override
-    public Map<String, Long> findUses(UUID owner) throws SQLException {
+    public Map<String, Use> findUses(UUID owner) throws SQLException {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(SELECT)) {
             statement.setString(1, owner.toString());
 
             try (ResultSet rows = statement.executeQuery()) {
-                Map<String, Long> uses = new HashMap<>();
+                Map<String, Use> uses = new HashMap<>();
                 while (rows.next()) {
-                    uses.put(rows.getString("kit"), rows.getLong("used_at"));
+                    uses.put(rows.getString("kit"),
+                            new Use(rows.getLong("used_at"), rows.getInt("times")));
                 }
                 return uses;
             }
@@ -90,14 +92,31 @@ final class SqlKitRepository implements KitRepository {
         };
     }
 
+    /**
+     * The count arrived after the first release. It defaults to one rather than zero, so a
+     * row written before it existed reads as what it was: somebody who had taken the kit,
+     * at least once.
+     */
+    private static String addTimes(SqlDialect dialect) {
+        return switch (dialect) {
+            case SQLITE -> "ALTER TABLE chorus_kit_uses ADD COLUMN times INTEGER NOT NULL DEFAULT 1";
+            case MYSQL -> "ALTER TABLE chorus_kit_uses ADD COLUMN times INT NOT NULL DEFAULT 1";
+        };
+    }
+
+    /** Counted in the database rather than read and written back, so two claims never race. */
     private static String upsert(SqlDialect dialect) {
         return switch (dialect) {
             case SQLITE -> """
-                    INSERT INTO chorus_kit_uses (owner, kit, used_at) VALUES (?, ?, ?)
-                    ON CONFLICT (owner, kit) DO UPDATE SET used_at = excluded.used_at""";
+                    INSERT INTO chorus_kit_uses (owner, kit, used_at, times) VALUES (?, ?, ?, 1)
+                    ON CONFLICT (owner, kit) DO UPDATE SET
+                        used_at = excluded.used_at,
+                        times   = chorus_kit_uses.times + 1""";
             case MYSQL -> """
-                    INSERT INTO chorus_kit_uses (owner, kit, used_at) VALUES (?, ?, ?)
-                    ON DUPLICATE KEY UPDATE used_at = VALUES(used_at)""";
+                    INSERT INTO chorus_kit_uses (owner, kit, used_at, times) VALUES (?, ?, ?, 1)
+                    ON DUPLICATE KEY UPDATE
+                        used_at = VALUES(used_at),
+                        times   = times + 1""";
         };
     }
 }

@@ -13,6 +13,11 @@ public final class NoEconomy implements Economy {
     }
 
     @Override
+    public String status() {
+        return "switched off by economy.enabled in config.yml";
+    }
+
+    @Override
     public double balance(OfflinePlayer player) {
         return 0;
     }

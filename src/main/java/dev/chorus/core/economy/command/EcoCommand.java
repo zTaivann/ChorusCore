@@ -48,7 +48,7 @@ public final class EcoCommand extends ChorusCommand {
             return;
         }
 
-        OfflinePlayer target = resolve(sender, args[1]);
+        OfflinePlayer target = known(sender, args[1]);
         if (target == null) {
             return;
         }
@@ -116,23 +116,6 @@ public final class EcoCommand extends ChorusCommand {
             return economy.withdraw(target, balance - amount);
         }
         return true;
-    }
-
-    /**
-     * Online players first, then anyone the server already has on file. Never a lookup with
-     * Mojang: that is a web request, and this command runs on the server thread.
-     */
-    private @Nullable OfflinePlayer resolve(CommandSender sender, String name) {
-        Player online = sender.getServer().getPlayerExact(name);
-        if (online != null) {
-            return online;
-        }
-        OfflinePlayer offline = sender.getServer().getOfflinePlayerIfCached(name);
-        if (offline == null || !offline.hasPlayedBefore()) {
-            messages.send(sender, "error.player-not-found", "player", name);
-            return null;
-        }
-        return offline;
     }
 
     private static double parseAmount(String raw) {

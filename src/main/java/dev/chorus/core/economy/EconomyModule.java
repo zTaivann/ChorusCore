@@ -72,10 +72,7 @@ public final class EconomyModule implements ChorusModule {
         commands.add(plugin.register(new PayLogCommand(support, log, economy)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 
-        if (!economy.enabled()) {
-            plugin.getLogger().info("No economy is available, so /pay and /balance will say so. "
-                    + "Install Vault plus an economy plugin, or check economy.enabled in config.yml.");
-        }
+        plugin.getLogger().info("Economy: " + economy.status() + ".");
     }
 
     @Override

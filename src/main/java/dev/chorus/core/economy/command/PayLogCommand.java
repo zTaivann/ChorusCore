@@ -47,7 +47,7 @@ public final class PayLogCommand extends ChorusCommand {
             if (args[0].equals("*")) {
                 subject = null;
             } else {
-                OfflinePlayer target = resolve(sender, args[0]);
+                OfflinePlayer target = known(sender, args[0]);
                 if (target == null) {
                     return;
                 }
@@ -81,19 +81,6 @@ public final class PayLogCommand extends ChorusCommand {
                     "amount", economy.format(payment.amount()),
                     "ago", Durations.format(Math.max(0, now - payment.paidAt())));
         }
-    }
-
-    private OfflinePlayer resolve(CommandSender sender, String name) {
-        Player online = sender.getServer().getPlayerExact(name);
-        if (online != null) {
-            return online;
-        }
-        OfflinePlayer offline = sender.getServer().getOfflinePlayerIfCached(name);
-        if (offline == null || !offline.hasPlayedBefore()) {
-            messages.send(sender, "error.player-not-found", "player", name);
-            return null;
-        }
-        return offline;
     }
 
     @Override

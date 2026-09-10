@@ -227,6 +227,15 @@ public final class ChorusPlugin extends JavaPlugin {
         return economy;
     }
 
+    /** The modules that actually started, in the order they did, for /chorus status. */
+    public List<String> enabledModules() {
+        List<String> names = new ArrayList<>(modules.size());
+        // The deque is a stack for shutdown, so it reads newest first; reversing it puts the
+        // list back into the order they were installed.
+        modules.forEach(module -> names.add(0, module.name()));
+        return names;
+    }
+
     public Storage storage() {
         return storage;
     }

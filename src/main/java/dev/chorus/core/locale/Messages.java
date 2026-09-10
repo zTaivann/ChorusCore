@@ -3,8 +3,10 @@ package dev.chorus.core.locale;
 import dev.chorus.core.api.MessageApi;
 import dev.chorus.core.config.ConfigFile;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -17,17 +19,32 @@ import java.util.Set;
 /**
  * Reads messages.yml and hands out ready-to-send components.
  *
- * <p>Templates are parsed once on load, so only the placeholder substitution runs per
- * message. Values are inserted into the parsed component instead of into the raw string,
- * which stops a player name from smuggling in MiniMessage tags.
+ * <p>A line with no placeholders is parsed once on load and handed out as it is. A line with
+ * placeholders is parsed on the spot, with the values handed to MiniMessage as unparsed tags
+ * rather than pasted into the text.
+ *
+ * <p>That last part is not a detail. Substituting into the finished component only works
+ * while the placeholder survives as one piece of text, and several tags do not leave it that
+ * way: {@code <gradient>} colours a line character by character, so {@code %home%} ends up as
+ * six separate components and no search for it can ever find it. Resolving during the parse
+ * puts the value in before any of that happens. Values still cannot smuggle in tags of their
+ * own, because an unparsed tag is inserted as plain text.
  */
 public final class Messages implements MessageApi {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
+    /**
+     * Placeholders are written {@code %name%} in the file and become {@code <chorus_name>}
+     * for MiniMessage. The prefix is what keeps a placeholder called "key" or "lang" from
+     * being mistaken for the MiniMessage tag of the same name.
+     */
+    private static final String SLOT_PREFIX = "chorus_";
+
     private final Plugin plugin;
     private final ConfigFile file;
     private final Map<String, Component> entries = new HashMap<>();
+    private final Map<String, String> templates = new HashMap<>();
     private final Set<String> muted = new HashSet<>();
     private final Set<String> alreadyReported = new HashSet<>();
 
@@ -48,6 +65,7 @@ public final class Messages implements MessageApi {
     /** Re-reads the already reloaded file. Reloading the file itself is the caller's job. */
     public void reload() {
         entries.clear();
+        templates.clear();
         muted.clear();
         alreadyReported.clear();
 
@@ -68,7 +86,9 @@ public final class Messages implements MessageApi {
                 muted.add(key);
                 continue;
             }
-            entries.put(key, MINI_MESSAGE.deserialize(template.replace("%prefix%", prefix)));
+            String filled = template.replace("%prefix%", prefix);
+            templates.put(key, filled);
+            entries.put(key, MINI_MESSAGE.deserialize(filled));
         }
     }
 
@@ -92,29 +112,56 @@ public final class Messages implements MessageApi {
         return MINI_MESSAGE.deserialize(raw.replace("%prefix%", rawPrefix));
     }
 
-    public Component render(String key, String... placeholders) {
-        Component message = entries.get(key);
-        if (message == null) {
-            // A blank template is an admin silencing the message, not a mistake.
-            if (muted.contains(key)) {
-                return Component.empty();
-            }
-            if (alreadyReported.add(key)) {
-                plugin.getLogger().warning("Missing message '" + key + "' in messages.yml");
-            }
-            return Component.text(key);
-        }
-
-        for (int i = 0; i + 1 < placeholders.length; i += 2) {
-            message = message.replaceText(substitution(placeholders[i], placeholders[i + 1]));
-        }
-        return message;
+    /**
+     * A message as plain text, for the small words that end up inside another message —
+     * "no limit", "free", "none". They live in messages.yml like everything else rather
+     * than being written into the Java, so a translated file translates them too.
+     */
+    public String plain(String key, String... placeholders) {
+        return PlainTextComponentSerializer.plainText().serialize(render(key, placeholders));
     }
 
-    private static TextReplacementConfig substitution(String placeholder, String value) {
-        return TextReplacementConfig.builder()
-                .matchLiteral("%" + placeholder + "%")
-                .replacement(value)
-                .build();
+    public Component render(String key, String... placeholders) {
+        if (placeholders.length == 0) {
+            return cached(key);
+        }
+
+        String template = templates.get(key);
+        if (template == null) {
+            return cached(key);
+        }
+        return fill(template, placeholders);
+    }
+
+    /**
+     * Puts the values into a template as it is parsed. Package-private so the checks can
+     * exercise the part that actually goes wrong without standing up a whole server.
+     */
+    static Component fill(String template, String... placeholders) {
+        // The tags are named after the placeholders that were actually passed, so a %word%
+        // nobody filled in is left alone rather than turning into an empty gap.
+        TagResolver.Builder resolvers = TagResolver.builder();
+        String filled = template;
+        for (int i = 0; i + 1 < placeholders.length; i += 2) {
+            String slot = SLOT_PREFIX + placeholders[i];
+            filled = filled.replace("%" + placeholders[i] + "%", "<" + slot + ">");
+            resolvers.resolver(Placeholder.unparsed(slot, placeholders[i + 1]));
+        }
+        return MINI_MESSAGE.deserialize(filled, resolvers.build());
+    }
+
+    private Component cached(String key) {
+        Component message = entries.get(key);
+        if (message != null) {
+            return message;
+        }
+        // A blank template is an admin silencing the message, not a mistake.
+        if (muted.contains(key)) {
+            return Component.empty();
+        }
+        if (alreadyReported.add(key)) {
+            plugin.getLogger().warning("Missing message '" + key + "' in messages.yml");
+        }
+        return Component.text(key);
     }
 }

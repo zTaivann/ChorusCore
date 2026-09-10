@@ -7,6 +7,8 @@ import dev.chorus.core.location.Names;
 import dev.chorus.core.warp.WarpDetails;
 import dev.chorus.core.warp.WarpDetailsService;
 import dev.chorus.core.warp.WarpService;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,9 +26,35 @@ import java.util.Locale;
  */
 public final class WarpSetCommand extends ChorusCommand {
 
-    private static final List<String> SETTINGS =
-            List.of("icon", "permission", "price", "cooldown", "description", "section");
+    /**
+     * Each setting with the shape of its value and the line that explains it. The message
+     * key is written out rather than built from the name, so the check that every line in
+     * messages.yml is reachable can see all six.
+     */
+    private record Setting(String name, String value, String help) {
+    }
 
+    private static final List<Setting> SETTINGS = List.of(
+            new Setting("icon", "<item>", "warp.settings-help-icon"),
+            new Setting("permission", "<node>", "warp.settings-help-permission"),
+            new Setting("price", "<amount>", "warp.settings-help-price"),
+            new Setting("cooldown", "<seconds>", "warp.settings-help-cooldown"),
+            new Setting("description", "<text>", "warp.settings-help-description"),
+            new Setting("section", "<name>", "warp.settings-help-section"));
+
+    /** One clickable line per setting, rather than a wall of pipes nobody can read in chat. */
+    private void help(CommandSender sender) {
+        messages.send(sender, "warp.settings-help-header");
+        for (Setting entry : SETTINGS) {
+            String usage = "/warpset <warp> " + entry.name() + " " + entry.value();
+            sender.sendMessage(messages.render("warp.settings-help-line",
+                            "usage", usage,
+                            "what", messages.plain(entry.help()))
+                    .clickEvent(ClickEvent.suggestCommand("/warpset "))
+                    .hoverEvent(HoverEvent.showText(messages.render("warp.settings-help-hover"))));
+        }
+        messages.send(sender, "warp.settings-help-footer");
+    }
     private final WarpService warps;
     private final WarpDetailsService details;
 
@@ -39,7 +67,7 @@ public final class WarpSetCommand extends ChorusCommand {
     @Override
     protected void run(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            messages.send(sender, "warp.settings-usage");
+            help(sender);
             return;
         }
 
@@ -50,8 +78,8 @@ public final class WarpSetCommand extends ChorusCommand {
         }
 
         String setting = args[1].toLowerCase(Locale.ROOT);
-        if (!SETTINGS.contains(setting)) {
-            messages.send(sender, "warp.settings-usage");
+        if (SETTINGS.stream().noneMatch(entry -> entry.name().equals(setting))) {
+            help(sender);
             return;
         }
 
@@ -134,6 +162,8 @@ public final class WarpSetCommand extends ChorusCommand {
         if (args.length == 1) {
             return startingWith(args[0], warps.all().stream().map(NamedLocation::name).toList());
         }
-        return args.length == 2 ? startingWith(args[1], SETTINGS) : List.of();
+        return args.length == 2
+                ? startingWith(args[1], SETTINGS.stream().map(Setting::name).toList())
+                : List.of();
     }
 }

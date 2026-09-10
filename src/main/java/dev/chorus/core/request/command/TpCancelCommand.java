@@ -32,8 +32,10 @@ public final class TpCancelCommand extends PlayerCommand {
             return;
         }
 
+        // Hidden players are treated as not being here at all: see the note in
+        // TeleportResponseCommand.
         Player target = server.getPlayerExact(args[0]);
-        if (target == null) {
+        if (target == null || !player.canSee(target)) {
             messages.send(player, "error.player-not-found", "player", args[0]);
             return;
         }

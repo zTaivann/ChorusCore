@@ -128,3 +128,4 @@ stack: [ restack ]
 # Kits
 kit: [ ]
 kits: [ kitlist ]
+kitedit: [ editkit, kitcreate ]

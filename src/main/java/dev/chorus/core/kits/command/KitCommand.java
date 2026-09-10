@@ -53,7 +53,10 @@ public final class KitCommand extends PlayerCommand {
 
         long left = kits.remaining(player.getUniqueId(), kit, System.currentTimeMillis());
         if (left == Long.MAX_VALUE) {
-            messages.send(player, "kits.one-time", "kit", kit.name());
+            // Two different reasons a kit is gone for good, and telling a player the wrong
+            // one sends them looking for a cooldown that will never come.
+            messages.send(player, kit.oneTime() ? "kits.one-time" : "kits.spent",
+                    "kit", kit.name());
             return;
         }
         if (left > 0) {

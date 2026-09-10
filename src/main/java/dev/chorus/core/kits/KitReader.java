@@ -28,6 +28,12 @@ public final class KitReader {
                                         Consumer<String> onProblem) {
         Map<String, Kit> kits = new LinkedHashMap<>();
         for (String name : definitions.getKeys(false)) {
+            // Only what the file on disk actually holds. The copy bundled in the jar backs
+            // this config so new options appear without anyone deleting their file, and
+            // without this a kit deleted with /kitedit would come straight back from it.
+            if (!definitions.isSet(name)) {
+                continue;
+            }
             ConfigurationSection block = definitions.getConfigurationSection(name);
             if (block == null) {
                 onProblem.accept("kit '" + name + "' has nothing in it");
@@ -41,8 +47,11 @@ public final class KitReader {
                     material(block.getString("icon", "CHEST"), Material.CHEST, onProblem),
                     Math.max(0, block.getInt("cooldown-seconds", 0)),
                     block.getBoolean("one-time", false),
+                    Math.max(0, block.getInt("max-claims", 0)),
                     Math.max(0, block.getDouble("price", 0)),
                     block.getString("permission", "chorus.kits.use." + key),
+                    List.copyOf(block.getStringList("run-as-player")),
+                    List.copyOf(block.getStringList("run-as-console")),
                     items(block.getMapList("items"), messages, key, onProblem)));
         }
         return Map.copyOf(kits);
@@ -74,6 +83,9 @@ public final class KitReader {
                 }
                 if (entry.get("enchantments") instanceof Map<?, ?> enchantments) {
                     enchant(meta, enchantments, kit, onProblem);
+                }
+                if (Boolean.TRUE.equals(entry.get("unbreakable"))) {
+                    meta.setUnbreakable(true);
                 }
                 item.setItemMeta(meta);
             }

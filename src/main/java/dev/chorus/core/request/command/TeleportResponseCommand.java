@@ -49,8 +49,11 @@ public final class TeleportResponseCommand extends PlayerCommand {
                 return;
             }
         } else {
-            Player from = server.getPlayerExact(args[0]);
-            if (from == null) {
+            // A player hidden from this one is treated as not being here at all, so nothing
+            // about a vanish can be worked out from which message comes back. A request a
+            // vanished staff member sent is still answerable with a bare /tpaccept.
+            Player from = player.getServer().getPlayerExact(args[0]);
+            if (from == null || !player.canSee(from)) {
                 messages.send(player, "error.player-not-found", "player", args[0]);
                 return;
             }

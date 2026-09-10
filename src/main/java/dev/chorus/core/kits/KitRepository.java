@@ -14,8 +14,11 @@ public interface KitRepository {
 
     void createTables() throws SQLException;
 
-    /** Kit name to the moment it was last taken. */
-    Map<String, Long> findUses(UUID owner) throws SQLException;
+    /** How each kit stands for one player: when it was last taken, and how often. */
+    record Use(long lastTaken, int times) {
+    }
+
+    Map<String, Use> findUses(UUID owner) throws SQLException;
 
     void markUsed(UUID owner, String kit, long when) throws SQLException;
 

@@ -5,7 +5,7 @@ api-version: '1.18'
 description: Modular core for Paper servers.
 authors: [ zTaivann ]
 folia-supported: false
-softdepend: [ Vault ]
+softdepend: [ Vault, PlaceholderAPI ]
 
 libraries:
   - com.zaxxer:HikariCP:${hikari}
@@ -19,7 +19,7 @@ libraries:
 commands:
   chorus:
     description: Core administration.
-    usage: /chorus reload
+    usage: /chorus [reload|status]
   home:
     description: Teleport to one of your homes.
     usage: /home [name]
@@ -295,6 +295,9 @@ commands:
   kits:
     description: List the kits you can take.
     usage: /kits
+  kitedit:
+    description: Build and change kits from in game.
+    usage: /kitedit [kit] [setting] [value]
 
 permissions:
   chorus.admin:
@@ -681,3 +684,6 @@ permissions:
   chorus.kits.list:
     description: Allows /kits.
     default: true
+  chorus.kits.edit:
+    description: Allows /kitedit.
+    default: op

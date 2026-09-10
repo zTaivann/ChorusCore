@@ -24,6 +24,7 @@ public final class VaultEconomy implements Economy, Listener {
     private final Logger logger;
 
     private volatile net.milkbowl.vault.economy.Economy provider;
+    private volatile String status = "not looked up yet";
 
     public VaultEconomy(Server server, Logger logger) {
         this.server = server;
@@ -40,11 +41,21 @@ public final class VaultEconomy implements Economy, Listener {
     @Override
     public void refresh() {
         net.milkbowl.vault.economy.Economy found = null;
-        if (server.getPluginManager().isPluginEnabled("Vault")) {
+        String reason;
+
+        if (!server.getPluginManager().isPluginEnabled("Vault")) {
+            reason = "no Vault installed, so every price is ignored";
+        } else {
             RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> registration =
                     server.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-            if (registration != null) {
+            if (registration == null) {
+                // The commonest mix-up by a distance. Vault is only a bridge: on its own it
+                // holds no money and nothing has registered an economy behind it.
+                reason = "Vault is installed but no economy plugin has registered with it, "
+                        + "so every price is ignored";
+            } else {
                 found = registration.getProvider();
+                reason = "using the Vault economy provided by " + found.getName();
             }
         }
 
@@ -52,6 +63,12 @@ public final class VaultEconomy implements Economy, Listener {
             logger.info("Hooked into the Vault economy provided by " + found.getName());
         }
         provider = found;
+        this.status = reason;
+    }
+
+    @Override
+    public String status() {
+        return status;
     }
 
     @Override

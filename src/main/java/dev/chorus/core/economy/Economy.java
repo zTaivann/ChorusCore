@@ -10,6 +10,13 @@ public interface Economy {
 
     boolean enabled();
 
+    /**
+     * A line saying what was found, for the startup log and for /chorus status. "Vault is
+     * installed" and "there is an economy" are different things, and telling them apart is
+     * the difference between a server owner fixing it in a minute and giving up.
+     */
+    String status();
+
     double balance(OfflinePlayer player);
 
     boolean has(OfflinePlayer player, double amount);

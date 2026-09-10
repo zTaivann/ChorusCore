@@ -1,7 +1,7 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   K I T S                                                              │
-# │   /kit  /kits                                                          │
+# │   /kit  /kits  /kitedit                                                │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -35,6 +35,12 @@ kits:
   #   icon              the item it is shown as.
   #   cooldown-seconds  how long before the same player may take it again.
   #   one-time          true means once ever, whatever the cooldown says.
+#   max-claims        how many times in total it may ever be taken. 0 is no limit.
+#                     Unlike one-time this still honours the cooldown in between.
+#   run-as-player     commands run as the player when they take it.
+#   run-as-console    commands run as the console when they take it. This is how
+#                     a kit hands out something the player could not give
+#                     themselves. %player% works in both.
   #   price             what taking it costs, through Vault.
   #   permission        who may take it. Leave it out and it defaults to
   #                     chorus.kits.use.<name>. Set it to '' for everyone.
@@ -48,7 +54,31 @@ kits:
   #                                     These are the same on every version,
   #                                     unlike the old PROTECTION_ENVIRONMENTAL
   #                                     spellings, so use them.
+  #                       unbreakable   true for a tool that never wears out
   #
+  # Anything that will not fit in the player's bags lands at their feet.
+  #
+  # ── Editing kits in game ────────────────────────────────────────────────
+  #
+  # /kitedit writes back into this file, in exactly the form above, so a kit
+  # made in game can still be opened in a text editor afterwards:
+  #
+  #   /kitedit vip create           makes it out of whatever you are carrying
+  #   /kitedit vip items            replaces its items with what you carry now
+  #   /kitedit vip icon DIAMOND     how it looks in /kits
+  #   /kitedit vip display <gold>VIP
+  #   /kitedit vip cooldown 3600
+  #   /kitedit vip maxclaims 5
+  #   /kitedit vip price 500
+  #   /kitedit vip permission chorus.kits.use.vip
+  #   /kitedit vip onetime true
+  #   /kitedit vip delete
+  #
+  # Leaving the value off puts a setting back to its default. Items are written
+  # in the form above rather than as a block of encoded data, which keeps the
+  # file readable and portable between versions; the cost is that anything the
+  # form cannot say, such as custom model data, is not carried over. The
+  # command says so when it happens.
   # Anything that will not fit in the player's bags lands at their feet.
   definitions:
 
@@ -83,7 +113,10 @@ kits:
       icon: GOLD_INGOT
       cooldown-seconds: 86400
       one-time: false
+      max-claims: 0
       price: 0.0
+      run-as-player: [ ]
+      run-as-console: [ ]
       items:
         - material: GOLDEN_APPLE
           amount: 2
@@ -125,3 +158,10 @@ commands:
     enabled: true
     sound:
       pitch: 1.5
+
+  kitedit:
+    enabled: true
+    sound:
+      key: block.note_block.pling
+      volume: 0.5
+      pitch: 1.2

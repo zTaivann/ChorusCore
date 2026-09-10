@@ -14,11 +14,17 @@ import java.util.List;
  * and handed out as copies so a kit can never be drained by giving it away.
  */
 public record Kit(String name, Component display, List<Component> lore, Material icon,
-                  int cooldownSeconds, boolean oneTime, double price, String permission,
+                  int cooldownSeconds, boolean oneTime, int maxClaims, double price,
+                  String permission, List<String> runAsPlayer, List<String> runAsConsole,
                   List<ItemStack> items) {
 
     public boolean allowed(Player player) {
         return permission.isEmpty() || player.hasPermission(permission);
+    }
+
+    /** Whether this kit has anything to run beyond handing over the items. */
+    public boolean runsCommands() {
+        return !runAsPlayer.isEmpty() || !runAsConsole.isEmpty();
     }
 
     /** Fresh copies, so handing the kit out never touches what the config loaded. */

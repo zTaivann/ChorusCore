@@ -7,6 +7,7 @@ import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.kits.command.KitCommand;
+import dev.chorus.core.kits.command.KitEditCommand;
 import dev.chorus.core.kits.command.KitListCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -48,7 +49,7 @@ public final class KitsModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("kit", "kits");
+        return List.of("kit", "kits", "kitedit");
     }
 
     @Override
@@ -68,6 +69,7 @@ public final class KitsModule implements ChorusModule {
         plugin.register(new KitDataListener(kits, plugin.messages(), plugin.getLogger()));
         commands.add(plugin.register(new KitCommand(support, kits, plugin.getLogger())));
         commands.add(plugin.register(new KitListCommand(support, kits, () -> settings)));
+        commands.add(plugin.register(new KitEditCommand(support, kits, new KitEditor(config, this::reloadKits), plugin.economy())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 
         loadPlayersAlreadyOnline();
@@ -87,6 +89,12 @@ public final class KitsModule implements ChorusModule {
         }
         load();
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
+    }
+
+    /** Re-reads the file after /kitedit has written to it. */
+    private void reloadKits() {
+        config.reload();
+        load();
     }
 
     private void load() {

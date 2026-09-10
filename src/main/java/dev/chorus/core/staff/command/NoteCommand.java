@@ -44,7 +44,7 @@ public final class NoteCommand extends ChorusCommand {
         }
 
         String action = args[0].toLowerCase(Locale.ROOT);
-        OfflinePlayer subject = resolve(sender, args[1]);
+        OfflinePlayer subject = known(sender, args[1]);
         if (subject == null) {
             return;
         }
@@ -116,19 +116,6 @@ public final class NoteCommand extends ChorusCommand {
             messages.send(sender, "staff.note-cleared",
                     "player", name, "count", String.valueOf(removed));
         });
-    }
-
-    private @Nullable OfflinePlayer resolve(CommandSender sender, String name) {
-        Player online = sender.getServer().getPlayerExact(name);
-        if (online != null) {
-            return online;
-        }
-        OfflinePlayer offline = sender.getServer().getOfflinePlayerIfCached(name);
-        if (offline == null || !offline.hasPlayedBefore()) {
-            messages.send(sender, "error.player-not-found", "player", name);
-            return null;
-        }
-        return offline;
     }
 
     @Override

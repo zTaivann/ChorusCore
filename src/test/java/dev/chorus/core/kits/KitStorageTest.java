@@ -38,10 +38,24 @@ class KitStorageTest {
         repository.markUsed(owner, "starter", 2000);
         repository.markUsed(owner, "daily", 3000);
 
-        Map<String, Long> uses = repository.findUses(owner);
+        Map<String, KitRepository.Use> uses = repository.findUses(owner);
         assertEquals(2, uses.size());
-        assertEquals(3000L, uses.get("daily"), "the cooldown should run from the most recent take");
-        assertEquals(2000L, uses.get("starter"));
+        assertEquals(3000L, uses.get("daily").lastTaken(),
+                "the cooldown should run from the most recent take");
+        assertEquals(2000L, uses.get("starter").lastTaken());
+    }
+
+    /** What max-claims is counted against, so it has to survive a restart. */
+    @Test
+    void everyClaimIsCounted() throws SQLException {
+        UUID owner = UUID.randomUUID();
+        repository.markUsed(owner, "daily", 1000);
+        assertEquals(1, repository.findUses(owner).get("daily").times());
+
+        repository.markUsed(owner, "daily", 2000);
+        repository.markUsed(owner, "daily", 3000);
+        assertEquals(3, repository.findUses(owner).get("daily").times(),
+                "the count is kept by the database, so two claims at once cannot lose one");
     }
 
     @Test
@@ -52,6 +66,18 @@ class KitStorageTest {
         assertTrue(repository.clear(owner, "daily"));
         assertFalse(repository.clear(owner, "daily"));
         assertTrue(repository.findUses(owner).isEmpty());
+    }
+
+    @Test
+    void clearingStartsTheCountAgain() throws SQLException {
+        UUID owner = UUID.randomUUID();
+        repository.markUsed(owner, "daily", 1000);
+        repository.markUsed(owner, "daily", 2000);
+        repository.clear(owner, "daily");
+
+        repository.markUsed(owner, "daily", 3000);
+        assertEquals(1, repository.findUses(owner).get("daily").times(),
+                "a reset should give the kit back rather than leave the count where it was");
     }
 
     @Test

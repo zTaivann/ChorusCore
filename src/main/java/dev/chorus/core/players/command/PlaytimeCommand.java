@@ -44,12 +44,8 @@ public final class PlaytimeCommand extends ChorusCommand {
             return;
         }
 
-        Player online = sender.getServer().getPlayerExact(args[0]);
-        OfflinePlayer target = online != null
-                ? online
-                : sender.getServer().getOfflinePlayerIfCached(args[0]);
-        if (target == null || !target.hasPlayedBefore()) {
-            messages.send(sender, "error.player-not-found", "player", args[0]);
+        OfflinePlayer target = known(sender, args[0]);
+        if (target == null) {
             return;
         }
         if (!ready(sender)) {

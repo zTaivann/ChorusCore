@@ -1,6 +1,7 @@
 package dev.chorus.core.command;
 
 import dev.chorus.core.locale.Messages;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -113,6 +114,30 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     protected static List<String> startingWith(String input, Collection<String> candidates) {
         String typed = input.toLowerCase(Locale.ROOT);
         return candidates.stream().filter(candidate -> candidate.startsWith(typed)).sorted().toList();
+    }
+
+    /**
+     * Looks up a player who may not be online, reporting it and returning null when there is
+     * nobody by that name.
+     *
+     * <p>Someone online is answered straight away: being here is proof enough that they
+     * exist, and asking {@code hasPlayedBefore} about them would say no on their very first
+     * session, which is how a brand new player becomes invisible to half the plugin.
+     *
+     * <p>Never a lookup with Mojang. That is a web request, and these commands run on the
+     * server thread.
+     */
+    protected final @Nullable OfflinePlayer known(CommandSender sender, String name) {
+        Player online = sender.getServer().getPlayerExact(name);
+        if (online != null && !(sender instanceof Player viewer && !viewer.canSee(online))) {
+            return online;
+        }
+        OfflinePlayer offline = sender.getServer().getOfflinePlayerIfCached(name);
+        if (offline == null || !offline.hasPlayedBefore()) {
+            messages.send(sender, "error.player-not-found", "player", name);
+            return null;
+        }
+        return offline;
     }
 
     /** Looks up an online player, reporting it and returning null when there is none. */

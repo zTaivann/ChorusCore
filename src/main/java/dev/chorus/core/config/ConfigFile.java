@@ -54,6 +54,25 @@ public final class ConfigFile {
         this.data = loaded;
     }
 
+    /**
+     * Writes the file back out.
+     *
+     * <p>Only for the parts of the config a command edits, such as the kits. Comments live
+     * with the key above them and survive as long as that key does, so the file a person
+     * wrote stays a file a person can read.
+     *
+     * @return whether it was written.
+     */
+    public boolean save() {
+        try {
+            data.save(new File(plugin.getDataFolder(), path));
+            return true;
+        } catch (IOException exception) {
+            plugin.getLogger().log(Level.SEVERE, "Could not write " + path, exception);
+            return false;
+        }
+    }
+
     public YamlConfiguration data() {
         return data;
     }
