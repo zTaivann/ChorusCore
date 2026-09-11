@@ -9,6 +9,8 @@ import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.kits.command.KitCommand;
 import dev.chorus.core.kits.command.KitEditCommand;
 import dev.chorus.core.kits.command.KitListCommand;
+import dev.chorus.core.kits.menu.KitEditMenu;
+import dev.chorus.core.kits.menu.KitMenuSettings;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
@@ -63,13 +65,17 @@ public final class KitsModule implements ChorusModule {
             throw new IllegalStateException("The kit history table could not be created", exception);
         }
 
-        kits = new KitService(repository, plugin.worker(), plugin.mainThread());
+        kits = new KitService(repository, plugin.messages(), plugin.economy(), plugin.worker(), plugin.mainThread());
         load();
 
         plugin.register(new KitDataListener(kits, plugin.messages(), plugin.getLogger()));
         commands.add(plugin.register(new KitCommand(support, kits, plugin.getLogger())));
         commands.add(plugin.register(new KitListCommand(support, kits, () -> settings)));
-        commands.add(plugin.register(new KitEditCommand(support, kits, new KitEditor(config, this::reloadKits), plugin.economy())));
+        KitEditor editor = new KitEditor(config, this::reloadKits);
+        KitEditMenu menu = new KitEditMenu(plugin, kits, editor, plugin.messages(), plugin.economy(),
+                plugin.prompts(), KitMenuSettings.read(config.section("kits.editor"), this::warn));
+        commands.add(plugin.register(
+                new KitEditCommand(support, kits, editor, menu, plugin.economy())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 
         loadPlayersAlreadyOnline();
@@ -91,9 +97,17 @@ public final class KitsModule implements ChorusModule {
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 
-    /** Re-reads the file after /kitedit has written to it. */
+    /**
+     * Re-reads the kits after /kitedit has changed one.
+     *
+     * <p>From the config already in memory, not from the file. It was just written out of
+     * that same memory, so reading it back would be a second trip to the disk on every click
+     * of a button somebody might click twenty times in a row.
+     *
+     * <p>It does mean an icon arrives here as a plain map rather than as the section a saved
+     * file gives back, which is exactly why the reader accepts both.
+     */
     private void reloadKits() {
-        config.reload();
         load();
     }
 

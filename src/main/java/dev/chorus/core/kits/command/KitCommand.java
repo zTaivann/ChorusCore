@@ -5,6 +5,9 @@ import dev.chorus.core.command.Durations;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.kits.Kit;
 import dev.chorus.core.kits.KitService;
+import dev.chorus.core.kits.rules.KitAction;
+import dev.chorus.core.kits.rules.Placeholders;
+import dev.chorus.core.kits.rules.Requirement;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -50,17 +53,7 @@ public final class KitCommand extends PlayerCommand {
             messages.send(player, "kits.unknown", "kit", args[0]);
             return;
         }
-
-        long left = kits.remaining(player.getUniqueId(), kit, System.currentTimeMillis());
-        if (left == Long.MAX_VALUE) {
-            // Two different reasons a kit is gone for good, and telling a player the wrong
-            // one sends them looking for a cooldown that will never come.
-            messages.send(player, kit.oneTime() ? "kits.one-time" : "kits.spent",
-                    "kit", kit.name());
-            return;
-        }
-        if (left > 0) {
-            messages.send(player, "kits.cooldown", "kit", kit.name(), "time", Durations.format(left));
+        if (!claimable(player, kit)) {
             return;
         }
         if (!ready(player)) {
@@ -77,6 +70,48 @@ public final class KitCommand extends PlayerCommand {
             settle(player);
             messages.send(player, "kits.received", "kit", kit.name());
         });
+    }
+
+    /**
+     * Every reason a kit might be refused, in the order a player would ask them.
+     *
+     * <p>Each refusal runs the kit's fail actions, so a server can put a sound or a title on
+     * "no" as readily as on "yes".
+     */
+    private boolean claimable(Player player, Kit kit) {
+        long left = kits.remaining(player.getUniqueId(), kit, System.currentTimeMillis());
+        if (left == Long.MAX_VALUE) {
+            // Two different reasons a kit is gone for good, and telling a player the wrong
+            // one sends them looking for a cooldown that will never come.
+            refuse(player, kit);
+            messages.send(player, kit.oneTime() ? "kits.one-time" : "kits.spent",
+                    "kit", kit.name());
+            return false;
+        }
+        if (left > 0) {
+            refuse(player, kit);
+            messages.send(player, "kits.cooldown", "kit", kit.name(), "time", Durations.format(left));
+            return false;
+        }
+
+        Requirement unmet = kits.unmet(player, kit);
+        if (unmet == null) {
+            return true;
+        }
+        refuse(player, kit);
+        if (unmet.denyMessage() == null) {
+            messages.send(player, "kits.requirement", "kit", kit.name());
+            return false;
+        }
+        // A requirement may carry its own line, which will always read better than a
+        // sentence built out of an operator and two numbers.
+        player.sendMessage(messages.parse(
+                Placeholders.fill(player, unmet.denyMessage().replace("%kit%", kit.name()))));
+        return false;
+    }
+
+    private void refuse(Player player, Kit kit) {
+        KitAction.runAll(kit.failActions(), player, messages, kit.name());
     }
 
     @Override

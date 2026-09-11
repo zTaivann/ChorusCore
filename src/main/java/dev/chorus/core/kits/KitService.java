@@ -1,12 +1,19 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.core.economy.Economy;
+import dev.chorus.core.kits.rules.KitAction;
+import dev.chorus.core.kits.rules.Requirement;
+import dev.chorus.core.locale.Messages;
+import dev.chorus.core.players.Playtime;
 import dev.chorus.core.storage.Queries;
-import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 public final class KitService {
 
     private final KitRepository repository;
+    private final Messages messages;
+    private final Economy economy;
     private final Executor worker;
     private final Executor mainThread;
     private final Map<UUID, Map<String, KitRepository.Use>> uses = new ConcurrentHashMap<>();
@@ -32,8 +41,11 @@ public final class KitService {
     private volatile Map<String, Kit> kits = Map.of();
     private volatile String firstJoinKit = "";
 
-    KitService(KitRepository repository, Executor worker, Executor mainThread) {
+    KitService(KitRepository repository, Messages messages, Economy economy,
+               Executor worker, Executor mainThread) {
         this.repository = repository;
+        this.messages = messages;
+        this.economy = economy;
         this.worker = worker;
         this.mainThread = mainThread;
     }
@@ -111,6 +123,42 @@ public final class KitService {
     }
 
     /**
+     * The first requirement this player does not meet, or null when they meet them all.
+     *
+     * <p>The numbers behind them are gathered lazily: a kit with no money requirement never
+     * asks the economy anything, and /kits builds this for every kit on the screen.
+     */
+    public @Nullable Requirement unmet(Player player, Kit kit) {
+        if (kit.requirements().isEmpty()) {
+            return null;
+        }
+        Requirement.Context context = new Requirement.Context() {
+            @Override
+            public double balance() {
+                return economy.balance(player);
+            }
+
+            @Override
+            public long playtimeSeconds() {
+                return TimeUnit.MILLISECONDS.toSeconds(Playtime.of(player));
+            }
+
+            @Override
+            public boolean hasClaimed(String other) {
+                Map<String, KitRepository.Use> taken = uses.get(player.getUniqueId());
+                return taken != null && taken.containsKey(other);
+            }
+        };
+
+        for (Requirement requirement : kit.requirements()) {
+            if (!requirement.met(player, context)) {
+                return requirement;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Hands the kit over and records it. Anything that will not fit lands at the player's
      * feet rather than quietly disappearing.
      */
@@ -128,38 +176,90 @@ public final class KitService {
             taken.put(kit.name(),
                     new KitRepository.Use(now, before == null ? 1 : before.times() + 1));
 
-            for (ItemStack leftover : player.getInventory()
-                    .addItem(kit.contents().toArray(new ItemStack[0])).values()) {
-                player.getWorld().dropItemNaturally(player.getLocation(), leftover);
-            }
-            run(player, kit);
+            hand(player, kit);
+            KitAction.runAll(kit.claimActions(), player, messages, kit.name());
         });
     }
 
     /**
-     * The commands a kit runs when it is taken, after the items are in.
+     * Puts the kit where it belongs.
      *
-     * <p>{@code run-as-console} is how a kit hands out something the player could not give
-     * themselves, which is most of what makes a kit more than a box of items. It is also
-     * how a kit could hand out anything at all, so it is worth reading twice.
+     * <p>Armour goes on rather than into the bags when {@code auto-armor} is on and the slot
+     * is free. Taking off what somebody is already wearing to put the kit's on would be a
+     * good way to lose enchanted diamond, so an occupied slot is left alone and the piece
+     * goes in the bags as any other item would.
      */
-    private void run(Player player, Kit kit) {
-        if (!kit.runsCommands()) {
-            return;
+    private void hand(Player player, Kit kit) {
+        PlayerInventory inventory = player.getInventory();
+        if (kit.clearInventory()) {
+            inventory.clear();
         }
-        for (String command : kit.runAsPlayer()) {
-            player.performCommand(forPlayer(command, player));
+
+        List<ItemStack> loose = new ArrayList<>(kit.contents().size());
+        for (ItemStack item : kit.contents()) {
+            if (!kit.autoArmor() || !equip(inventory, item)) {
+                loose.add(item);
+            }
         }
-        for (String command : kit.runAsConsole()) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), forPlayer(command, player));
+
+        for (ItemStack leftover : inventory.addItem(loose.toArray(new ItemStack[0])).values()) {
+            player.getWorld().dropItemNaturally(player.getLocation(), leftover);
         }
     }
 
-    private static String forPlayer(String command, Player player) {
-        String cleaned = command.startsWith("/") ? command.substring(1) : command;
-        return cleaned.replace("%player%", player.getName());
+    /** @return whether the piece was worn. */
+    private static boolean equip(PlayerInventory inventory, ItemStack item) {
+        ArmourSlot slot = ArmourSlot.of(item.getType());
+        if (slot == null || slot.worn(inventory) != null) {
+            return false;
+        }
+        slot.wear(inventory, item);
+        return true;
     }
 
+    /**
+     * Which armour slot a material belongs in, worked out from the end of its name.
+     *
+     * <p>By suffix rather than by listing every piece: the game has gained whole armour sets
+     * since 1.18, and a list written today would not know about the next one.
+     */
+    private enum ArmourSlot {
+        HELMET, CHESTPLATE, LEGGINGS, BOOTS;
+
+        static @Nullable ArmourSlot of(Material material) {
+            String name = material.name();
+            for (ArmourSlot slot : values()) {
+                if (name.endsWith("_" + slot.name())) {
+                    return slot;
+                }
+            }
+            // The two that break the pattern, and have since the game had armour at all.
+            return switch (name) {
+                case "TURTLE_HELMET", "CARVED_PUMPKIN" -> HELMET;
+                case "ELYTRA" -> CHESTPLATE;
+                default -> null;
+            };
+        }
+
+        @Nullable ItemStack worn(PlayerInventory inventory) {
+            ItemStack piece = switch (this) {
+                case HELMET -> inventory.getHelmet();
+                case CHESTPLATE -> inventory.getChestplate();
+                case LEGGINGS -> inventory.getLeggings();
+                case BOOTS -> inventory.getBoots();
+            };
+            return piece == null || piece.getType().isAir() ? null : piece;
+        }
+
+        void wear(PlayerInventory inventory, ItemStack item) {
+            switch (this) {
+                case HELMET -> inventory.setHelmet(item);
+                case CHESTPLATE -> inventory.setChestplate(item);
+                case LEGGINGS -> inventory.setLeggings(item);
+                case BOOTS -> inventory.setBoots(item);
+            }
+        }
+    }
     public CompletableFuture<Boolean> reset(UUID owner, String kit) {
         String key = kit.toLowerCase(java.util.Locale.ROOT);
         return Queries.run(() -> repository.clear(owner, key), worker, mainThread)

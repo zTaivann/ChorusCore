@@ -58,7 +58,8 @@ final class KitWriter {
                 || !meta.getItemFlags().isEmpty();
     }
 
-    private static Map<String, Object> describe(ItemStack item) {
+    /** One item on its own, which is what an icon is. */
+    static Map<String, Object> describe(ItemStack item) {
         // Linked so the file reads in the order a person would write it.
         Map<String, Object> written = new LinkedHashMap<>();
         written.put("material", item.getType().name());

@@ -28,6 +28,7 @@ import dev.chorus.core.home.HomeModule;
 import dev.chorus.core.items.ItemsModule;
 import dev.chorus.core.kits.KitsModule;
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.menu.ChatPrompts;
 import dev.chorus.core.menu.MenuListener;
 import dev.chorus.core.papi.ChorusExpansion;
 import dev.chorus.core.players.PlayersModule;
@@ -78,6 +79,7 @@ public final class ChorusPlugin extends JavaPlugin {
     private TeleportService teleports;
     private PlayerFlagService flags;
     private AuditLog audit;
+    private ChatPrompts prompts;
     private CommandSupport support;
     private ChorusServices services;
 
@@ -137,6 +139,9 @@ public final class ChorusPlugin extends JavaPlugin {
                 TeleportSettings.read(configs.get(TELEPORT_CONFIG).section("teleport")));
         register(teleports);
         register(new MenuListener());
+        prompts = new ChatPrompts(this, messages, mainThread);
+        register(prompts);
+        prompts.start();
         register(new RootCommand(this, support));
 
         services = new ChorusServices(getDescription().getVersion(), economy, teleports, messages);
@@ -184,6 +189,9 @@ public final class ChorusPlugin extends JavaPlugin {
         }
 
         cooldowns.clear();
+        if (prompts != null) {
+            prompts.shutdown();
+        }
         if (flags != null) {
             flags.clearAll();
         }
@@ -246,6 +254,10 @@ public final class ChorusPlugin extends JavaPlugin {
 
     public AuditLog audit() {
         return audit;
+    }
+
+    public ChatPrompts prompts() {
+        return prompts;
     }
 
     /** Runs tasks on the server thread, dropping them once the plugin is gone. */

@@ -14,7 +14,16 @@ public final class MenuItems {
     }
 
     public static ItemStack of(Material material, Component name, List<Component> lore) {
-        ItemStack item = new ItemStack(material);
+        return of(new ItemStack(material), name, lore);
+    }
+
+    /**
+     * The same from a real item rather than a bare material, so an icon somebody chose by
+     * dragging their own enchanted sword in still looks like that sword on the button.
+     */
+    public static ItemStack of(ItemStack template, Component name, List<Component> lore) {
+        ItemStack item = template.clone();
+        item.setAmount(1);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(name);
@@ -26,7 +35,6 @@ public final class MenuItems {
         }
         return item;
     }
-
     public static @Nullable ItemStack filler(@Nullable Material material) {
         return material == null ? null : of(material, Component.empty(), List.of());
     }

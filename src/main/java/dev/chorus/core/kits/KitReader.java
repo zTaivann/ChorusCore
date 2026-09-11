@@ -1,6 +1,8 @@
 package dev.chorus.core.kits;
 
 import dev.chorus.core.items.Enchantments;
+import dev.chorus.core.kits.rules.KitAction;
+import dev.chorus.core.kits.rules.Requirement;
 import dev.chorus.core.locale.Messages;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -44,14 +46,17 @@ public final class KitReader {
                     key,
                     messages.parse(block.getString("display", name)),
                     lore(block.getStringList("lore"), messages),
-                    material(block.getString("icon", "CHEST"), Material.CHEST, onProblem),
+                    icon(block.get("icon"), messages, key, onProblem),
                     Math.max(0, block.getInt("cooldown-seconds", 0)),
                     block.getBoolean("one-time", false),
                     Math.max(0, block.getInt("max-claims", 0)),
                     Math.max(0, block.getDouble("price", 0)),
                     block.getString("permission", "chorus.kits.use." + key),
-                    List.copyOf(block.getStringList("run-as-player")),
-                    List.copyOf(block.getStringList("run-as-console")),
+                    block.getBoolean("auto-armor", true),
+                    block.getBoolean("clear-inventory", false),
+                    Requirement.read(block.getList("requirements", List.of()), key, onProblem),
+                    KitAction.read(block.getStringList("claim-actions"), key, onProblem),
+                    KitAction.read(block.getStringList("fail-actions"), key, onProblem),
                     items(block.getMapList("items"), messages, key, onProblem)));
         }
         return Map.copyOf(kits);
@@ -65,33 +70,86 @@ public final class KitReader {
                                          String kit, Consumer<String> onProblem) {
         List<ItemStack> items = new ArrayList<>(entries.size());
         for (Map<?, ?> entry : entries) {
-            Material material = material(text(entry.get("material")), null, onProblem);
-            if (material == null) {
+            ItemStack item = item(entry, messages, kit, onProblem);
+            if (item == null) {
                 onProblem.accept("kit '" + kit + "' lists an item with no usable material");
                 continue;
-            }
-
-            ItemStack item = new ItemStack(material, amount(entry.get("amount")));
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                String name = text(entry.get("name"));
-                if (name != null) {
-                    meta.displayName(plain(messages.parse(name)));
-                }
-                if (entry.get("lore") instanceof List<?> lines) {
-                    meta.lore(lines.stream().map(line -> plain(messages.parse(String.valueOf(line)))).toList());
-                }
-                if (entry.get("enchantments") instanceof Map<?, ?> enchantments) {
-                    enchant(meta, enchantments, kit, onProblem);
-                }
-                if (Boolean.TRUE.equals(entry.get("unbreakable"))) {
-                    meta.setUnbreakable(true);
-                }
-                item.setItemMeta(meta);
             }
             items.add(item);
         }
         return List.copyOf(items);
+    }
+
+    /**
+     * One item from its written form.
+     *
+     * <p>Shared with the icon, which is the same shape: a kit shown as a named, enchanted
+     * sword reads better than one shown as a plain one, and there was no reason for the icon
+     * to understand less than the contents do.
+     */
+    private static @Nullable ItemStack item(Map<?, ?> entry, Messages messages, String kit,
+                                            Consumer<String> onProblem) {
+        Material material = material(text(entry.get("material")), null, onProblem);
+        if (material == null) {
+            return null;
+        }
+
+        ItemStack item = new ItemStack(material, amount(entry.get("amount")));
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return item;
+        }
+
+        String name = text(entry.get("name"));
+        if (name != null) {
+            meta.displayName(plain(messages.parse(name)));
+        }
+        if (entry.get("lore") instanceof List<?> lines) {
+            meta.lore(lines.stream().map(line -> plain(messages.parse(String.valueOf(line)))).toList());
+        }
+        if (entry.get("enchantments") instanceof Map<?, ?> enchantments) {
+            enchant(meta, enchantments, kit, onProblem);
+        }
+        if (Boolean.TRUE.equals(entry.get("unbreakable"))) {
+            meta.setUnbreakable(true);
+        }
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    /**
+     * The written form of an item, whichever shape the config hands it over in.
+     *
+     * <p>Setting a value in memory leaves a {@link Map} behind; reading the same file back
+     * hands out a {@link ConfigurationSection} instead. Checking for only one of them is why
+     * an icon could be saved, reported as saved, and still come back as a chest.
+     *
+     * @return null when this is not a block at all, such as a bare material name.
+     */
+    static @Nullable Map<?, ?> asBlock(@Nullable Object written) {
+        if (written instanceof ConfigurationSection section) {
+            return section.getValues(false);
+        }
+        return written instanceof Map<?, ?> map ? map : null;
+    }
+
+    /** The icon: a bare material name for the simple case, or an item block for the rest. */
+    private static ItemStack icon(Object written, Messages messages, String kit,
+                                  Consumer<String> onProblem) {
+        Map<?, ?> block = asBlock(written);
+
+        if (block != null) {
+            ItemStack item = item(block, messages, kit, onProblem);
+            if (item != null) {
+                return item;
+            }
+            onProblem.accept("kit '" + kit + "' has an icon with no usable material");
+            return new ItemStack(Material.CHEST);
+        }
+
+        Material material = material(written == null ? null : String.valueOf(written),
+                Material.CHEST, onProblem);
+        return new ItemStack(material == null ? Material.CHEST : material);
     }
 
     /**

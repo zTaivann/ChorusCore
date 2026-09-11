@@ -4,6 +4,7 @@ import dev.chorus.core.locale.Messages;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -16,8 +17,18 @@ import java.util.function.Consumer;
  */
 public final class ListMenu {
 
-    public record Entry(Material icon, Component display, List<Component> lore,
+    /**
+     * One line of the grid. The icon is a whole item rather than a bare material, so an
+     * entry can carry whatever was chosen for it: a named sword stays a named sword.
+     */
+    public record Entry(ItemStack icon, Component display, List<Component> lore,
                         Consumer<Player> action) {
+
+        /** For the callers that only have a material to show. */
+        public Entry(Material icon, Component display, List<Component> lore,
+                     Consumer<Player> action) {
+            this(new ItemStack(icon), display, lore, action);
+        }
     }
 
     private ListMenu() {

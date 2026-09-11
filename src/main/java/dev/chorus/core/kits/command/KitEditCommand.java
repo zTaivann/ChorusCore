@@ -7,6 +7,7 @@ import dev.chorus.core.economy.Economy;
 import dev.chorus.core.kits.Kit;
 import dev.chorus.core.kits.KitEditor;
 import dev.chorus.core.kits.KitService;
+import dev.chorus.core.kits.menu.KitEditMenu;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -23,14 +24,15 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
- * {@code /kitedit <kit> <setting> [value]}: builds and changes kits from inside the game.
+ * Builds and changes kits from inside the game, by screen or by command.
  *
- * <p>Shaped like {@code /warpset} on purpose. Everything in this plugin that edits something
- * made in game reads the same way, and one shape to learn beats six.
+ * <p>{@code /kitedit} on its own opens the editor. Every command form still works exactly as
+ * it did, because plenty of people would rather type than click and a screen that replaced
+ * the commands would take that away from them. The screen is a faster way to reach the same
+ * settings, not a separate feature with its own gaps.
  *
- * <p>{@code /kitedit <kit>} on its own prints what the kit is set to now. Anyone editing a
- * kit wants to see where they are starting from, and a list of settings with no values next
- * to them is a list of guesses.
+ * <p>The command form is shaped like {@code /warpset} on purpose: everything in this plugin
+ * that edits something made in game reads the same way, and one shape to learn beats six.
  */
 public final class KitEditCommand extends PlayerCommand {
 
@@ -40,7 +42,7 @@ public final class KitEditCommand extends PlayerCommand {
      * Each setting with the shape of its value and the line that explains it.
      *
      * <p>The message key is written out rather than built from the name, so the check that
-     * every line in messages.yml is reachable can see all eleven of them.
+     * every line in messages.yml is reachable can see all of them.
      */
     private record Setting(String name, String value, String help) {
     }
@@ -56,22 +58,31 @@ public final class KitEditCommand extends PlayerCommand {
             new Setting("price", "<amount>", "kits.edit-help-price"),
             new Setting("permission", "<node>", "kits.edit-help-permission"),
             new Setting("onetime", "<true|false>", "kits.edit-help-onetime"),
+            new Setting("autoarmor", "<true|false>", "kits.edit-help-autoarmor"),
+            new Setting("clearinventory", "<true|false>", "kits.edit-help-clearinventory"),
             new Setting("delete", "", "kits.edit-help-delete"));
 
     private final KitService kits;
     private final KitEditor editor;
+    private final KitEditMenu menu;
     private final Economy economy;
 
-    public KitEditCommand(CommandSupport support, KitService kits, KitEditor editor, Economy economy) {
+    public KitEditCommand(CommandSupport support, KitService kits, KitEditor editor,
+                          KitEditMenu menu, Economy economy) {
         super(support, "kitedit", "chorus.kits.edit");
         this.kits = kits;
         this.editor = editor;
+        this.menu = menu;
         this.economy = economy;
     }
 
     @Override
     protected void execute(Player player, String[] args) {
         if (args.length == 0) {
+            menu.openList(player);
+            return;
+        }
+        if (args[0].equalsIgnoreCase("help")) {
             help(player);
             return;
         }
@@ -84,11 +95,19 @@ public final class KitEditCommand extends PlayerCommand {
                 messages.send(player, "kits.edit-unknown", "kit", name);
                 return;
             }
-            describe(player, kit);
+            menu.open(player, name);
             return;
         }
 
         String setting = args[1].toLowerCase(Locale.ROOT);
+        if (setting.equals("info")) {
+            if (kit == null) {
+                messages.send(player, "kits.edit-unknown", "kit", name);
+                return;
+            }
+            describe(player, kit);
+            return;
+        }
         if (SETTINGS.stream().noneMatch(entry -> entry.name().equals(setting))) {
             messages.send(player, "kits.edit-unknown-setting", "setting", args[1]);
             help(player);
@@ -117,7 +136,7 @@ public final class KitEditCommand extends PlayerCommand {
         }
     }
 
-    /** One clickable line per setting, so nobody has to copy a wall of pipes out of chat. */
+    /** One clickable line per setting, rather than a wall of pipes nobody can read in chat. */
     private void help(Player player) {
         messages.send(player, "kits.edit-help-header");
         for (Setting entry : SETTINGS) {
@@ -136,17 +155,25 @@ public final class KitEditCommand extends PlayerCommand {
         messages.send(player, "kits.edit-info-header", "kit", kit.name());
         messages.send(player, "kits.edit-info-display", "display", PLAIN.serialize(kit.display()));
         messages.send(player, "kits.edit-info-icon",
-                "icon", kit.icon().name().toLowerCase(Locale.ROOT));
+                "icon", kit.icon().getType().name().toLowerCase(Locale.ROOT));
         messages.send(player, "kits.edit-info-cooldown", "cooldown", cooldownOf(kit));
         messages.send(player, "kits.edit-info-maxclaims", "claims", claimsOf(kit));
         messages.send(player, "kits.edit-info-price", "price", priceOf(kit));
         messages.send(player, "kits.edit-info-permission", "permission",
                 kit.permission().isEmpty() ? messages.plain("kits.word-everyone") : kit.permission());
         messages.send(player, "kits.edit-info-onetime", "onetime", word(kit.oneTime()));
+        messages.send(player, "kits.edit-info-autoarmor", "autoarmor", word(kit.autoArmor()));
+        messages.send(player, "kits.edit-info-clearinventory",
+                "clearinventory", word(kit.clearInventory()));
         messages.send(player, "kits.edit-info-items", "count", String.valueOf(kit.items().size()));
-        if (kit.runsCommands()) {
-            messages.send(player, "kits.edit-info-commands", "count",
-                    String.valueOf(kit.runAsPlayer().size() + kit.runAsConsole().size()));
+        if (!kit.requirements().isEmpty()) {
+            messages.send(player, "kits.edit-info-requirements",
+                    "count", String.valueOf(kit.requirements().size()));
+        }
+        if (!kit.claimActions().isEmpty() || !kit.failActions().isEmpty()) {
+            messages.send(player, "kits.edit-info-actions",
+                    "claim", String.valueOf(kit.claimActions().size()),
+                    "fail", String.valueOf(kit.failActions().size()));
         }
         messages.send(player, "kits.edit-info-footer", "kit", kit.name());
     }
@@ -191,7 +218,7 @@ public final class KitEditCommand extends PlayerCommand {
         }
         settle(player);
         messages.send(player, "kits.edit-created", "kit", name);
-        kits.find(name).ifPresent(made -> describe(player, made));
+        menu.open(player, name);
     }
 
     private void delete(Player player, String name) {
@@ -254,7 +281,7 @@ public final class KitEditCommand extends PlayerCommand {
             case "cooldown" -> Durations.format(TimeUnit.SECONDS.toMillis((long) number(value)));
             case "maxclaims" -> (long) number(value) + " " + messages.plain("kits.word-claims");
             case "price" -> economy.format(number(value));
-            case "onetime" -> word(Boolean.parseBoolean(value));
+            case "onetime", "autoarmor", "clearinventory" -> word(Boolean.parseBoolean(value));
             default -> value;
         };
     }
@@ -280,16 +307,20 @@ public final class KitEditCommand extends PlayerCommand {
                                       @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
             List<String> names = new ArrayList<>(kits.all().stream().map(Kit::name).toList());
+            names.add("help");
             return startingWith(args[0], names);
         }
         if (args.length == 2) {
-            return startingWith(args[1], SETTINGS.stream().map(Setting::name).toList());
+            List<String> names = new ArrayList<>(SETTINGS.stream().map(Setting::name).toList());
+            names.add("info");
+            return startingWith(args[1], names);
         }
         if (args.length != 3) {
             return List.of();
         }
         return switch (args[1].toLowerCase(Locale.ROOT)) {
-            case "onetime" -> startingWith(args[2], List.of("true", "false"));
+            case "onetime", "autoarmor", "clearinventory" ->
+                    startingWith(args[2], List.of("true", "false"));
             case "cooldown" -> startingWith(args[2], List.of("0", "60", "3600", "86400"));
             case "maxclaims" -> startingWith(args[2], List.of("0", "1", "5", "10"));
             default -> List.of();

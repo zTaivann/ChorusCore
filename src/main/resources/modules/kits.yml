@@ -28,19 +28,89 @@ kits:
     next-page: ARROW
     close: BARRIER
 
+  # ── The editor screen ───────────────────────────────────────────────────
+  #
+  # Which block each button in /kitedit is made of. Every one falls back to
+  # something that has existed far longer than the oldest version this jar runs
+  # on, so a name you leave out can never break the screen.
+  editor:
+    # Rows in the screen the items are laid out in. 1 to 6.
+    item-rows: 4
+
+    filler: ''
+    icon: ITEM_FRAME
+    lore: BOOK
+    items: CHEST
+    preview: ENDER_CHEST
+    cooldown: CLOCK
+    max-claims: PAPER
+    price: GOLD_INGOT
+    permission: NAME_TAG
+    enabled: LIME_DYE
+    disabled: GRAY_DYE
+    new-kit: WRITABLE_BOOK
+    back: ARROW
+    delete: LAVA_BUCKET
+    close: BARRIER
+
   # ── The kits themselves ─────────────────────────────────────────────────
   #
   #   display           the name shown in /kits, in MiniMessage.
   #   lore              extra lines under that name.
-  #   icon              the item it is shown as.
+  #   icon              the item it is shown as. Either a material name, or the
+  #                     same block an item takes, which is what /kitedit writes
+  #                     when you drop a real item into the icon slot:
+  #
+  #                       icon: DIAMOND_SWORD
+  #
+  #                       icon:
+  #                         material: DIAMOND_SWORD
+  #                         name: '<gold>VIP Sword'
+  #                         enchantments: { sharpness: 5 }
   #   cooldown-seconds  how long before the same player may take it again.
   #   one-time          true means once ever, whatever the cooldown says.
-#   max-claims        how many times in total it may ever be taken. 0 is no limit.
-#                     Unlike one-time this still honours the cooldown in between.
-#   run-as-player     commands run as the player when they take it.
-#   run-as-console    commands run as the console when they take it. This is how
-#                     a kit hands out something the player could not give
-#                     themselves. %player% works in both.
+  #   max-claims        how many times in total it may ever be taken. 0 is no limit.
+  #                     Unlike one-time this still honours the cooldown in between.
+  #   auto-armor        armour goes straight onto the player rather than into
+  #                     their bags. A slot they have already filled is left
+  #                     alone: taking off enchanted diamond to put a kit's
+  #                     leather on would be a good way to lose it.
+  #   clear-inventory   empties their bags before handing the kit over.
+  #
+  #   requirements      what has to be true before they may take it. Each one is
+  #                     written type: value, and takes either shape:
+  #
+  #                       - 'permission: chorus.kits.vip'
+  #                       - condition: 'placeholder: %player_level% >= 10'
+  #                         deny: '<red>Come back at level 10.'
+  #
+  #                     The types are permission, placeholder, money, playtime
+  #                     (in seconds) and kit (another kit they must have taken).
+  #                     placeholder is the one that makes the rest optional:
+  #                     anything any plugin exposes through PlaceholderAPI can
+  #                     gate a kit, with >=, <=, ==, !=, >, < or contains.
+  #                     Without a deny line they get the message from
+  #                     messages.yml instead.
+  #
+  #   claim-actions     what happens when they take it.
+  #   fail-actions      what happens when they are refused, whatever the reason.
+  #
+  #                     Both are written type: value, run in the order listed:
+  #
+  #                       - 'message: <green>Enjoy your %kit% kit.'
+  #                       - 'broadcast: <gray>%player% just claimed %kit%.'
+  #                       - 'actionbar: <green>Claimed'
+  #                       - 'title: <gold><bold>VIP;<gray>Welcome aboard'
+  #                       - 'sound: entity.player.levelup 1 1.4'
+  #                       - 'console: lp user %player% parent add vip'
+  #                       - 'player: spawn'
+  #                       - 'close'
+  #
+  #                     console runs as the server, which is how a kit hands out
+  #                     something the player could not give themselves. It is
+  #                     also how a kit could hand out anything at all, so it is
+  #                     worth reading twice. %player% and %kit% work in all of
+  #                     them, as does anything PlaceholderAPI knows.
   #   price             what taking it costs, through Vault.
   #   permission        who may take it. Leave it out and it defaults to
   #                     chorus.kits.use.<name>. Set it to '' for everyone.
@@ -115,8 +185,13 @@ kits:
       one-time: false
       max-claims: 0
       price: 0.0
-      run-as-player: [ ]
-      run-as-console: [ ]
+      auto-armor: true
+      clear-inventory: false
+      claim-actions:
+        - 'sound: entity.player.levelup 0.6 1.4'
+        - 'actionbar: <green>Daily kit claimed'
+      fail-actions:
+        - 'sound: block.note_block.bass 0.5 0.7'
       items:
         - material: GOLDEN_APPLE
           amount: 2

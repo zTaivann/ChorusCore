@@ -26,24 +26,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class MessagesTest {
 
-    /** Any literal shaped like a dotted key whose first segment is one of our roots. */
+    /** The top-level sections of messages.yml, which every key begins with. */
+    private static final String ROOTS = "error|core|cooldown|economy|chat|home|warp|spawn"
+            + "|request|back|teleport|utility|staff|players|items|menu|kits";
+
+    /**
+     * Any literal shaped like a dotted key whose first segment is one of our roots.
+     *
+     * <p>Broad on purpose: a key reaches send() through a ternary, through a helper of
+     * this plugin's own, or from the next line down, and a pattern anchored on the call
+     * would miss most of them and call every one of those messages dead.
+     *
+     * <p>The one thing it has to rule out is a config path, which looks exactly the same:
+     * config.section("kits.editor") is not a message and reporting it as a missing one
+     * sends whoever reads the failure looking for a line that was never meant to exist.
+     */
     private static final Pattern MESSAGE_KEY = Pattern.compile(
-            "\"((?:error|core|cooldown|economy|chat|home|warp|spawn|request|back|teleport|utility"
-                    + "|staff|players|items|menu|kits)(?:\\.[a-z-]+)+)\"");
+            "(?<!section[(])[\"]((?:" + ROOTS + ")(?:[.][a-z-]+)+)[\"]");
 
     @Test
     void everyTemplateParses() {
         YamlConfiguration messages = Resources.read("messages.yml");
-        String prefix = messages.getString("prefix", "");
+        List<String> broken = messages.getKeys(true).stream()
+                .filter(messages::isString)
+                .filter(key -> !parses(messages.getString(key, "")))
+                .toList();
 
-        for (String key : messages.getKeys(true)) {
-            String template = messages.getString(key);
-            if (template == null || template.isBlank()) {
-                continue;
-            }
-            assertTrue(parses(template.replace("%prefix%", prefix)),
-                    "MiniMessage cannot read '" + key + "'");
-        }
+        assertEquals(List.of(), broken, "these templates are not valid MiniMessage");
     }
 
     @Test
@@ -69,6 +78,45 @@ class MessagesTest {
         assertEquals(List.of(), unused, "messages.yml has keys nothing sends");
     }
 
+    /**
+     * A newline inside one line of item lore is not a line break.
+     *
+     * <p>Lore is a list of lines, so the game draws the newline as the missing character it
+     * is: a little box in the middle of the sentence. A template with one in it has to go
+     * through renderLines, which splits it into the separate lines it was asking for.
+     */
+    @Test
+    void noLoreLineIsSentAsOnePieceWhenItAsksForSeveral() throws IOException {
+        YamlConfiguration messages = Resources.read("messages.yml");
+        String sources = allSources();
+
+        List<String> wrong = messages.getKeys(true).stream()
+                .filter(messages::isString)
+                .filter(MessagesTest::isLore)
+                .filter(key -> messages.getString(key, "").contains("<newline>"))
+                .filter(key -> sources.contains("render(\"" + key + "\""))
+                .toList();
+
+        assertEquals(List.of(), wrong,
+                "these lore lines hold a newline but are rendered as one piece; use renderLines");
+    }
+
+    /** Lore keys are the ones whose last segment says so, either way round. */
+    private static boolean isLore(String key) {
+        String last = key.substring(key.lastIndexOf('.') + 1);
+        return last.startsWith("lore") || last.endsWith("lore");
+    }
+
+    private static String allSources() throws IOException {
+        StringBuilder everything = new StringBuilder();
+        try (Stream<Path> files = Files.walk(Resources.SOURCES)) {
+            for (Path file : files.filter(path -> path.toString().endsWith(".java")).toList()) {
+                everything.append(Files.readString(file, StandardCharsets.UTF_8));
+            }
+        }
+        return everything.toString();
+    }
+
     private static Set<String> keysUsedInSources() throws IOException {
         Set<String> keys = new TreeSet<>();
         try (Stream<Path> files = Files.walk(Resources.SOURCES)) {
@@ -79,6 +127,7 @@ class MessagesTest {
                 }
             }
         }
+        assertTrue(keys.size() > 100, "the scanner found almost nothing, so it has stopped working");
         return keys;
     }
 

@@ -1,7 +1,10 @@
 package dev.chorus.core.locale;
 
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -65,6 +68,26 @@ class PlaceholderTest {
     @Test
     void aPlaceholderNamedAfterATagIsNotMistakenForIt() {
         assertEquals("chorus.admin", plain("%key%", "key", "chorus.admin"));
+    }
+
+    /**
+     * The menus once showed a box in the middle of a tooltip because a lore line holding a
+     * newline was sent as one piece. Lore is a list of lines; this is what splits it.
+     */
+    @Test
+    void aTemplateSplitsIntoTheLinesItAsksFor() {
+        List<String> lines = Messages.fillLines(
+                "<gray>Holds <white>%count%<newline><green>Click to edit", "count", "3")
+                .stream().map(PLAIN::serialize).toList();
+
+        assertEquals(2, lines.size());
+        assertEquals("Holds 3", lines.get(0));
+        assertEquals("Click to edit", lines.get(1));
+    }
+
+    @Test
+    void aTemplateWithNoBreakIsStillOneLine() {
+        assertEquals(1, Messages.fillLines("<gray>Just the one").size());
     }
 
     private static String plain(String template, String... placeholders) {

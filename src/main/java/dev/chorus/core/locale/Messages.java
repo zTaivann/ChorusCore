@@ -11,8 +11,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -119,6 +121,34 @@ public final class Messages implements MessageApi {
      */
     public String plain(String key, String... placeholders) {
         return PlainTextComponentSerializer.plainText().serialize(render(key, placeholders));
+    }
+
+    /**
+     * A message as separate lines, split where the template says {@code <newline>}.
+     *
+     * <p>For item lore, which is a list of lines rather than one piece of text. A newline
+     * inside a single lore line is not a line break at all: the game draws it as the missing
+     * character it is, a little box in the middle of the sentence.
+     *
+     * <p>Each line is parsed on its own, so a colour opened before a break does not bleed
+     * into the line after it, which is what you want on a tooltip anyway.
+     */
+    public List<Component> renderLines(String key, String... placeholders) {
+        String template = templates.get(key);
+        if (template == null) {
+            return List.of(cached(key));
+        }
+        return fillLines(template, placeholders);
+    }
+
+    /** Package-private so the checks can exercise the split without standing up a server. */
+    static List<Component> fillLines(String template, String... placeholders) {
+        String[] parts = template.split("<newline>", -1);
+        List<Component> lines = new ArrayList<>(parts.length);
+        for (String part : parts) {
+            lines.add(fill(part, placeholders));
+        }
+        return lines;
     }
 
     public Component render(String key, String... placeholders) {

@@ -2,6 +2,7 @@ package dev.chorus.core.menu;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Server;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -21,7 +23,7 @@ import java.util.function.Consumer;
 public final class Menu implements InventoryHolder {
 
     private final Inventory inventory;
-    private final Map<Integer, Consumer<Player>> actions = new HashMap<>();
+    private final Map<Integer, BiConsumer<Player, ClickType>> actions = new HashMap<>();
 
     public Menu(Server server, Component title, int rows) {
         this.inventory = server.createInventory(this, rows * 9, title);
@@ -41,6 +43,17 @@ public final class Menu implements InventoryHolder {
     }
 
     public void set(int slot, ItemStack item, Consumer<Player> action) {
+        setPerClick(slot, item, (player, click) -> action.accept(player));
+    }
+
+    /**
+     * For the screens where a right click means something different from a left one.
+     *
+     * <p>Named apart from {@link #set} rather than overloading it: two methods taking
+     * functional interfaces of different arities cannot be told apart by a lambda that does
+     * not spell out its parameter types, and every call site here is one of those.
+     */
+    public void setPerClick(int slot, ItemStack item, BiConsumer<Player, ClickType> action) {
         inventory.setItem(slot, item);
         actions.put(slot, action);
     }
@@ -61,10 +74,10 @@ public final class Menu implements InventoryHolder {
         player.openInventory(inventory);
     }
 
-    void click(Player player, int slot) {
-        Consumer<Player> action = actions.get(slot);
+    void click(Player player, int slot, ClickType type) {
+        BiConsumer<Player, ClickType> action = actions.get(slot);
         if (action != null) {
-            action.accept(player);
+            action.accept(player, type);
         }
     }
 }

@@ -55,7 +55,11 @@ public final class KitEditor {
     }
 
     public Result setItems(String name, Player from) {
-        ItemStack[] contents = from.getInventory().getStorageContents();
+        return setItems(name, from.getInventory().getStorageContents());
+    }
+
+    /** The same, from a screen the items were laid out in rather than from a rucksack. */
+    public Result setItems(String name, ItemStack[] contents) {
         List<Map<String, Object>> written = KitWriter.describe(contents);
 
         int simplified = 0;
@@ -69,6 +73,17 @@ public final class KitEditor {
         return commit() ? new Result(true, written.size(), simplified) : Result.failed();
     }
 
+    /**
+     * The icon as a whole item, written in the same form the contents take.
+     *
+     * <p>A kit shown as a named, enchanted sword reads better than one shown as a plain
+     * one, and there was no reason for the icon to understand less than the items do.
+     */
+    public boolean setIcon(String name, ItemStack item) {
+        config.data().set(ROOT + name + ".icon", KitWriter.describe(item));
+        return commit();
+    }
+
     /** An empty value takes the setting out again, leaving the kit on the default. */
     public boolean set(String name, String setting, String value) {
         String path = ROOT + name + "." + pathOf(setting);
@@ -80,7 +95,7 @@ public final class KitEditor {
         return switch (setting) {
             case "cooldown", "maxclaims" -> (int) Double.parseDouble(value.replace(',', '.'));
             case "price" -> Double.parseDouble(value.replace(',', '.'));
-            case "onetime" -> Boolean.parseBoolean(value);
+            case "onetime", "autoarmor", "clearinventory" -> Boolean.parseBoolean(value);
             case "lore" -> List.of(value.split("\\|"));
             default -> value;
         };
@@ -91,6 +106,8 @@ public final class KitEditor {
             case "cooldown" -> "cooldown-seconds";
             case "maxclaims" -> "max-claims";
             case "onetime" -> "one-time";
+            case "autoarmor" -> "auto-armor";
+            case "clearinventory" -> "clear-inventory";
             default -> setting;
         };
     }
