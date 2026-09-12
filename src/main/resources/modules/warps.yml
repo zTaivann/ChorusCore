@@ -62,6 +62,12 @@ warps:
   # Names accept letters, numbers, hyphens and underscores.
   max-name-length: 24
 
+  # The order warps appear in inside a section.
+  #   name     alphabetical
+  #   uses     most used first
+  #   created  the order they were made in
+  sort: name
+
   # Signs reading [Warp] on the first line and a warp name on the second send
   # whoever right-clicks them, honouring that warp's price, wait and permission
   # exactly as /warp would. Making one needs chorus.warp.sign.create.

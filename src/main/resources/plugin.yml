@@ -83,6 +83,12 @@ commands:
   back:
     description: Return to where you were before your last teleport.
     usage: /back [steps]
+  tpauto:
+    description: Accept every teleport request without being asked.
+    usage: /tpauto
+  tpoffline:
+    description: Teleport to where a player logged out.
+    usage: /tpoffline [player]
 
   heal:
     description: Restore health.
@@ -148,15 +154,27 @@ commands:
   paylog:
     description: Show recent payments.
     usage: /paylog [player]
+  paytoggle:
+    description: Stop accepting payments.
+    usage: /paytoggle
   msg:
     description: Send a private message.
     usage: /msg [player] [message]
   reply:
     description: Answer the last private message.
     usage: /reply [message]
+  msgtoggle:
+    description: Turn private messages off or on.
+    usage: /msgtoggle
+  ignore:
+    description: Stop hearing from a player.
+    usage: /ignore [player|list]
   socialspy:
     description: Watch private messages.
     usage: /socialspy
+  mail:
+    description: Leave a message for a player who is not online.
+    usage: /mail [read|send|sendall|clear]
 
   speed:
     description: Change walking or flying speed.
@@ -164,6 +182,9 @@ commands:
   top:
     description: Teleport to the surface above you.
     usage: /top
+  jump:
+    description: Teleport to the block you are looking at.
+    usage: /jump
   near:
     description: List the players around you.
     usage: /near [radius]
@@ -246,6 +267,12 @@ commands:
   whois:
     description: Show everything known about a player.
     usage: /whois [player]
+  nick:
+    description: Change the name a player is shown by.
+    usage: /nick [player] [name|off]
+  realname:
+    description: Show the username behind a nickname.
+    usage: /realname [nickname]
   list:
     description: Show who is online.
     usage: /list
@@ -264,6 +291,9 @@ commands:
   clearinventory:
     description: Empty an inventory.
     usage: /clearinventory [player]
+  restore:
+    description: Put back an inventory that was emptied.
+    usage: /restore [player] [list|number]
   itemname:
     description: Rename the item you are holding.
     usage: /itemname [text]
@@ -288,6 +318,12 @@ commands:
   stack:
     description: Merge the loose stacks in your inventory.
     usage: /stack
+  give:
+    description: Give items by name.
+    usage: /give [player] [item] [amount]
+  exp:
+    description: Give, take or show experience.
+    usage: /exp [show|give|take|set|reset] [player] [amount]
 
   kit:
     description: Take a kit.
@@ -298,6 +334,39 @@ commands:
   kitedit:
     description: Build and change kits from in game.
     usage: /kitedit [kit] [setting] [value]
+  kitreset:
+    description: Clear a kit cooldown so it can be taken again.
+    usage: /kitreset [kit] [player]
+
+  world:
+    description: List the worlds, or travel to one.
+    usage: /world [name]
+  time:
+    description: Read or set the time of day.
+    usage: /time [day|night|ticks] [world|all]
+  weather:
+    description: Change the weather.
+    usage: /weather [clear|rain|storm] [minutes] [world]
+  spawnmob:
+    description: Spawn mobs where you are looking.
+    usage: /spawnmob [mob] [amount] [player]
+  sweep:
+    description: Clear entities out of the world.
+    usage: /sweep [what] [radius]
+
+  sell:
+    description: Sell items to the server.
+    usage: /sell [hand|all|item] [amount]
+  worth:
+    description: Show what the server pays for an item.
+    usage: /worth [hand|item] [amount]
+  setworth:
+    description: Set what an item sells for.
+    usage: /setworth [item] [price]
+
+  commands:
+    description: List the commands you can use.
+    usage: /commands [module|search] [page]
 
 permissions:
   chorus.admin:
@@ -486,6 +555,15 @@ permissions:
   chorus.chat.reply:
     description: Allows /reply.
     default: true
+  chorus.chat.toggle:
+    description: Allows /msgtoggle.
+    default: true
+  chorus.chat.ignore:
+    description: Allows /ignore.
+    default: true
+  chorus.chat.ignore.bypass:
+    description: Messages from this player are never ignored.
+    default: op
   chorus.chat.spy:
     description: Allows /socialspy and receiving the copies.
     default: op
@@ -645,6 +723,14 @@ permissions:
   chorus.items.clearinventory.others:
     description: Allows /clearinventory on another player.
     default: op
+  chorus.items.restore:
+    description: Allows /restore, and putting a backup back.
+    default: op
+    children:
+      chorus.items.restore.view: true
+  chorus.items.restore.view:
+    description: Allows looking at backups without putting one back.
+    default: op
   chorus.items.itemname:
     description: Allows /itemname.
     default: op
@@ -686,4 +772,100 @@ permissions:
     default: true
   chorus.kits.edit:
     description: Allows /kitedit.
+    default: op
+  chorus.kits.reset:
+    description: Allows /kitreset.
+    default: op
+  chorus.help:
+    description: Allows /commands.
+    default: true
+  chorus.bypass.confirm:
+    description: Skips every confirmation prompt.
+    default: false
+  chorus.home.others:
+    description: Allows /home <player>:<home>.
+    default: op
+  chorus.tpa.auto:
+    description: Allows /tpauto.
+    default: true
+  chorus.tpa.offline:
+    description: Allows /tpoffline.
+    default: op
+  chorus.utility.jump:
+    description: Allows /jump.
+    default: op
+  chorus.economy.toggle:
+    description: Allows /paytoggle.
+    default: true
+  chorus.economy.balance.others:
+    description: Allows looking up another player's balance.
+    default: op
+  chorus.mail.use:
+    description: Allows /mail.
+    default: true
+  chorus.mail.send:
+    description: Allows sending mail.
+    default: true
+  chorus.mail.all:
+    description: Allows sending mail to everybody at once.
+    default: op
+  chorus.items.give:
+    description: Allows /give.
+    default: op
+  chorus.items.give.others:
+    description: Allows giving items to another player.
+    default: op
+  chorus.items.exp:
+    description: Allows /exp.
+    default: op
+  chorus.items.exp.others:
+    description: Allows changing another player's experience.
+    default: op
+  chorus.players.nick:
+    description: Allows /nick.
+    default: op
+  chorus.players.nick.others:
+    description: Allows renaming another player.
+    default: op
+  chorus.players.nick.colour:
+    description: Allows colour codes in a nickname.
+    default: op
+  chorus.players.realname:
+    description: Allows /realname.
+    default: true
+  chorus.players.seen.address:
+    description: Adds the address and shared accounts to /seen.
+    default: op
+  chorus.world.go:
+    description: Allows /world.
+    default: op
+  chorus.world.time:
+    description: Allows /time.
+    default: op
+  chorus.world.weather:
+    description: Allows /weather.
+    default: op
+  chorus.world.spawnmob:
+    description: Allows /spawnmob.
+    default: op
+  chorus.world.spawnmob.others:
+    description: Allows spawning mobs on another player.
+    default: op
+  chorus.world.sweep:
+    description: Allows /sweep.
+    default: op
+  chorus.shops.use:
+    description: Allows using a [Buy] or [Sell] sign.
+    default: true
+  chorus.shops.create:
+    description: Allows making a [Buy] or [Sell] sign.
+    default: op
+  chorus.shops.sell:
+    description: Allows /sell.
+    default: true
+  chorus.shops.worth:
+    description: Allows /worth.
+    default: true
+  chorus.shops.admin:
+    description: Allows /setworth.
     default: op

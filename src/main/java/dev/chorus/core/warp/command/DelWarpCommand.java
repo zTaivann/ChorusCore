@@ -2,6 +2,7 @@ package dev.chorus.core.warp.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Confirmations;
 import dev.chorus.core.location.NamedLocation;
 import dev.chorus.core.location.Names;
 import dev.chorus.core.warp.WarpDetailsService;
@@ -18,13 +19,15 @@ public final class DelWarpCommand extends ChorusCommand {
 
     private final WarpService warps;
     private final WarpDetailsService details;
+    private final Confirmations confirmations;
     private final Logger logger;
 
     public DelWarpCommand(CommandSupport support, WarpService warps, WarpDetailsService details,
-                          Logger logger) {
+                          Confirmations confirmations, Logger logger) {
         super(support, "delwarp", "chorus.warp.delete");
         this.warps = warps;
         this.details = details;
+        this.confirmations = confirmations;
         this.logger = logger;
     }
 
@@ -42,6 +45,10 @@ public final class DelWarpCommand extends ChorusCommand {
         String key = Names.normalise(args[0]);
         if (warps.find(key).isEmpty()) {
             messages.send(sender, "warp.unknown", "warp", key);
+            return;
+        }
+        if (!confirmations.confirmed(sender, "delwarp:" + key, "warp.delete-confirm",
+                "warp", key)) {
             return;
         }
         if (!ready(sender)) {

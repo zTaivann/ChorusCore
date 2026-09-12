@@ -1,6 +1,7 @@
 package dev.chorus.core.items;
 
 import dev.chorus.core.ChorusModule;
+import dev.chorus.core.backup.BackupMenu;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
@@ -9,14 +10,20 @@ import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.items.command.ClearInventoryCommand;
 import dev.chorus.core.items.command.CondenseCommand;
 import dev.chorus.core.items.command.EnchantCommand;
+import dev.chorus.core.items.command.ExperienceCommand;
+import dev.chorus.core.items.command.GiveCommand;
 import dev.chorus.core.items.command.GlowCommand;
 import dev.chorus.core.items.command.HatCommand;
 import dev.chorus.core.items.command.ItemNameCommand;
 import dev.chorus.core.items.command.LoreCommand;
 import dev.chorus.core.items.command.MoreCommand;
+import dev.chorus.core.items.command.RestoreCommand;
+import dev.chorus.core.menu.MenuSettings;
 import dev.chorus.core.items.command.SkullCommand;
 import dev.chorus.core.items.command.StackCommand;
 import dev.chorus.core.items.command.UnbreakableCommand;
+
+import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,17 +57,19 @@ public final class ItemsModule implements ChorusModule {
     @Override
     public List<String> commandNames() {
         return List.of("hat", "condense", "clearinventory", "itemname", "lore", "more", "skull",
-                "unbreakable", "glow", "enchant", "stack");
+                "unbreakable", "glow", "enchant", "stack", "restore", "give", "exp");
     }
 
     @Override
     public void enable() {
         config = plugin.configs().get(CONFIG);
         items = new ItemService(readSettings());
+        plugin.backups().apply(config.section("backups"));
 
         commands.add(plugin.register(new HatCommand(support)));
         commands.add(plugin.register(new CondenseCommand(support, items)));
-        commands.add(plugin.register(new ClearInventoryCommand(support)));
+        commands.add(plugin.register(
+                new ClearInventoryCommand(support, plugin.backups(), plugin.confirmations())));
         commands.add(plugin.register(new ItemNameCommand(support, items)));
         commands.add(plugin.register(new LoreCommand(support, items)));
         commands.add(plugin.register(new MoreCommand(support)));
@@ -69,6 +78,12 @@ public final class ItemsModule implements ChorusModule {
         commands.add(plugin.register(new GlowCommand(support)));
         commands.add(plugin.register(new EnchantCommand(support)));
         commands.add(plugin.register(new StackCommand(support)));
+        commands.add(plugin.register(new GiveCommand(support)));
+        commands.add(plugin.register(new ExperienceCommand(support)));
+        commands.add(plugin.register(new RestoreCommand(support, plugin.backups(),
+                new BackupMenu(plugin.messages(), plugin.backups(),
+                        MenuSettings.read(config.section("backups.menu"), Material.PAPER, this::warn)),
+                plugin.profiles())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 
@@ -81,13 +96,17 @@ public final class ItemsModule implements ChorusModule {
         if (items == null) {
             return;
         }
+        plugin.backups().apply(config.section("backups"));
         items.apply(readSettings());
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 
+    private void warn(String name) {
+        plugin.getLogger().warning(
+                "This server has no material called '" + name + "', configured in " + CONFIG);
+    }
+
     private ItemSettings readSettings() {
-        return ItemSettings.read(config.section("items"),
-                name -> plugin.getLogger().warning(
-                        "This server has no material called '" + name + "', configured in " + CONFIG));
+        return ItemSettings.read(config.section("items"), this::warn);
     }
 }

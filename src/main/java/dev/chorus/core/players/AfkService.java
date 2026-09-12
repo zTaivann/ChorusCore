@@ -11,7 +11,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,15 +35,18 @@ public final class AfkService implements Listener {
 
     private final Plugin plugin;
     private final Messages messages;
+    private final Schedulers schedulers;
     private final Map<UUID, Long> lastActivity = new HashMap<>();
+    private final Map<UUID, String> reasons = new HashMap<>();
     private final Set<UUID> away = new HashSet<>();
 
     private volatile PlayerSettings settings;
-    private BukkitTask sweeper;
+    private ChorusTask sweeper;
 
-    AfkService(Plugin plugin, Messages messages, PlayerSettings settings) {
+    AfkService(Plugin plugin, Messages messages, Schedulers schedulers, PlayerSettings settings) {
         this.plugin = plugin;
         this.messages = messages;
+        this.schedulers = schedulers;
         this.settings = settings;
     }
 
@@ -61,6 +65,7 @@ public final class AfkService implements Listener {
             sweeper = null;
         }
         lastActivity.clear();
+        reasons.clear();
         away.clear();
     }
 
@@ -68,15 +73,30 @@ public final class AfkService implements Listener {
         return away.contains(playerId);
     }
 
+    /** What they said they were doing, or an empty string. */
+    public String reason(UUID playerId) {
+        return reasons.getOrDefault(playerId, "");
+    }
+
     /** @return the state the player is now in. */
-    public boolean toggle(Player player) {
-        lastActivity.put(player.getUniqueId(), System.currentTimeMillis());
-        if (away.remove(player.getUniqueId())) {
+    public boolean toggle(Player player, String reason) {
+        UUID id = player.getUniqueId();
+        lastActivity.put(id, System.currentTimeMillis());
+        if (away.remove(id)) {
+            reasons.remove(id);
             announce(player, "players.afk-back", "players.afk-back-broadcast");
             return false;
         }
-        away.add(player.getUniqueId());
-        announce(player, "players.afk-now", "players.afk-now-broadcast");
+
+        away.add(id);
+        if (reason.isEmpty()) {
+            reasons.remove(id);
+            announce(player, "players.afk-now", "players.afk-now-broadcast");
+        } else {
+            reasons.put(id, reason);
+            announce(player, "players.afk-now-reason", "players.afk-now-reason-broadcast",
+                    "reason", reason);
+        }
         return true;
     }
 
@@ -113,12 +133,14 @@ public final class AfkService implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         lastActivity.remove(event.getPlayer().getUniqueId());
+        reasons.remove(event.getPlayer().getUniqueId());
         away.remove(event.getPlayer().getUniqueId());
     }
 
     private void touch(Player player) {
         lastActivity.put(player.getUniqueId(), System.currentTimeMillis());
         if (away.remove(player.getUniqueId())) {
+            reasons.remove(player.getUniqueId());
             announce(player, "players.afk-back", "players.afk-back-broadcast");
         }
     }
@@ -129,8 +151,7 @@ public final class AfkService implements Listener {
             sweeper = null;
         }
         if (settings.autoAfk() || settings.kicks()) {
-            sweeper = plugin.getServer().getScheduler()
-                    .runTaskTimer(plugin, this::sweep, SWEEP_TICKS, SWEEP_TICKS);
+            sweeper = schedulers.globalTimer(this::sweep, SWEEP_TICKS, SWEEP_TICKS);
         }
     }
 
@@ -160,14 +181,20 @@ public final class AfkService implements Listener {
         }
     }
 
-    private void announce(Player player, String toPlayer, String toEveryone) {
-        messages.send(player, toPlayer);
+    private void announce(Player player, String toPlayer, String toEveryone,
+                          String... extra) {
+        messages.send(player, toPlayer, extra);
         if (!settings.broadcast()) {
             return;
         }
+
+        String[] placeholders = new String[extra.length + 2];
+        placeholders[0] = "player";
+        placeholders[1] = player.getName();
+        System.arraycopy(extra, 0, placeholders, 2, extra.length);
         for (Player other : plugin.getServer().getOnlinePlayers()) {
             if (!other.equals(player)) {
-                messages.send(other, toEveryone, "player", player.getName());
+                messages.send(other, toEveryone, placeholders);
             }
         }
     }

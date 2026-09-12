@@ -9,7 +9,16 @@ package dev.chorus.core.flags;
 public enum PlayerFlag {
 
     /** Turns down every incoming teleport request without the sender having to be told twice. */
-    TELEPORTS_BLOCKED("teleports-blocked");
+    TELEPORTS_BLOCKED("teleports-blocked"),
+
+    /** Turns down every private message, from anybody. */
+    MESSAGES_BLOCKED("messages-blocked"),
+
+    /** Turns down every payment, so nobody can push money onto them. */
+    PAYMENTS_BLOCKED("payments-blocked"),
+
+    /** Accepts every teleport request without being asked. */
+    TELEPORTS_AUTOMATIC("teleports-automatic");
 
     private final String stored;
 

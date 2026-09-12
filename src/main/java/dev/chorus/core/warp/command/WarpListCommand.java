@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class WarpListCommand extends ChorusCommand {
 
@@ -32,11 +33,14 @@ public final class WarpListCommand extends ChorusCommand {
 
     private final WarpService warps;
     private final WarpDetailsService details;
+    private final Supplier<String> order;
 
-    public WarpListCommand(CommandSupport support, WarpService warps, WarpDetailsService details) {
+    public WarpListCommand(CommandSupport support, WarpService warps, WarpDetailsService details,
+                           Supplier<String> order) {
         super(support, "warps", "chorus.warp.list");
         this.warps = warps;
         this.details = details;
+        this.order = order;
     }
 
     @Override
@@ -53,13 +57,53 @@ public final class WarpListCommand extends ChorusCommand {
 
         visible.sort(Comparator
                 .comparing((NamedLocation warp) -> section(warp), Comparator.nullsLast(String::compareTo))
-                .thenComparing(BY_NAME));
+                .thenComparing(within()));
+
+        if (args.length > 0) {
+            openSection(sender, visible, args[0]);
+            return;
+        }
 
         // The console has no screen to open, so it always gets the written list.
         if (warps.settings().menu().enabled() && sender instanceof Player player) {
             openMenu(player, visible);
         } else {
             sendList(sender, visible);
+        }
+    }
+
+    /** Whichever order the config asks for inside a section. */
+    private Comparator<NamedLocation> within() {
+        return switch (order.get().toLowerCase(Locale.ROOT)) {
+            case "uses", "popular" -> {
+                Comparator<NamedLocation> byUses = Comparator.comparingLong(
+                        (NamedLocation warp) -> details.of(warp.name()).uses());
+                yield byUses.reversed().thenComparing(BY_NAME);
+            }
+            // The order they came out of the database, which is the order they were made.
+            case "none", "created" -> (left, right) -> 0;
+            default -> BY_NAME;
+        };
+    }
+
+    /** Straight into one section, for a server whose warps are sorted into many. */
+    private void openSection(CommandSender sender, List<NamedLocation> visible, String wanted) {
+        List<NamedLocation> inside = new ArrayList<>();
+        for (NamedLocation warp : visible) {
+            String section = section(warp);
+            if (section != null && section.equalsIgnoreCase(wanted)) {
+                inside.add(warp);
+            }
+        }
+        if (inside.isEmpty()) {
+            messages.send(sender, "warp.section-unknown", "section", wanted);
+            return;
+        }
+        if (warps.settings().menu().enabled() && sender instanceof Player player) {
+            openGrid(player, inside, "menu.warps.section-title", null,
+                    "section", section(inside.get(0)));
+        } else {
+            sendList(sender, inside);
         }
     }
 

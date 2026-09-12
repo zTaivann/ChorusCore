@@ -35,7 +35,7 @@ class MessagesTest {
 
     /** The top-level sections of both files, which every key begins with. */
     private static final String ROOTS = "error|core|cooldown|economy|chat|home|warp|spawn"
-            + "|request|back|teleport|utility|staff|players|items|menu|kits";
+            + "|request|back|teleport|utility|staff|players|items|menu|kits|world|shops";
 
     /**
      * Any literal shaped like a dotted key whose first segment is one of our roots.

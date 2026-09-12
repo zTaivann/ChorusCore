@@ -81,6 +81,44 @@ items:
     SLIME_BALL: SLIME_BLOCK
     BONE_MEAL: BONE_BLOCK
 
+# ── Inventory backups ────────────────────────────────────────────────────
+#
+# A copy of everything a player was carrying, taken before they lose it: the
+# inventory, the ender chest, the experience, the health, the food and where
+# they were. For a death, what killed them and who.
+#
+# /restore [player] opens a screen of them. Clicking one shows what was in it
+# before anything is put back.
+#
+# Restoring takes a copy of what it replaces, so a wrong one can be undone.
+backups:
+  enabled: true
+
+  # 0 for no age limit.
+  keep-days: 14
+
+  # How many to keep per player. 0 for no limit.
+  keep-per-player: 20
+
+  # When a copy is taken. death is the one that matters.
+  on:
+    death: true
+    join: true
+    quit: true
+    world: true
+    clear: true
+    kit: true
+    manual: true
+
+  # The screen /restore opens. Rows counts the navigation strip at the bottom.
+  menu:
+    rows: 6
+    filler: ''
+    navigation-filler: GRAY_STAINED_GLASS_PANE
+    previous-page: ARROW
+    next-page: ARROW
+    close: BARRIER
+
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 
@@ -174,3 +212,24 @@ commands:
       key: entity.item.pickup
       volume: 0.5
       pitch: 1.0
+
+  restore:
+    enabled: true
+    sound:
+      key: entity.player.levelup
+      volume: 0.5
+      pitch: 1.4
+
+  give:
+    enabled: true
+    sound:
+      key: entity.item.pickup
+      volume: 0.5
+      pitch: 1.2
+
+  exp:
+    enabled: true
+    sound:
+      key: entity.experience_orb.pickup
+      volume: 0.6
+      pitch: 1.2

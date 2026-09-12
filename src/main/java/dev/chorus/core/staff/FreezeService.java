@@ -9,7 +9,8 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 
 import java.util.HashSet;
 import java.util.Locale;
@@ -32,17 +33,19 @@ public final class FreezeService implements Listener {
 
     private final Plugin plugin;
     private final Messages messages;
+    private final Schedulers schedulers;
     private final Set<UUID> frozen = new HashSet<>();
 
-    private BukkitTask reminder;
+    private ChorusTask reminder;
 
-    FreezeService(Plugin plugin, Messages messages) {
+    FreezeService(Plugin plugin, Messages messages, Schedulers schedulers) {
         this.plugin = plugin;
         this.messages = messages;
+        this.schedulers = schedulers;
     }
 
     void start() {
-        reminder = plugin.getServer().getScheduler().runTaskTimer(plugin, this::remind,
+        reminder = schedulers.globalTimer(this::remind,
                 REMINDER_TICKS, REMINDER_TICKS);
     }
 

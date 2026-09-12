@@ -77,6 +77,11 @@ teleport:
   safe-landing: true
   safe-landing-radius: 5
 
+  # Seconds of not being hittable after arriving anywhere, so a warp into a PvP
+  # world is not a coin toss. Attacking somebody gives it up at once.
+  # 0 turns it off. Maximum 30.
+  invulnerable-seconds: 3
+
 # ── Requests ──────────────────────────────────────────────────────────────
 requests:
   # How long a /tpa or /tpahere request stays open. Minimum 5.
@@ -162,3 +167,19 @@ commands:
       key: block.lever.click
       volume: 0.5
       pitch: 1.2
+
+  # The choice is remembered between sessions.
+  tpauto:
+    enabled: true
+    sound:
+      key: block.lever.click
+      volume: 0.5
+      pitch: 1.5
+
+  tpoffline:
+    enabled: true
+    warmup-seconds: 0
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.6
+      pitch: 0.8

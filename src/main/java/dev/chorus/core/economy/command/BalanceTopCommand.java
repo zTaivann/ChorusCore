@@ -2,32 +2,37 @@ package dev.chorus.core.economy.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.economy.Balances;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.economy.EconomyService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 /**
- * The richest players who are online.
+ * The richest players on the server.
  *
- * <p>Deliberately not the whole server: balances belong to whichever economy plugin is
- * installed, and the only way to rank everyone who ever played would be to ask it about each
- * of them in turn, on the server thread. Plenty of servers have found out the hard way what
- * that does to a Sunday afternoon.
+ * <p>Every account the built-in ledger holds, ranked and paged, since it is all in memory
+ * already. On a server whose money belongs to another plugin there is no such list to read:
+ * the only way to rank everyone who ever played would be to ask that plugin about each of
+ * them in turn, on the server thread, so the ranking falls back to whoever is online.
  */
 public final class BalanceTopCommand extends ChorusCommand {
 
     private final Economy economy;
     private final EconomyService service;
+    private final @Nullable Balances ledger;
 
-    public BalanceTopCommand(CommandSupport support, Economy economy, EconomyService service) {
+    public BalanceTopCommand(CommandSupport support, Economy economy, EconomyService service,
+                             @Nullable Balances ledger) {
         super(support, "baltop", "chorus.economy.baltop");
         this.economy = economy;
         this.service = service;
+        this.ledger = ledger;
     }
 
     @Override
@@ -40,14 +45,17 @@ public final class BalanceTopCommand extends ChorusCommand {
             return;
         }
 
-        List<Entry> entries = new ArrayList<>();
-        for (Player online : sender.getServer().getOnlinePlayers()) {
-            if (sender instanceof Player viewer && !viewer.canSee(online)) {
-                continue;
-            }
-            entries.add(new Entry(online.getName(), economy.balance(online)));
+        int size = service.settings().topSize();
+        int page = Math.max(1, args.length > 0 ? number(args[0]) : 1);
+        int total = ledger == null ? onlineCount(sender) : ledger.size();
+        int pages = Math.max(1, (total + size - 1) / size);
+        if (page > pages) {
+            page = pages;
         }
-        entries.sort(Comparator.comparingDouble(Entry::balance).reversed());
+
+        List<Entry> entries = ledger == null
+                ? online(sender, size, (page - 1) * size)
+                : ranked(size, (page - 1) * size);
 
         settle(sender);
         if (entries.isEmpty()) {
@@ -55,14 +63,62 @@ public final class BalanceTopCommand extends ChorusCommand {
             return;
         }
 
-        int shown = Math.min(entries.size(), service.settings().topSize());
-        messages.send(sender, "economy.baltop-header", "count", String.valueOf(shown));
-        for (int place = 0; place < shown; place++) {
-            Entry entry = entries.get(place);
+        messages.send(sender, "economy.baltop-header",
+                "count", String.valueOf(total),
+                "page", String.valueOf(page),
+                "pages", String.valueOf(pages));
+        int place = (page - 1) * size;
+        for (Entry entry : entries) {
             messages.send(sender, "economy.baltop-entry",
-                    "place", String.valueOf(place + 1),
+                    "place", String.valueOf(++place),
                     "player", entry.name(),
                     "amount", economy.format(entry.balance()));
+        }
+        if (ledger != null) {
+            messages.send(sender, "economy.baltop-total", "amount", economy.format(ledger.total()));
+        }
+    }
+
+    private List<Entry> ranked(int size, int offset) {
+        List<Entry> entries = new ArrayList<>(size);
+        for (Balances.Ranked account : ledger.top(size, offset)) {
+            entries.add(new Entry(account.name(), account.balance()));
+        }
+        return entries;
+    }
+
+    private List<Entry> online(CommandSender sender, int size, int offset) {
+        List<Entry> entries = new ArrayList<>();
+        for (Player player : sender.getServer().getOnlinePlayers()) {
+            if (sender instanceof Player viewer && !viewer.canSee(player)) {
+                continue;
+            }
+            entries.add(new Entry(player.getName(), economy.balance(player)));
+        }
+        entries.sort(Comparator.comparingDouble(Entry::balance).reversed());
+
+        int from = Math.min(offset, entries.size());
+        return entries.subList(from, Math.min(from + size, entries.size()));
+    }
+
+    private static int onlineCount(CommandSender sender) {
+        if (!(sender instanceof Player viewer)) {
+            return sender.getServer().getOnlinePlayers().size();
+        }
+        int count = 0;
+        for (Player player : sender.getServer().getOnlinePlayers()) {
+            if (viewer.canSee(player)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static int number(String raw) {
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException notANumber) {
+            return 1;
         }
     }
 

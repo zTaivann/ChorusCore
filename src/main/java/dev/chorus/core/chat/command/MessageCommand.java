@@ -1,6 +1,8 @@
 package dev.chorus.core.chat.command;
 
+import dev.chorus.core.chat.IgnoreList;
 import dev.chorus.core.chat.PrivateMessages;
+import dev.chorus.core.flags.PlayerFlagService;
 import dev.chorus.core.command.CommandSupport;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,8 +13,9 @@ import java.util.List;
 
 public final class MessageCommand extends PrivateMessageCommand {
 
-    public MessageCommand(CommandSupport support, PrivateMessages chat) {
-        super(support, chat, "msg", "chorus.chat.msg");
+    public MessageCommand(CommandSupport support, PrivateMessages chat,
+                          PlayerFlagService flags, IgnoreList ignores) {
+        super(support, chat, flags, ignores, "msg", "chorus.chat.msg");
     }
 
     @Override
@@ -29,6 +32,9 @@ public final class MessageCommand extends PrivateMessageCommand {
         }
         if (target.equals(player)) {
             messages.send(player, "chat.msg-self");
+            return;
+        }
+        if (refuses(player, target)) {
             return;
         }
 

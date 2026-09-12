@@ -36,6 +36,7 @@ menu:
     entry: '<gradient:#6b3fb5:#9b6fd4>%home%'
     lore-world: '<dark_gray>▪ <gray>World <dark_gray>» <white>%world%'
     lore-position: '<dark_gray>▪ <gray>Position <dark_gray>» <white>%x%<dark_gray>, <white>%y%<dark_gray>, <white>%z%'
+    lore-created: '<dark_gray>▪ <gray>Made <dark_gray>» <white>%date%'
     lore-divider: '<dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪'
     lore-action: '<color:#3f9e4d>➜ <gray>Click to teleport'
 
@@ -64,6 +65,40 @@ menu:
     lore-action: '<color:#3f9e4d>➜ <gray>Click to take'
     lore-cooldown: '<color:#b03a3a>✖ <gray>Ready in <white>%time%'
     lore-taken: '<color:#b03a3a>✖ <gray>Already taken'
+    lore-locked: '<color:#b03a3a>✖ <gray>You do not meet what it asks for'
+
+  # ── /restore ────────────────────────────────────────────────────────────
+  #
+  # The saved inventories, one of them laid out, and its ender chest.
+  backups:
+    title: '<color:#1a1a1a>» <gradient:#8f4fd6:#b47ceb>BACKUPS</gradient> <color:#1a1a1a>« <color:#333333>%player% <color:#1a1a1a>▪ <color:#333333>%page%<color:#1a1a1a>/<color:#333333>%pages%'
+    entry: '<gradient:#8f4fd6:#b47ceb>%reason%</gradient> <dark_gray>▪ <gray>%ago% ago'
+    entry-lore: '<dark_gray>▪ <gray>By <dark_gray>» <white>%actor%<newline><dark_gray>▪ <gray>At <dark_gray>» <white>%world% %x% %y% %z%<newline><dark_gray>▪ <gray>Level <white>%level%</white> <dark_gray>▪ <gray>Health <white>%health%</white> <dark_gray>▪ <gray>Food <white>%food%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to look inside'
+    entry-death-lore: '<dark_gray>▪ <color:#b03a3a>Cause <dark_gray>» <white>%cause%<newline><dark_gray>▪ <gray>At <dark_gray>» <white>%world% %x% %y% %z%<newline><dark_gray>▪ <gray>Level <white>%level%</white> <dark_gray>▪ <gray>Health <white>%health%</white> <dark_gray>▪ <gray>Food <white>%food%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to look inside'
+    entry-killed-lore: '<dark_gray>▪ <color:#b03a3a>Killed by <dark_gray>» <white>%killer%<newline><dark_gray>▪ <gray>At <dark_gray>» <white>%world% %x% %y% %z%<newline><dark_gray>▪ <gray>Level <white>%level%</white> <dark_gray>▪ <gray>Health <white>%health%</white> <dark_gray>▪ <gray>Food <white>%food%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to look inside'
+    reason-death: 'Death'
+    reason-join: 'Joined'
+    reason-quit: 'Left'
+    reason-world: 'Left world'
+    reason-clear: 'Cleared'
+    reason-kit: 'Kit'
+    reason-restore: 'Restored'
+    reason-manual: 'Saved by hand'
+    view-title: '<color:#1a1a1a>» <gradient:#8f4fd6:#b47ceb>BACKUP</gradient> <color:#1a1a1a>« <color:#333333>%player% <color:#1a1a1a>▪ <color:#333333>%ago% ago'
+    ender-title: '<color:#1a1a1a>» <gradient:#6b3fb5:#9b6fd4>ENDER CHEST</gradient> <color:#1a1a1a>« <color:#333333>%player% <color:#1a1a1a>▪ <color:#333333>%ago% ago'
+    ender: '<color:#c9a227>◆ Ender chest'
+    ender-lore: '<dark_gray>▪ <gray>What was in it at the time<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to look'
+    restore: '<color:#3f9e4d>✚ Restore inventory'
+    restore-lore: '<dark_gray>▪ <gray>Puts these items back<newline><dark_gray>▪ <gray>What they carry now is saved first<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to restore'
+    restore-all: '<color:#3f9e4d>✦ Restore everything'
+    restore-all-lore: '<dark_gray>▪ <gray>Inventory, ender chest, XP, health and food<newline><dark_gray>▪ <gray>What they have now is saved first<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to restore'
+    hand-over: '<color:#c9a227>✋ Hand the items over'
+    hand-over-lore: '<dark_gray>▪ <gray>Gives these items back without<newline><dark_gray>▪ <gray>taking away what they carry now<newline><dark_gray>▪ <gray>Anything that does not fit drops at their feet<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to hand over'
+    filter: '<color:#c9a227>◆ Showing <white>%filter%'
+    filter-all: 'everything'
+    filter-lore: '<dark_gray>▪ <gray>Next <dark_gray>» <white>%next%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to change'
+    restore-ender: '<color:#3f9e4d>✚ Restore ender chest'
+    restore-ender-lore: '<dark_gray>▪ <gray>Puts only these items back<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to restore'
 
   # ── Screens that show an inventory ──────────────────────────────────────
   titles:

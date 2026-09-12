@@ -1,6 +1,7 @@
 package dev.chorus.core.home.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Confirmations;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.home.Home;
 import dev.chorus.core.home.HomeService;
@@ -18,11 +19,14 @@ import java.util.logging.Logger;
 public final class DelHomeCommand extends PlayerCommand {
 
     private final HomeService homes;
+    private final Confirmations confirmations;
     private final Logger logger;
 
-    public DelHomeCommand(CommandSupport support, HomeService homes, Logger logger) {
+    public DelHomeCommand(CommandSupport support, HomeService homes, Confirmations confirmations,
+                          Logger logger) {
         super(support, "delhome", "chorus.home.delete");
         this.homes = homes;
+        this.confirmations = confirmations;
         this.logger = logger;
     }
 
@@ -46,6 +50,10 @@ public final class DelHomeCommand extends PlayerCommand {
         String key = Names.normalise(args[0]);
         if (homes.find(playerId, key).isEmpty()) {
             messages.send(player, "home.unknown", "home", key);
+            return;
+        }
+        if (!confirmations.confirmed(player, "delhome:" + key, "home.delete-confirm",
+                "home", key)) {
             return;
         }
         if (!ready(player)) {

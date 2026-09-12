@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    alias(libs.plugins.shadow)
 }
 
 repositories {
@@ -11,6 +12,9 @@ repositories {
 
 dependencies {
     compileOnly(libs.paper.api)
+
+    // Shaded in below: bStats refuses to run from its own package name.
+    implementation(libs.bstats)
     compileOnly(libs.hikaricp)
     compileOnly(libs.sqlite.jdbc)
     compileOnly(libs.mariadb.client)
@@ -60,6 +64,25 @@ tasks.test {
 }
 
 /**
+ * bStats is the one thing that travels inside the jar. It is moved into this plugin's own
+ * package on the way in, which is what keeps two plugins carrying different versions of it
+ * from fighting over the same classes.
+ */
+tasks.shadowJar {
+    archiveClassifier = ""
+    relocate("org.bstats", "dev.chorus.core.libs.bstats")
+    minimize()
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}
+
+tasks.jar {
+    archiveClassifier = "plain"
+}
+
+/**
  * The jar is built against 1.18.2 so that it runs on everything from there upwards, which
  * also means the compiler never sees what became of an API since. `apicheck` compiles the
  * same sources against the newest Paper release: a method that has been removed or renamed
@@ -73,6 +96,7 @@ dependencies {
     // 1.18.2 handed these down with the API; newer Paper does not. They are compile-time
     // only either way, so nothing about the jar changes.
     modernApi(libs.annotations)
+    modernApi(libs.bstats)
     modernApi(libs.hikaricp)
     modernApi(libs.sqlite.jdbc)
     modernApi(libs.mariadb.client)

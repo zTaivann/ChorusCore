@@ -55,11 +55,53 @@ storage:
       characterEncoding: utf8
 
 # ── Economy ──────────────────────────────────────────────────────────────
+#
+# ChorusCore keeps its own balances, so /pay and /balance work on a server with
+# nothing else installed. Vault is only a bridge: with it there, the same money
+# is offered to every other plugin, and another economy plugin can take over.
 economy:
-  # Prices are charged through Vault. With no Vault, or no economy plugin behind it,
-  # every price is simply ignored and nothing else changes.
-  # Set this to false to switch prices off even when Vault is installed.
+  # false switches prices off entirely and leaves /pay and /balance saying so.
   enabled: true
+
+  # Where the money lives.
+  #   auto   the built-in ledger, unless another economy plugin has registered
+  #          with Vault, in which case that one wins and everybody agrees.
+  #   self   the built-in ledger, whatever else is installed.
+  #   vault  another plugin only. With no Vault every price is ignored.
+  #   off    the same as enabled: false.
+  provider: auto
+
+  # What a brand new player starts with.
+  starting-balance: 0.0
+
+  # A balance is never taken below or above these.
+  minimum-balance: 0.0
+  maximum-balance: 1000000000000.0
+
+  # How money is written. Only used by the built-in ledger; another economy
+  # plugin formats its own.
+  currency:
+    symbol: "$"
+    # true writes 100$ instead of $100.
+    suffix: false
+    # Decimal places, 0 to 4.
+    decimals: 2
+    # The words that go with an amount, for the lines that read "5 coins".
+    singular: coin
+    plural: coins
+
+# ── Confirmations ────────────────────────────────────────────────────────
+confirmations:
+  # Seconds to run a command again to confirm it, for the ones that cannot be
+  # taken back: /clearinventory, /delhome, /delwarp, /sweep of a whole world
+  # and a payment over the threshold in modules/economy.yml.
+  # 0 asks for no confirmation at all. chorus.bypass.confirm skips them.
+  seconds: 15
+
+# ── Metrics ──────────────────────────────────────────────────────────────
+# Sends the server version, the storage type and how many modules are on to
+# bStats, which is how anybody knows the plugin is being used. No player data.
+metrics: true
 
 # ── Staff log ────────────────────────────────────────────────────────────
 staff-log:

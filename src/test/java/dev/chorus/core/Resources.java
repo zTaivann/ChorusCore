@@ -17,7 +17,8 @@ public final class Resources {
     public static final List<String> MODULES = List.of(
             "modules/homes.yml", "modules/warps.yml", "modules/spawn.yml", "modules/teleport.yml",
             "modules/utility.yml", "modules/economy.yml", "modules/chat.yml", "modules/staff.yml",
-            "modules/players.yml", "modules/items.yml", "modules/kits.yml");
+            "modules/players.yml", "modules/items.yml", "modules/kits.yml",
+            "modules/world.yml", "modules/shops.yml");
 
     private Resources() {
     }

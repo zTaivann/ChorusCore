@@ -1,13 +1,13 @@
 package dev.chorus.core.staff;
 
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,13 +25,13 @@ public final class TempFlyService implements Listener {
     private static final long TICKS_PER_SECOND = 20L;
     private static final long WARNING_SECONDS = 10;
 
-    private final Plugin plugin;
+    private final Schedulers schedulers;
     private final Messages messages;
     private final Map<UUID, Grant> grants = new HashMap<>();
 
-    TempFlyService(Plugin plugin, Messages messages) {
-        this.plugin = plugin;
+    TempFlyService(Messages messages, Schedulers schedulers) {
         this.messages = messages;
+        this.schedulers = schedulers;
     }
 
     /** Replaces any grant already running, so a second call extends rather than stacks. */
@@ -39,14 +39,14 @@ public final class TempFlyService implements Listener {
         cancel(player.getUniqueId());
         player.setAllowFlight(true);
 
-        BukkitTask warning = seconds > WARNING_SECONDS
-                ? plugin.getServer().getScheduler().runTaskLater(plugin,
+        ChorusTask warning = seconds > WARNING_SECONDS
+                ? schedulers.entityLater(player,
                 () -> messages.send(player, "staff.tempfly-ending",
                         "seconds", String.valueOf(WARNING_SECONDS)),
                 (seconds - WARNING_SECONDS) * TICKS_PER_SECOND)
                 : null;
 
-        BukkitTask expiry = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+        ChorusTask expiry = schedulers.entityLater(player, () -> {
             grants.remove(player.getUniqueId());
             revoke(player);
             messages.send(player, "staff.tempfly-expired");
@@ -97,7 +97,7 @@ public final class TempFlyService implements Listener {
         player.setFlying(false);
     }
 
-    private record Grant(BukkitTask expiry, BukkitTask warning) {
+    private record Grant(ChorusTask expiry, ChorusTask warning) {
 
         void cancelAll() {
             expiry.cancel();

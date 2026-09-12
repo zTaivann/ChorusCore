@@ -2,11 +2,14 @@ package dev.chorus.core.economy.command;
 
 import dev.chorus.core.api.event.ChorusPaymentEvent;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Confirmations;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.economy.EconomyService;
 import dev.chorus.core.economy.EconomySettings;
 import dev.chorus.core.economy.PaymentLog;
+import dev.chorus.core.flags.PlayerFlag;
+import dev.chorus.core.flags.PlayerFlagService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,14 +23,19 @@ public final class PayCommand extends PlayerCommand {
     private final Economy economy;
     private final EconomyService service;
     private final PaymentLog log;
+    private final PlayerFlagService flags;
+    private final Confirmations confirmations;
     private final Logger logger;
 
     public PayCommand(CommandSupport support, Economy economy, EconomyService service,
-                      PaymentLog log, Logger logger) {
+                      PaymentLog log, PlayerFlagService flags, Confirmations confirmations,
+                      Logger logger) {
         super(support, "pay", "chorus.economy.pay");
         this.economy = economy;
         this.service = service;
         this.log = log;
+        this.flags = flags;
+        this.confirmations = confirmations;
         this.logger = logger;
     }
 
@@ -49,6 +57,10 @@ public final class PayCommand extends PlayerCommand {
         }
         if (target.equals(player)) {
             messages.send(player, "economy.pay-self");
+            return;
+        }
+        if (flags.isSet(target.getUniqueId(), PlayerFlag.PAYMENTS_BLOCKED)) {
+            messages.send(player, "economy.pay-refused", "player", target.getName());
             return;
         }
 
@@ -73,6 +85,11 @@ public final class PayCommand extends PlayerCommand {
             messages.send(player, "economy.insufficient",
                     "price", economy.format(amount),
                     "balance", economy.format(economy.balance(player)));
+            return;
+        }
+        if (settings.needsConfirming(amount) && !confirmations.confirmed(player,
+                "pay:" + target.getName() + ':' + amount, "economy.pay-confirm",
+                "player", target.getName(), "amount", economy.format(amount))) {
             return;
         }
         if (!ready(player)) {

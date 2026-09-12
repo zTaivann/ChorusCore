@@ -74,6 +74,9 @@ public final class KitListCommand extends PlayerCommand {
         if (left > 0) {
             return messages.render("menu.kits.lore-cooldown", "time", Durations.format(left));
         }
+        if (kits.unmet(player, kit) != null) {
+            return messages.render("menu.kits.lore-locked");
+        }
         return messages.render("menu.kits.lore-action");
     }
 

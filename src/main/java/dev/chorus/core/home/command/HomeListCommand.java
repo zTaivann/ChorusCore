@@ -12,11 +12,17 @@ import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public final class HomeListCommand extends PlayerCommand {
+
+    private static final DateTimeFormatter DATE =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
 
     private static final String UNLIMITED = "∞";
 
@@ -61,6 +67,8 @@ public final class HomeListCommand extends PlayerCommand {
                             messages.render("menu.homes.lore-world", "world", home.worldName()),
                             messages.render("menu.homes.lore-position",
                                     "x", round(home.x()), "y", round(home.y()), "z", round(home.z())),
+                            messages.render("menu.homes.lore-created",
+                                    "date", DATE.format(Instant.ofEpochMilli(home.createdAt()))),
                             messages.render("menu.homes.lore-divider"),
                             messages.render("menu.homes.lore-action")),
                     clicker -> {

@@ -11,6 +11,7 @@ import dev.chorus.core.economy.command.BalanceTopCommand;
 import dev.chorus.core.economy.command.EcoCommand;
 import dev.chorus.core.economy.command.PayCommand;
 import dev.chorus.core.economy.command.PayLogCommand;
+import dev.chorus.core.economy.command.PayToggleCommand;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public final class EconomyModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("pay", "balance", "baltop", "eco", "paylog");
+        return List.of("pay", "paytoggle", "balance", "baltop", "eco", "paylog");
     }
 
     @Override
@@ -65,9 +66,11 @@ public final class EconomyModule implements ChorusModule {
         log.prune();
 
         Economy economy = plugin.economy();
-        commands.add(plugin.register(new PayCommand(support, economy, service, log, plugin.getLogger())));
+        commands.add(plugin.register(new PayCommand(support, economy, service, log, plugin.flags(),
+                plugin.confirmations(), plugin.getLogger())));
+        commands.add(plugin.register(new PayToggleCommand(support, plugin.flags())));
         commands.add(plugin.register(new BalanceCommand(support, economy)));
-        commands.add(plugin.register(new BalanceTopCommand(support, economy, service)));
+        commands.add(plugin.register(new BalanceTopCommand(support, economy, service, plugin.balances())));
         commands.add(plugin.register(new EcoCommand(support, economy, plugin.audit())));
         commands.add(plugin.register(new PayLogCommand(support, log, economy)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());

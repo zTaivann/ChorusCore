@@ -1,0 +1,127 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   S H O P S                                                            │
+# │   [Buy] and [Sell] signs  -  /sell  /worth  /setworth                  │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# The command block options are the same everywhere. modules/utility.yml lists
+# them in full.
+#
+# ── Signs ─────────────────────────────────────────────────────────────────
+#
+# Four lines. The first says which way the trade goes, the rest say what and
+# how much:
+#
+#   [Buy]        the server sells to the player
+#   64           how many change hands at once
+#   diamond      what they are
+#   250          the total price for that many
+#
+#   [Sell]       the server buys from the player
+#   32
+#   iron_ingot
+#   40           leave this line empty to use the worth list below
+#
+# Making one needs chorus.shops.create; using one needs chorus.shops.use.
+# These are the server's own shops, so nothing runs out of stock.
+
+# Switches off every command in this file at once.
+enabled: true
+
+# ── Settings ──────────────────────────────────────────────────────────────
+shops:
+  # false leaves [Buy] and [Sell] signs as ordinary signs.
+  signs: true
+
+  # Every price below is multiplied by this when something is sold. 0.8 pays
+  # eighty per cent, which is the usual way to keep money from piling up.
+  sell-multiplier: 1.0
+
+  # What the server pays for each item, for /sell and for a [Sell] sign with no
+  # price on it. An item that is not listed cannot be sold at all.
+  # Add your own with /setworth <item> <price>, which writes back to this file.
+  worth:
+    coal: 2.0
+    charcoal: 1.0
+    raw_iron: 4.0
+    iron_ingot: 6.0
+    raw_gold: 8.0
+    gold_ingot: 12.0
+    raw_copper: 2.0
+    copper_ingot: 3.0
+    redstone: 2.0
+    lapis_lazuli: 3.0
+    quartz: 4.0
+    diamond: 60.0
+    emerald: 40.0
+    netherite_scrap: 200.0
+    wheat: 1.0
+    carrot: 1.0
+    potato: 1.0
+    beetroot: 1.0
+    sugar_cane: 1.0
+    melon_slice: 0.5
+    pumpkin: 2.0
+    oak_log: 1.5
+    spruce_log: 1.5
+    birch_log: 1.5
+    jungle_log: 1.5
+    acacia_log: 1.5
+    dark_oak_log: 1.5
+    cobblestone: 0.2
+    stone: 0.4
+    sand: 0.3
+    gravel: 0.3
+    obsidian: 5.0
+    rotten_flesh: 0.5
+    bone: 1.0
+    string: 1.0
+    gunpowder: 3.0
+    ender_pearl: 10.0
+    blaze_rod: 12.0
+    leather: 2.0
+    beef: 2.0
+    porkchop: 2.0
+    chicken: 2.0
+
+# ── Commands ──────────────────────────────────────────────────────────────
+commands:
+
+  # Everything below inherits this and overrides only what it needs.
+  defaults:
+    enabled: true
+    warmup-seconds: 0
+    cooldown-seconds: 0
+    price: 0.0
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.2
+    particle:
+      name: ''
+      count: 0
+      spread: 0.4
+      height: 1.8
+      speed: 0.02
+
+  # The signs borrow this sound, since a sign is another way of running it.
+  sell:
+    enabled: true
+    sound:
+      key: entity.experience_orb.pickup
+      volume: 0.7
+      pitch: 1.2
+
+  worth:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.6
+
+  setworth:
+    enabled: true
+    sound:
+      key: block.note_block.pling
+      volume: 0.6
+      pitch: 1.8

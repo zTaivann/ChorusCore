@@ -1,8 +1,11 @@
 package dev.chorus.core.chat.command;
 
+import dev.chorus.core.chat.IgnoreList;
 import dev.chorus.core.chat.PrivateMessages;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
+import dev.chorus.core.flags.PlayerFlag;
+import dev.chorus.core.flags.PlayerFlagService;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -14,10 +17,34 @@ abstract class PrivateMessageCommand extends PlayerCommand {
 
     protected final PrivateMessages chat;
 
+    private final PlayerFlagService flags;
+    private final IgnoreList ignores;
+
     protected PrivateMessageCommand(CommandSupport support, PrivateMessages chat,
+                                    PlayerFlagService flags, IgnoreList ignores,
                                     String name, String permission) {
         super(support, name, permission);
         this.chat = chat;
+        this.flags = flags;
+        this.ignores = ignores;
+    }
+
+    /**
+     * Whether this message should not arrive, having told the sender so.
+     *
+     * <p>One line for both reasons. A player who has been ignored is told the same thing as
+     * one writing to somebody with messages off, which spares both of them the argument.
+     */
+    protected final boolean refuses(Player from, Player to) {
+        if (from.hasPermission(ignores.bypassPermission())) {
+            return false;
+        }
+        if (flags.isSet(to.getUniqueId(), PlayerFlag.MESSAGES_BLOCKED)
+                || ignores.ignores(to.getUniqueId(), from.getUniqueId())) {
+            messages.send(from, "chat.msg-refused", "player", to.getName());
+            return true;
+        }
+        return false;
     }
 
     protected final void deliver(Player from, Player to, String text) {

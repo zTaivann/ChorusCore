@@ -8,9 +8,11 @@ import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.players.command.AfkCommand;
 import dev.chorus.core.players.command.ListCommand;
+import dev.chorus.core.players.command.NickCommand;
 import dev.chorus.core.players.command.PlayerTimeCommand;
 import dev.chorus.core.players.command.PlayerWeatherCommand;
 import dev.chorus.core.players.command.PlaytimeCommand;
+import dev.chorus.core.players.command.RealNameCommand;
 import dev.chorus.core.players.command.SeenCommand;
 import dev.chorus.core.players.command.WhoisCommand;
 
@@ -45,7 +47,8 @@ public final class PlayersModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("afk", "seen", "playtime", "whois", "list", "ptime", "pweather");
+        return List.of("afk", "seen", "playtime", "whois", "list", "ptime", "pweather",
+                "nick", "realname");
     }
 
     public AfkService afk() {
@@ -55,17 +58,21 @@ public final class PlayersModule implements ChorusModule {
     @Override
     public void enable() {
         config = plugin.configs().get(CONFIG);
-        afk = new AfkService(plugin, plugin.messages(), PlayerSettings.read(config.section("players")));
+        afk = new AfkService(plugin, plugin.messages(), plugin.schedulers(),
+                PlayerSettings.read(config.section("players")));
         plugin.register(afk);
         afk.start();
 
         commands.add(plugin.register(new AfkCommand(support, afk)));
-        commands.add(plugin.register(new SeenCommand(support, afk)));
+        commands.add(plugin.register(new SeenCommand(support, afk, plugin.profiles())));
         commands.add(plugin.register(new PlaytimeCommand(support)));
         commands.add(plugin.register(new WhoisCommand(support, afk)));
         commands.add(plugin.register(new ListCommand(support, afk)));
         commands.add(plugin.register(new PlayerTimeCommand(support)));
         commands.add(plugin.register(new PlayerWeatherCommand(support)));
+        commands.add(plugin.register(new NickCommand(support, plugin.profiles(),
+                () -> config.section("players").getInt("max-nick-length", 16))));
+        commands.add(plugin.register(new RealNameCommand(support, plugin.profiles())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 

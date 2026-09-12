@@ -1,0 +1,86 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   W O R L D                                                            │
+# │   /world  /time  /weather  /spawnmob  /sweep                           │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# The command block options are the same everywhere. modules/utility.yml lists
+# them in full.
+
+# Switches off every command in this file at once.
+enabled: true
+
+# ── Settings ──────────────────────────────────────────────────────────────
+world:
+  # On, /world also needs chorus.world.go.<world name>, so a creative or event
+  # world can be closed without a second plugin. The name is lower case.
+  per-world-permission: false
+
+  # The most mobs one /spawnmob may place at once.
+  spawnmob-limit: 20
+
+# ── Commands ──────────────────────────────────────────────────────────────
+commands:
+
+  # Everything below inherits this and overrides only what it needs.
+  defaults:
+    enabled: true
+    warmup-seconds: 0
+    cooldown-seconds: 0
+    price: 0.0
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.2
+    particle:
+      name: ''
+      count: 0
+      spread: 0.4
+      height: 1.8
+      speed: 0.02
+
+  world:
+    enabled: true
+    warmup-seconds: 3
+    cooldown-seconds: 10
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.7
+      pitch: 1.0
+    particle:
+      name: PORTAL
+      count: 40
+      height: 2.0
+      speed: 0.05
+
+  time:
+    enabled: true
+    sound:
+      key: block.note_block.chime
+      volume: 0.6
+      pitch: 1.4
+
+  weather:
+    enabled: true
+    sound:
+      key: item.bucket.empty
+      volume: 0.6
+      pitch: 1.2
+
+  spawnmob:
+    enabled: true
+    sound:
+      key: entity.chicken.egg
+      volume: 0.6
+      pitch: 1.0
+
+  # Clearing a whole world at once asks for a second press first. The window is
+  # set in config.yml.
+  sweep:
+    enabled: true
+    cooldown-seconds: 5
+    sound:
+      key: entity.generic.explode
+      volume: 0.4
+      pitch: 1.6

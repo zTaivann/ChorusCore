@@ -1,5 +1,7 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.core.backup.BackupReason;
+import dev.chorus.core.backup.InventoryBackups;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.kits.rules.KitAction;
 import dev.chorus.core.kits.rules.Requirement;
@@ -33,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 public final class KitService {
 
     private final KitRepository repository;
+    private final InventoryBackups backups;
     private final Messages messages;
     private final Economy economy;
     private final Executor worker;
@@ -42,9 +45,10 @@ public final class KitService {
     private volatile Map<String, Kit> kits = Map.of();
     private volatile String firstJoinKit = "";
 
-    KitService(KitRepository repository, Messages messages, Economy economy,
-               Executor worker, Executor mainThread) {
+    KitService(KitRepository repository, InventoryBackups backups, Messages messages,
+               Economy economy, Executor worker, Executor mainThread) {
         this.repository = repository;
+        this.backups = backups;
         this.messages = messages;
         this.economy = economy;
         this.worker = worker;
@@ -219,6 +223,7 @@ public final class KitService {
     private void hand(Player player, Kit kit) {
         PlayerInventory inventory = player.getInventory();
         if (kit.clearInventory()) {
+            backups.take(player, BackupReason.KIT, kit.name(), player.getName());
             inventory.clear();
         }
 

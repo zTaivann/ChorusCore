@@ -12,11 +12,13 @@ import dev.chorus.core.request.command.BackCommand;
 import dev.chorus.core.request.command.TeleportRequestCommand;
 import dev.chorus.core.request.command.TeleportResponseCommand;
 import dev.chorus.core.request.command.TpCancelCommand;
+import dev.chorus.core.request.command.TpAutoCommand;
+import dev.chorus.core.request.command.TpOfflineCommand;
 import dev.chorus.core.request.command.TpToggleCommand;
 import dev.chorus.core.teleport.TeleportService;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
+import dev.chorus.core.platform.ChorusTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +35,7 @@ public final class TeleportRequestModule implements ChorusModule {
 
     private ConfigFile config;
     private TeleportRequestService requests;
-    private BukkitTask sweeper;
+    private ChorusTask sweeper;
 
     public TeleportRequestModule(ChorusPlugin plugin, CommandSupport support,
                                  TeleportService teleports, PlayerFlagService flags) {
@@ -55,7 +57,8 @@ public final class TeleportRequestModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("tpa", "tpahere", "tpaccept", "tpdeny", "tpcancel", "tptoggle", "back");
+        return List.of("tpa", "tpahere", "tpaccept", "tpdeny", "tpcancel", "tptoggle", "back",
+                "tpauto", "tpoffline");
     }
 
     @Override
@@ -65,9 +68,9 @@ public final class TeleportRequestModule implements ChorusModule {
 
         plugin.register(new RequestListener(requests));
         commands.add(plugin.register(new TeleportRequestCommand(support, requests,
-                TeleportRequest.Direction.TO_TARGET, "tpa", "chorus.tpa.use", flags)));
+                TeleportRequest.Direction.TO_TARGET, "tpa", "chorus.tpa.use", flags, teleports)));
         commands.add(plugin.register(new TeleportRequestCommand(support, requests,
-                TeleportRequest.Direction.TO_SENDER, "tpahere", "chorus.tpa.here", flags)));
+                TeleportRequest.Direction.TO_SENDER, "tpahere", "chorus.tpa.here", flags, teleports)));
         commands.add(plugin.register(new TeleportResponseCommand(support, requests, teleports,
                 true, "tpaccept", "chorus.tpa.accept")));
         commands.add(plugin.register(new TeleportResponseCommand(support, requests, teleports,
@@ -75,9 +78,11 @@ public final class TeleportRequestModule implements ChorusModule {
         commands.add(plugin.register(new TpCancelCommand(support, requests)));
         commands.add(plugin.register(new TpToggleCommand(support, flags)));
         commands.add(plugin.register(new BackCommand(support, teleports)));
+        commands.add(plugin.register(new TpAutoCommand(support, flags)));
+        commands.add(plugin.register(new TpOfflineCommand(support, plugin.profiles(), teleports)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 
-        sweeper = plugin.getServer().getScheduler().runTaskTimer(plugin, this::dropExpired,
+        sweeper = plugin.schedulers().globalTimer(this::dropExpired,
                 SWEEP_INTERVAL_TICKS, SWEEP_INTERVAL_TICKS);
     }
 

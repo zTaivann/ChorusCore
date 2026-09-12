@@ -13,6 +13,7 @@ import dev.chorus.core.utility.command.FeedCommand;
 import dev.chorus.core.utility.command.FlyCommand;
 import dev.chorus.core.utility.command.GodCommand;
 import dev.chorus.core.utility.command.HealCommand;
+import dev.chorus.core.utility.command.JumpCommand;
 import dev.chorus.core.utility.command.MenuCommand;
 import dev.chorus.core.utility.command.MirrorCommand;
 import dev.chorus.core.utility.command.NearCommand;
@@ -60,7 +61,7 @@ public final class UtilityModule implements ChorusModule {
     public List<String> commandNames() {
         List<String> names = new ArrayList<>(List.of("heal", "feed", "fly", "god", "ping", "fix",
                 "trash", "speed", "top", "near", "invsee", "ecsee", "tps", "getpos", "suicide",
-                "burn"));
+                "burn", "jump"));
         for (PortableMenu menu : PortableMenu.values()) {
             names.add(menu.command());
         }
@@ -71,7 +72,7 @@ public final class UtilityModule implements ChorusModule {
     public void enable() {
         config = plugin.configs().get(CONFIG);
         utility = new UtilityService(readSettings());
-        mirrors = new MirrorService(plugin, plugin.messages(), utility);
+        mirrors = new MirrorService(plugin, plugin.messages(), utility, plugin.schedulers());
         plugin.register(mirrors);
 
         commands.add(plugin.register(new HealCommand(support, utility)));
@@ -83,6 +84,7 @@ public final class UtilityModule implements ChorusModule {
         commands.add(plugin.register(new DisposalCommand(support, utility)));
         commands.add(plugin.register(new SpeedCommand(support, utility)));
         commands.add(plugin.register(new TopCommand(support, utility, teleports)));
+        commands.add(plugin.register(new JumpCommand(support, teleports)));
         commands.add(plugin.register(new NearCommand(support, utility)));
         commands.add(plugin.register(new TpsCommand(support)));
         commands.add(plugin.register(new PositionCommand(support)));

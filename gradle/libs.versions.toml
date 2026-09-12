@@ -8,6 +8,8 @@ vault = "1.7"
 placeholderapi = "2.11.6"
 junit = "5.11.4"
 annotations = "26.0.2"
+bstats = "3.1.0"
+shadow = "9.2.2"
 
 [libraries]
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
@@ -21,3 +23,7 @@ junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 annotations = { module = "org.jetbrains:annotations", version.ref = "annotations" }
+bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

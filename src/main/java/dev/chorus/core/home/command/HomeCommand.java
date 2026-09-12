@@ -16,7 +16,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * {@code /home [name]}, and {@code /home <player>:<name>} for staff.
+ *
+ * <p>The second form only reaches a player who is online: homes are held in memory for
+ * whoever is here and nowhere else while they are not.
+ */
 public final class HomeCommand extends PlayerCommand {
+
+    private static final String OTHERS = "chorus.home.others";
 
     private final HomeService homes;
     private final TeleportService teleports;
@@ -29,18 +37,35 @@ public final class HomeCommand extends PlayerCommand {
 
     @Override
     protected void execute(Player player, String[] args) {
-        UUID playerId = player.getUniqueId();
+        Player owner = player;
+        String[] rest = args;
+
+        int colon = args.length > 0 ? args[0].indexOf(':') : -1;
+        if (colon > 0) {
+            if (!player.hasPermission(OTHERS)) {
+                messages.send(player, "error.no-permission");
+                return;
+            }
+            owner = online(player, args[0].substring(0, colon));
+            if (owner == null) {
+                return;
+            }
+            rest = new String[] {args[0].substring(colon + 1)};
+        }
+
+        UUID playerId = owner.getUniqueId();
         if (!homes.isLoaded(playerId)) {
             messages.send(player, "error.loading");
             return;
         }
         // Telling someone with no homes at all that "home" does not exist reads like a bug.
         if (homes.count(playerId) == 0) {
-            messages.send(player, "home.none");
+            messages.send(player, owner.equals(player) ? "home.none" : "home.none-other",
+                    "player", owner.getName());
             return;
         }
 
-        String name = requested(player, args);
+        String name = requested(owner, rest);
         Optional<Home> found = homes.find(playerId, name);
         if (found.isEmpty()) {
             messages.send(player, "home.unknown", "home", Names.normalise(name));
@@ -57,9 +82,11 @@ public final class HomeCommand extends PlayerCommand {
         if (!ready(player)) {
             return;
         }
+        Player whose = owner;
         teleports.teleport(player, destination, rules(), name(), () -> {
             settle(player);
-            messages.send(player, "home.teleported", "home", home.name());
+            messages.send(player, whose.equals(player) ? "home.teleported" : "home.teleported-other",
+                    "home", home.name(), "player", whose.getName());
         });
     }
 

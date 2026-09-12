@@ -11,7 +11,8 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,16 +30,18 @@ import java.util.UUID;
 public final class MirrorService implements Listener {
 
     private final Plugin plugin;
+    private final Schedulers schedulers;
     private final Messages messages;
     private final UtilityService utility;
     private final Map<UUID, InventoryMirror> open = new HashMap<>();
 
-    private BukkitTask refresher;
+    private ChorusTask refresher;
 
-    MirrorService(Plugin plugin, Messages messages, UtilityService utility) {
+    MirrorService(Plugin plugin, Messages messages, UtilityService utility, Schedulers schedulers) {
         this.plugin = plugin;
         this.messages = messages;
         this.utility = utility;
+        this.schedulers = schedulers;
     }
 
     public void open(Player viewer, Player target, InventoryMirror.Kind kind, boolean editable) {
@@ -130,12 +133,11 @@ public final class MirrorService implements Listener {
 
     private void scheduleWriteBack(InventoryMirror mirror) {
         // The click has not been applied yet, so the copy has to wait a tick.
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            Player target = plugin.getServer().getPlayer(mirror.targetId());
-            if (target != null) {
-                mirror.writeBack(target);
-            }
-        });
+        Player target = plugin.getServer().getPlayer(mirror.targetId());
+        if (target == null) {
+            return;
+        }
+        schedulers.entity(target, () -> mirror.writeBack(target));
     }
 
     private void startRefreshing() {
@@ -143,8 +145,7 @@ public final class MirrorService implements Listener {
         if (refresher != null || period <= 0) {
             return;
         }
-        refresher = plugin.getServer().getScheduler()
-                .runTaskTimer(plugin, this::refreshAll, period, period);
+        refresher = schedulers.globalTimer(this::refreshAll, period, period);
     }
 
     private void stopRefreshingIfIdle() {

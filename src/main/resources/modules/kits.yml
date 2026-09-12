@@ -270,3 +270,10 @@ commands:
       key: block.note_block.pling
       volume: 0.5
       pitch: 1.2
+
+  kitreset:
+    enabled: true
+    sound:
+      key: block.note_block.pling
+      volume: 0.5
+      pitch: 1.8

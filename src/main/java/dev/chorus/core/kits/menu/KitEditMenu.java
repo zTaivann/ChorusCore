@@ -6,6 +6,7 @@ import dev.chorus.core.kits.Kit;
 import dev.chorus.core.kits.KitEditor;
 import dev.chorus.core.kits.KitService;
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.menu.ChatPrompts;
 import dev.chorus.core.menu.PaletteMenu;
 import dev.chorus.core.menu.Menu;
@@ -66,6 +67,7 @@ public final class KitEditMenu {
     private static final int COOLDOWN_LEAP = 86400;
 
     private final Plugin plugin;
+    private final Schedulers schedulers;
     private final KitService kits;
     private final KitEditor editor;
     private final Messages messages;
@@ -74,9 +76,11 @@ public final class KitEditMenu {
     private final KitMenuSettings settings;
     private final KitRulesMenu rules;
 
-    public KitEditMenu(Plugin plugin, KitService kits, KitEditor editor, Messages messages,
-                       Economy economy, ChatPrompts prompts, KitMenuSettings settings) {
+    public KitEditMenu(Plugin plugin, Schedulers schedulers, KitService kits, KitEditor editor,
+                       Messages messages, Economy economy, ChatPrompts prompts,
+                       KitMenuSettings settings) {
         this.plugin = plugin;
+        this.schedulers = schedulers;
         this.kits = kits;
         this.editor = editor;
         this.messages = messages;
@@ -438,7 +442,7 @@ public final class KitEditMenu {
             // to show it to, and asking a stopping server to schedule anything throws.
             return;
         }
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        schedulers.entity(player, () -> {
             if (player.isOnline()) {
                 open.run();
             }

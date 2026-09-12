@@ -6,25 +6,31 @@ import dev.chorus.core.api.SpawnApi;
 import dev.chorus.core.api.WarpApi;
 import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.audit.SqlAuditRepository;
+import dev.chorus.core.backup.BackupListener;
+import dev.chorus.core.backup.InventoryBackups;
+import dev.chorus.core.backup.SqlBackupRepository;
 import dev.chorus.core.chat.ChatModule;
 import dev.chorus.core.command.ActionGuard;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandAliases;
 import dev.chorus.core.command.CommandOverrides;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Confirmations;
 import dev.chorus.core.command.Cooldowns;
 import dev.chorus.core.command.DisabledCommand;
+import dev.chorus.core.command.HelpCommand;
 import dev.chorus.core.command.RootCommand;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.config.ConfigFiles;
 import dev.chorus.core.custom.CustomCommandsModule;
+import dev.chorus.core.economy.Balances;
 import dev.chorus.core.economy.Economy;
+import dev.chorus.core.economy.EconomyModule;
+import dev.chorus.core.economy.EconomySetup;
+import dev.chorus.core.economy.NoEconomy;
 import dev.chorus.core.flags.PlayerFlagListener;
 import dev.chorus.core.flags.PlayerFlagService;
 import dev.chorus.core.flags.SqlPlayerFlagRepository;
-import dev.chorus.core.economy.EconomyModule;
-import dev.chorus.core.economy.NoEconomy;
-import dev.chorus.core.economy.VaultEconomy;
 import dev.chorus.core.home.HomeModule;
 import dev.chorus.core.items.ItemsModule;
 import dev.chorus.core.kits.KitsModule;
@@ -32,8 +38,13 @@ import dev.chorus.core.locale.Messages;
 import dev.chorus.core.menu.ChatPrompts;
 import dev.chorus.core.menu.MenuListener;
 import dev.chorus.core.papi.ChorusExpansion;
+import dev.chorus.core.platform.Schedulers;
+import dev.chorus.core.players.PlayerProfileListener;
+import dev.chorus.core.players.PlayerProfiles;
 import dev.chorus.core.players.PlayersModule;
+import dev.chorus.core.players.SqlPlayerProfileRepository;
 import dev.chorus.core.request.TeleportRequestModule;
+import dev.chorus.core.shops.ShopsModule;
 import dev.chorus.core.spawn.SpawnModule;
 import dev.chorus.core.staff.StaffModule;
 import dev.chorus.core.storage.SqlStorage;
@@ -43,18 +54,25 @@ import dev.chorus.core.teleport.TeleportService;
 import dev.chorus.core.teleport.TeleportSettings;
 import dev.chorus.core.utility.UtilityModule;
 import dev.chorus.core.warp.WarpModule;
+import dev.chorus.core.world.WorldModule;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
+import org.bstats.charts.SingleLineChart;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -69,26 +87,35 @@ public final class ChorusPlugin extends JavaPlugin {
     public static final String TELEPORT_CONFIG = "modules/teleport.yml";
 
     private static final long COOLDOWN_SWEEP_TICKS = 20L * 60 * 5;
+    private static final int BSTATS_ID = 27418;
+    private static final String CORE = "core";
 
     private final Deque<ChorusModule> modules = new ArrayDeque<>();
-    private final List<String> registeredCommands = new ArrayList<>();
+    private final Map<String, ChorusModule> byName = new LinkedHashMap<>();
+    private final List<Registered> commands = new ArrayList<>();
+    private final List<String> modulesOff = new ArrayList<>();
     private final Set<String> switchedOff = new HashSet<>();
     private final Cooldowns cooldowns = new Cooldowns();
 
-    private int modulesOff;
+    private String installing = CORE;
 
     private ConfigFiles configs;
+    private Schedulers schedulers;
     private Executor mainThread;
     private ExecutorService worker;
     private Messages messages;
-    private Economy economy;
+    private EconomySetup economySetup;
     private Storage storage;
     private TeleportService teleports;
     private PlayerFlagService flags;
+    private PlayerProfiles profiles;
+    private Confirmations confirmations;
     private AuditLog audit;
+    private InventoryBackups backups;
     private ChatPrompts prompts;
     private CommandSupport support;
     private ChorusServices services;
+    private Metrics metrics;
 
     @Override
     public void onEnable() {
@@ -96,21 +123,14 @@ public final class ChorusPlugin extends JavaPlugin {
         configs = new ConfigFiles(this);
         ConfigFile core = configs.get("config.yml");
 
+        schedulers = new Schedulers(this);
         mainThread = task -> {
             if (isEnabled()) {
-                getServer().getScheduler().runTask(this, task);
+                schedulers.global(task);
             }
         };
         worker = Executors.newFixedThreadPool(2, storageThreadFactory());
         messages = Messages.load(this, configs.get("messages.yml"), configs.get("menus.yml"));
-
-        economy = core.section("economy").getBoolean("enabled", true)
-                ? new VaultEconomy(getServer(), getLogger())
-                : new NoEconomy();
-        if (economy instanceof Listener listener) {
-            register(listener);
-        }
-        support = new CommandSupport(messages, new ActionGuard(messages, cooldowns, economy));
 
         try {
             storage = SqlStorage.open(this, StorageOptions.read(core.data()));
@@ -120,39 +140,58 @@ public final class ChorusPlugin extends JavaPlugin {
             return;
         }
 
+        economySetup = new EconomySetup(this, storage, worker);
+        economySetup.start(core.section("economy"));
+        register(economySetup);
+        if (economySetup.economy() instanceof Listener listener) {
+            register(listener);
+        }
+
+        confirmations = new Confirmations(messages, core.section("confirmations").getInt("seconds", 15));
+        register(confirmations);
+        support = new CommandSupport(messages, new ActionGuard(messages, cooldowns, economy()));
+
         SqlPlayerFlagRepository flagStore = new SqlPlayerFlagRepository(storage);
-        try {
-            flagStore.createTables();
-        } catch (SQLException exception) {
-            getLogger().log(Level.SEVERE, "The player settings table could not be created", exception);
-            getServer().getPluginManager().disablePlugin(this);
+        if (!open(flagStore::createTables, "player settings")) {
             return;
         }
         flags = new PlayerFlagService(flagStore, worker, getLogger());
         register(new PlayerFlagListener(flags, messages, getLogger()));
 
+        SqlPlayerProfileRepository profileStore = new SqlPlayerProfileRepository(storage);
+        if (!open(profileStore::createTables, "player")) {
+            return;
+        }
+        profiles = new PlayerProfiles(profileStore, worker, mainThread, getLogger());
+        register(new PlayerProfileListener(profiles));
+
         SqlAuditRepository auditStore = new SqlAuditRepository(storage);
-        try {
-            auditStore.createTables();
-        } catch (SQLException exception) {
-            getLogger().log(Level.SEVERE, "The staff log table could not be created", exception);
-            getServer().getPluginManager().disablePlugin(this);
+        if (!open(auditStore::createTables, "staff log")) {
             return;
         }
         audit = new AuditLog(auditStore, worker, mainThread, getLogger());
         audit.apply(core.section("staff-log"));
         audit.prune();
 
-        teleports = new TeleportService(this, messages, mainThread,
+        SqlBackupRepository backupStore = new SqlBackupRepository(storage);
+        if (!open(backupStore::createTables, "inventory backup")) {
+            return;
+        }
+        backups = new InventoryBackups(backupStore, worker, mainThread, getLogger());
+        backups.prune();
+        register(new BackupListener(backups, messages));
+
+        teleports = new TeleportService(this, messages, mainThread, schedulers,
                 TeleportSettings.read(configs.get(TELEPORT_CONFIG).section("teleport")));
         register(teleports);
         register(new MenuListener());
-        prompts = new ChatPrompts(this, messages, mainThread);
+        prompts = new ChatPrompts(this, messages, mainThread, schedulers);
         register(prompts);
         prompts.start();
         register(new RootCommand(this, support));
+        register(new HelpCommand(this, support));
 
-        services = new ChorusServices(getDescription().getVersion(), economy, teleports, messages);
+        services = new ChorusServices(getDescription().getVersion(), economy(), teleports, messages);
 
         install(new HomeModule(this, support, teleports));
         install(new WarpModule(this, support, teleports));
@@ -160,8 +199,10 @@ public final class ChorusPlugin extends JavaPlugin {
         install(new TeleportRequestModule(this, support, teleports, flags));
         install(new UtilityModule(this, support, teleports));
         install(new EconomyModule(this, support));
+        install(new ShopsModule(this, support));
         install(new ChatModule(this, support));
         install(new ItemsModule(this, support));
+        install(new WorldModule(this, support, teleports));
 
         StaffModule staff = new StaffModule(this, support, teleports);
         PlayersModule players = new PlayersModule(this, support);
@@ -178,15 +219,14 @@ public final class ChorusPlugin extends JavaPlugin {
         hookPlaceholders(staff, players);
 
         CommandOverrides overrides = new CommandOverrides(
-                CommandAliases.apply(this, configs.get("aliases.yml"), registeredCommands,
-                        switchedOff));
+                CommandAliases.apply(this, configs.get("aliases.yml"), commandNames(), switchedOff));
         if (!overrides.isEmpty()) {
             register(overrides);
         }
-        getServer().getScheduler().runTaskTimer(this,
-                () -> cooldowns.sweep(System.currentTimeMillis()),
+        schedulers.globalTimer(() -> cooldowns.sweep(System.currentTimeMillis()),
                 COOLDOWN_SWEEP_TICKS, COOLDOWN_SWEEP_TICKS);
 
+        startMetrics(core);
         announce(core, System.currentTimeMillis() - started);
     }
 
@@ -202,18 +242,19 @@ public final class ChorusPlugin extends JavaPlugin {
         console.title(getDescription().getVersion(), serverVersion());
 
         console.connected("Storage", storage.dialect().name().toLowerCase(Locale.ROOT));
-        if (economy instanceof NoEconomy) {
-            console.absent("Economy", economy.status());
+        if (economy() instanceof NoEconomy) {
+            console.absent("Economy", economy().status());
         } else {
-            console.connected("Economy", economy.status());
+            console.connected("Economy", economy().status());
         }
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             console.connected("Placeholders", "PlaceholderAPI");
         } else {
             console.absent("Placeholders", "PlaceholderAPI not installed");
         }
-        console.connected("Modules", modules.size() + " of " + (modules.size() + modulesOff));
-        console.connected("Commands", registeredCommands.size() + " registered");
+        console.connected("Scheduling", schedulers.describe());
+        console.connected("Modules", modules.size() + " of " + (modules.size() + modulesOff.size()));
+        console.connected("Commands", commands.size() + " registered");
         console.ready(millis, String.join(", ", getDescription().getAuthors()));
     }
 
@@ -237,15 +278,27 @@ public final class ChorusPlugin extends JavaPlugin {
             }
         }
 
+        if (metrics != null) {
+            metrics.shutdown();
+        }
         cooldowns.clear();
+        if (confirmations != null) {
+            confirmations.clear();
+        }
         if (prompts != null) {
             prompts.shutdown();
         }
         if (flags != null) {
             flags.clearAll();
         }
+        if (profiles != null) {
+            profiles.clear();
+        }
         if (teleports != null) {
             teleports.shutdown();
+        }
+        if (schedulers != null) {
+            schedulers.shutdown();
         }
         if (worker != null) {
             drain(worker);
@@ -258,10 +311,24 @@ public final class ChorusPlugin extends JavaPlugin {
     public void reload() {
         configs.reloadAll();
         messages.reload();
-        economy.refresh();
-        audit.apply(configs.get("config.yml").section("staff-log"));
+        ConfigFile core = configs.get("config.yml");
+        economySetup.reload(core.section("economy"));
+        confirmations.apply(core.section("confirmations").getInt("seconds", 15));
+        audit.apply(core.section("staff-log"));
         teleports.apply(TeleportSettings.read(configs.get(TELEPORT_CONFIG).section("teleport")));
         modules.forEach(ChorusModule::reload);
+    }
+
+    /** One module, for a change that should not touch the rest of the server. */
+    public boolean reload(String module) {
+        ChorusModule found = byName.get(module.toLowerCase(Locale.ROOT));
+        if (found == null) {
+            return false;
+        }
+        configs.get(found.configPath()).reload();
+        messages.reload();
+        found.reload();
+        return true;
     }
 
     public Cooldowns cooldowns() {
@@ -280,8 +347,21 @@ public final class ChorusPlugin extends JavaPlugin {
         return support;
     }
 
+    public Schedulers schedulers() {
+        return schedulers;
+    }
+
+    public Confirmations confirmations() {
+        return confirmations;
+    }
+
     public Economy economy() {
-        return economy;
+        return economySetup == null ? new NoEconomy() : economySetup.economy();
+    }
+
+    /** The built-in ledger, or null on a server whose money belongs to another plugin. */
+    public @Nullable Balances balances() {
+        return economySetup == null ? null : economySetup.balances();
     }
 
     /** The modules that actually started, in the order they did, for /chorus status. */
@@ -293,6 +373,14 @@ public final class ChorusPlugin extends JavaPlugin {
         return names;
     }
 
+    public List<String> switchedOffModules() {
+        return List.copyOf(modulesOff);
+    }
+
+    public List<Registered> registeredCommands() {
+        return List.copyOf(commands);
+    }
+
     public Storage storage() {
         return storage;
     }
@@ -301,15 +389,23 @@ public final class ChorusPlugin extends JavaPlugin {
         return flags;
     }
 
+    public PlayerProfiles profiles() {
+        return profiles;
+    }
+
     public AuditLog audit() {
         return audit;
+    }
+
+    public InventoryBackups backups() {
+        return backups;
     }
 
     public ChatPrompts prompts() {
         return prompts;
     }
 
-    /** Runs tasks on the server thread, dropping them once the plugin is gone. */
+    /** Runs tasks where the server allows them, dropping them once the plugin is gone. */
     public Executor mainThread() {
         return mainThread;
     }
@@ -342,7 +438,7 @@ public final class ChorusPlugin extends JavaPlugin {
         }
         target.setExecutor(command);
         target.setTabCompleter(command);
-        registeredCommands.add(command.name());
+        commands.add(new Registered(installing, command));
         return command;
     }
 
@@ -358,6 +454,7 @@ public final class ChorusPlugin extends JavaPlugin {
         }
 
         if (!configs.get(module.configPath()).data().getBoolean("enabled", true)) {
+            installing = module.name();
             module.commandNames().forEach(name -> {
                 register(new DisabledCommand(support, name));
                 // Noted so it does not go on to take /clear away from the server and then
@@ -365,17 +462,45 @@ public final class ChorusPlugin extends JavaPlugin {
                 // server back what it had, not leave a hole where both used to be.
                 switchedOff.add(name);
             });
-            modulesOff++;
+            installing = CORE;
+            modulesOff.add(module.name());
             getLogger().info("Module '" + module.name() + "' is switched off in " + module.configPath());
             return;
         }
 
         try {
+            installing = module.name();
             module.enable();
             modules.push(module);
+            byName.put(module.name().toLowerCase(Locale.ROOT), module);
         } catch (RuntimeException exception) {
             getLogger().log(Level.SEVERE, "Module '" + module.name() + "' failed to start", exception);
             getServer().getPluginManager().disablePlugin(this);
+        } finally {
+            installing = CORE;
+        }
+    }
+
+    private List<String> commandNames() {
+        List<String> names = new ArrayList<>(commands.size());
+        commands.forEach(registered -> names.add(registered.command().name()));
+        return names;
+    }
+
+    private void startMetrics(ConfigFile core) {
+        if (!core.data().getBoolean("metrics", true)) {
+            return;
+        }
+        try {
+            metrics = new Metrics(this, BSTATS_ID);
+            metrics.addCustomChart(new SimplePie("storage",
+                    () -> storage.dialect().name().toLowerCase(Locale.ROOT)));
+            metrics.addCustomChart(new SimplePie("economy",
+                    () -> economySetup.mode().name().toLowerCase(Locale.ROOT)));
+            metrics.addCustomChart(new SimplePie("scheduling", schedulers::describe));
+            metrics.addCustomChart(new SingleLineChart("modules", modules::size));
+        } catch (LinkageError | RuntimeException exception) {
+            getLogger().log(Level.FINE, "Metrics could not be started", exception);
         }
     }
 
@@ -389,6 +514,18 @@ public final class ChorusPlugin extends JavaPlugin {
         } catch (LinkageError | RuntimeException exception) {
             getLogger().log(Level.WARNING, "PlaceholderAPI is installed but the expansion "
                     + "could not be registered", exception);
+        }
+    }
+
+    /** @return whether the plugin is still standing. */
+    private boolean open(Tables tables, String what) {
+        try {
+            tables.create();
+            return true;
+        } catch (SQLException exception) {
+            getLogger().log(Level.SEVERE, "The " + what + " table could not be created", exception);
+            getServer().getPluginManager().disablePlugin(this);
+            return false;
         }
     }
 
@@ -413,4 +550,14 @@ public final class ChorusPlugin extends JavaPlugin {
             return thread;
         };
     }
+
+    /** A command and the module that owns it, which is what /commands groups by. */
+    public record Registered(String module, ChorusCommand command) {
+    }
+
+    @FunctionalInterface
+    private interface Tables {
+        void create() throws SQLException;
+    }
+
 }

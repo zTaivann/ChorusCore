@@ -63,8 +63,12 @@ economy:
   # Largest amount a single /pay may move. 0 means no ceiling.
   maximum-payment: 0.0
 
-  # How many places /baltop lists. Maximum 50.
+  # How many places one page of /baltop lists. Maximum 50.
   top-size: 10
+
+  # A payment of this much or more asks the sender to run the command again
+  # before it goes through. 0 never asks.
+  confirm-above: 0.0
 
   # Every /pay is written down, so a dispute about a trade has an answer.
   log:
@@ -129,3 +133,10 @@ commands:
     sound:
       volume: 0.4
       pitch: 1.5
+
+  paytoggle:
+    enabled: true
+    sound:
+      key: block.lever.click
+      volume: 0.5
+      pitch: 1.2

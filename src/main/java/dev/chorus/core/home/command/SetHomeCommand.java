@@ -2,6 +2,7 @@ package dev.chorus.core.home.command;
 
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Confirmations;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.home.Home;
 import dev.chorus.core.home.HomeService;
@@ -17,11 +18,14 @@ import java.util.logging.Logger;
 public final class SetHomeCommand extends PlayerCommand {
 
     private final HomeService homes;
+    private final Confirmations confirmations;
     private final Logger logger;
 
-    public SetHomeCommand(CommandSupport support, HomeService homes, Logger logger) {
+    public SetHomeCommand(CommandSupport support, HomeService homes, Confirmations confirmations,
+                          Logger logger) {
         super(support, "sethome", "chorus.home.set");
         this.homes = homes;
+        this.confirmations = confirmations;
         this.logger = logger;
     }
 
@@ -62,6 +66,10 @@ public final class SetHomeCommand extends PlayerCommand {
                 rules().cooldownSeconds(),
                 homes.settings().priceFor(rules().price(), homes.count(playerId), replacing),
                 rules().feedback());
+        if (replacing && !confirmations.confirmed(player, "sethome:" + key,
+                "home.overwrite-confirm", "home", key)) {
+            return;
+        }
         if (!ready(player, name(), against)) {
             return;
         }

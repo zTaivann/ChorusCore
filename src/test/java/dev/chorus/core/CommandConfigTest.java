@@ -24,8 +24,8 @@ class CommandConfigTest {
 
     private static final Pattern SOUND_KEY = Pattern.compile("[a-z0-9_]+(\\.[a-z0-9_]+)+");
 
-    /** Only /chorus has no warmup, cooldown or price block. */
-    private static final Set<String> UNPRICED = Set.of("chorus");
+    /** The two commands the core itself owns have no warmup, cooldown or price. */
+    private static final Set<String> UNPRICED = Set.of("chorus", "commands");
 
     private static final Set<String> OPTIONS =
             Set.of("enabled", "warmup-seconds", "cooldown-seconds", "price", "sound", "particle");

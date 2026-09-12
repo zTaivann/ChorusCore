@@ -14,7 +14,7 @@ import dev.chorus.core.home.command.RenameHomeCommand;
 import dev.chorus.core.home.command.SetHomeCommand;
 import dev.chorus.core.teleport.TeleportService;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
+import dev.chorus.core.platform.ChorusTask;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public final class HomeModule implements ChorusModule {
 
     private ConfigFile config;
     private HomeService homes;
-    private BukkitTask reaper;
+    private ChorusTask reaper;
 
     public HomeModule(ChorusPlugin plugin, CommandSupport support, TeleportService teleports) {
         this.plugin = plugin;
@@ -77,14 +77,16 @@ public final class HomeModule implements ChorusModule {
         plugin.register(new HomeDataListener(homes, plugin.messages(), logger));
 
         commands.add(plugin.register(new HomeCommand(support, homes, teleports)));
-        commands.add(plugin.register(new SetHomeCommand(support, homes, logger)));
-        commands.add(plugin.register(new DelHomeCommand(support, homes, logger)));
+        commands.add(plugin.register(
+                new SetHomeCommand(support, homes, plugin.confirmations(), logger)));
+        commands.add(plugin.register(
+                new DelHomeCommand(support, homes, plugin.confirmations(), logger)));
         commands.add(plugin.register(new HomeListCommand(support, homes)));
         commands.add(plugin.register(new RenameHomeCommand(support, homes, logger)));
         commands.add(plugin.register(new HomeIconCommand(support, homes, logger)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 
-        reaper = plugin.getServer().getScheduler().runTaskTimer(plugin,
+        reaper = plugin.schedulers().globalTimer(
                 () -> homes.reapOffline(owner -> plugin.getServer().getPlayer(owner) != null),
                 REAP_INTERVAL_TICKS, REAP_INTERVAL_TICKS);
 

@@ -5,17 +5,19 @@ import dev.chorus.core.api.event.ChorusTeleportEvent;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.feedback.CommandFeedback;
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -43,15 +45,19 @@ public final class TeleportService implements TeleportApi, Listener {
     private final Plugin plugin;
     private final Messages messages;
     private final Executor mainThread;
+    private final Schedulers schedulers;
     private final Map<UUID, Pending> pending = new HashMap<>();
     private final Map<UUID, Deque<Location>> history = new HashMap<>();
+    private final Map<UUID, Long> protectedUntil = new HashMap<>();
 
     private volatile TeleportSettings settings;
 
-    public TeleportService(Plugin plugin, Messages messages, Executor mainThread, TeleportSettings settings) {
+    public TeleportService(Plugin plugin, Messages messages, Executor mainThread,
+                           Schedulers schedulers, TeleportSettings settings) {
         this.plugin = plugin;
         this.messages = messages;
         this.mainThread = mainThread;
+        this.schedulers = schedulers;
         this.settings = settings;
     }
 
@@ -84,7 +90,7 @@ public final class TeleportService implements TeleportApi, Listener {
         }
 
         messages.send(player, "teleport.warmup", "seconds", String.valueOf(warmup));
-        BukkitTask task = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+        ChorusTask task = schedulers.entityLater(player, () -> {
             Pending finished = pending.remove(player.getUniqueId());
             if (finished != null) {
                 finished.cancelCountdown();
@@ -157,6 +163,7 @@ public final class TeleportService implements TeleportApi, Listener {
         pending.values().forEach(Pending::cancelAll);
         pending.clear();
         history.clear();
+        protectedUntil.clear();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -196,6 +203,7 @@ public final class TeleportService implements TeleportApi, Listener {
         UUID playerId = event.getPlayer().getUniqueId();
         forget(playerId, null);
         history.remove(playerId);
+        protectedUntil.remove(playerId);
     }
 
     /**
@@ -233,11 +241,60 @@ public final class TeleportService implements TeleportApi, Listener {
 
         player.teleportAsync(destination).thenAcceptAsync(moved -> {
             if (moved) {
+                protect(player);
                 arrived.run();
             } else {
                 messages.send(player, "teleport.failed");
             }
         }, mainThread);
+    }
+
+    /**
+     * A few seconds of not being hittable on arrival.
+     *
+     * <p>Landing in the middle of whatever is already there is what makes a warp into a PvP
+     * world a coin toss. The protection ends the moment they attack somebody, so it cannot
+     * be used to open a fight.
+     */
+    private void protect(Player player) {
+        int seconds = settings.invulnerableSeconds();
+        if (seconds <= 0) {
+            return;
+        }
+        protectedUntil.put(player.getUniqueId(), System.currentTimeMillis() + seconds * 1000L);
+    }
+
+    public boolean isProtected(UUID playerId) {
+        Long until = protectedUntil.get(playerId);
+        if (until == null) {
+            return false;
+        }
+        if (until > System.currentTimeMillis()) {
+            return true;
+        }
+        protectedUntil.remove(playerId);
+        return false;
+    }
+
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onProtectedDamage(EntityDamageEvent event) {
+        if (protectedUntil.isEmpty() || !(event.getEntity() instanceof Player player)) {
+            return;
+        }
+        if (isProtected(player.getUniqueId())) {
+            event.setCancelled(true);
+        }
+    }
+
+    /** Hitting somebody gives it up, which is the whole of the rule. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onAttack(EntityDamageByEntityEvent event) {
+        if (protectedUntil.isEmpty()) {
+            return;
+        }
+        if (event.getDamager() instanceof Player attacker) {
+            protectedUntil.remove(attacker.getUniqueId());
+        }
     }
 
     /** Newest first, and only as deep as the config allows. */
@@ -258,14 +315,14 @@ public final class TeleportService implements TeleportApi, Listener {
         });
     }
 
-    private @Nullable BukkitTask countdown(Player player, int warmup) {
+    private @Nullable ChorusTask countdown(Player player, int warmup) {
         if (!settings.warmupCountdown()) {
             return null;
         }
         // Counted from a deadline rather than a tally, so a lagging server shows the time
         // that is actually left instead of drifting away from it.
         long deadline = System.currentTimeMillis() + warmup * 1000L;
-        return plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
+        return schedulers.entityTimer(player, () -> {
             long remaining = (deadline - System.currentTimeMillis() + 999) / 1000;
             if (remaining > 0) {
                 player.sendActionBar(messages.render("teleport.warmup-countdown",
@@ -289,7 +346,7 @@ public final class TeleportService implements TeleportApi, Listener {
         }
     }
 
-    private record Pending(BukkitTask task, @Nullable BukkitTask countdown, Location origin) {
+    private record Pending(ChorusTask task, @Nullable ChorusTask countdown, Location origin) {
 
         boolean coversSameBlock(Location other) {
             return origin.getWorld() == other.getWorld()

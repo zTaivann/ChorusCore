@@ -64,6 +64,9 @@ players:
   # Tell everyone else when somebody goes away or comes back.
   broadcast: true
 
+  # The longest a nickname may be, counting letters rather than colour codes.
+  max-nick-length: 16
+
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 
@@ -133,3 +136,16 @@ commands:
       key: block.amethyst_block.chime
       volume: 0.5
       pitch: 0.9
+
+  nick:
+    enabled: true
+    sound:
+      key: block.note_block.pling
+      volume: 0.5
+      pitch: 1.6
+
+  realname:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.6

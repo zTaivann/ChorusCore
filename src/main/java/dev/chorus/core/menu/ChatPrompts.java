@@ -10,7 +10,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 
 import java.util.Locale;
 import java.util.Map;
@@ -40,18 +41,21 @@ public final class ChatPrompts implements Listener {
     private final Plugin plugin;
     private final Messages messages;
     private final Executor mainThread;
+    private final Schedulers schedulers;
     private final Map<UUID, Prompt> waiting = new ConcurrentHashMap<>();
 
-    private BukkitTask sweeper;
+    private ChorusTask sweeper;
 
-    public ChatPrompts(Plugin plugin, Messages messages, Executor mainThread) {
+    public ChatPrompts(Plugin plugin, Messages messages, Executor mainThread,
+                       Schedulers schedulers) {
         this.plugin = plugin;
         this.messages = messages;
         this.mainThread = mainThread;
+        this.schedulers = schedulers;
     }
 
     public void start() {
-        sweeper = plugin.getServer().getScheduler().runTaskTimer(plugin, this::dropExpired,
+        sweeper = schedulers.globalTimer(this::dropExpired,
                 SWEEP_TICKS, SWEEP_TICKS);
     }
 

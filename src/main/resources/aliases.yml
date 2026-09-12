@@ -16,6 +16,7 @@
 
 # Core
 chorus: [ chorusecore ]
+commands: [ help, chorushelp ]
 
 # Homes
 home: [ ]
@@ -44,6 +45,8 @@ tpaccept: [ tpyes, tpacc ]
 tpdeny: [ tpno ]
 tpcancel: [ ]
 back: [ return ]
+tpauto: [ autotp, tpaccepting ]
+tpoffline: [ otp, tpoff ]
 tptoggle: [ tpblock, toggletp ]
 
 # Utility
@@ -70,19 +73,24 @@ balance: [ bal, money ]
 baltop: [ balancetop, topbalance ]
 eco: [ economy ]
 paylog: [ payments ]
+paytoggle: [ payblock ]
 
 # Chat
 msg: [ w, tell, whisper, pm ]
 reply: [ r ]
 socialspy: [ spy ]
+mail: [ memo, email ]
+msgtoggle: [ togglemsg, msgblock ]
+ignore: [ block, mute ]
 
 # Utility, second batch
 speed: [ walkspeed ]
-top: [ jump ]
+top: [ ]
+jump: [ j, jumpto ]
 near: [ nearby ]
 invsee: [ inventorysee, seeinv ]
 ecsee: [ endersee, enderchestsee ]
-tps: [ lag ]
+tps: [ lag, gc, mem ]
 getpos: [ pos, coords, whereami ]
 suicide: [ die ]
 burn: [ ignite, setfire ]
@@ -113,11 +121,14 @@ whois: [ playerinfo, pinfo ]
 list: [ online, who ]
 ptime: [ playertime ]
 pweather: [ playerweather ]
+nick: [ nickname ]
+realname: [ whois-nick ]
 
 # Items
 hat: [ head ]
 condense: [ compress ]
 clearinventory: [ clear, ci, clearinv ]
+restore: [ restoreinv, undoclear ]
 itemname: [ rename ]
 lore: [ itemlore ]
 more: [ fill ]
@@ -126,8 +137,23 @@ unbreakable: [ nobreak ]
 glow: [ shine ]
 enchant: [ ench ]
 stack: [ restack ]
+give: [ item, i ]
+exp: [ xp ]
 
 # Kits
 kit: [ ]
 kits: [ kitlist ]
 kitedit: [ editkit, kitcreate ]
+kitreset: [ resetkit, kitclear ]
+
+# World
+world: [ goworld ]
+time: [ settime ]
+weather: [ setweather, sky ]
+spawnmob: [ mob, summon-mob ]
+sweep: [ butcher, killall, clearentities ]
+
+# Shops
+sell: [ ]
+worth: [ price ]
+setworth: [ ]

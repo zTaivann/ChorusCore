@@ -9,6 +9,7 @@ import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.kits.command.KitCommand;
 import dev.chorus.core.kits.command.KitEditCommand;
 import dev.chorus.core.kits.command.KitListCommand;
+import dev.chorus.core.kits.command.KitResetCommand;
 import dev.chorus.core.kits.menu.KitEditMenu;
 import dev.chorus.core.kits.menu.KitMenuSettings;
 import org.bukkit.configuration.ConfigurationSection;
@@ -51,7 +52,7 @@ public final class KitsModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("kit", "kits", "kitedit");
+        return List.of("kit", "kits", "kitedit", "kitreset");
     }
 
     @Override
@@ -65,16 +66,18 @@ public final class KitsModule implements ChorusModule {
             throw new IllegalStateException("The kit history table could not be created", exception);
         }
 
-        kits = new KitService(repository, plugin.messages(), plugin.economy(),
-                plugin.worker(), plugin.mainThread());
+        kits = new KitService(repository, plugin.backups(), plugin.messages(),
+                plugin.economy(), plugin.worker(), plugin.mainThread());
         load();
 
         plugin.register(new KitDataListener(kits, plugin.messages(), plugin.getLogger()));
         commands.add(plugin.register(new KitCommand(support, kits, plugin.getLogger())));
         commands.add(plugin.register(new KitListCommand(support, kits, () -> settings)));
+        commands.add(plugin.register(new KitResetCommand(support, kits)));
         KitEditor editor = new KitEditor(config, this::load);
-        KitEditMenu menu = new KitEditMenu(plugin, kits, editor, plugin.messages(), plugin.economy(),
-                plugin.prompts(), KitMenuSettings.read(config.section("kits.editor"), this::warn));
+        KitEditMenu menu = new KitEditMenu(plugin, plugin.schedulers(), kits, editor,
+                plugin.messages(), plugin.economy(), plugin.prompts(),
+                KitMenuSettings.read(config.section("kits.editor"), this::warn));
         commands.add(plugin.register(
                 new KitEditCommand(support, kits, editor, menu, plugin.economy())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());

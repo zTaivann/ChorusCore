@@ -49,6 +49,18 @@ public final class ListMenu {
     public static void open(Player viewer, Messages messages, MenuSettings settings,
                             String titleKey, List<Entry> entries, int page,
                             @Nullable Consumer<Player> back, String... titleValues) {
+        open(viewer, messages, settings, titleKey, entries, page, back, null, titleValues);
+    }
+
+    /**
+     * The same with one button of the screen's own, such as the filter on the backup list.
+     *
+     * @param control what goes in the free spot on the navigation row, or null.
+     */
+    public static void open(Player viewer, Messages messages, MenuSettings settings,
+                            String titleKey, List<Entry> entries, int page,
+                            @Nullable Consumer<Player> back, @Nullable Entry control,
+                            String... titleValues) {
         int perPage = settings.perPage();
         int pages = Math.max(1, (entries.size() + perPage - 1) / perPage);
         int current = Math.min(Math.max(0, page), pages - 1);
@@ -74,19 +86,24 @@ public final class ListMenu {
             menu.set(settings.previousSlot(), button(messages, settings.previousPage(),
                             "menu.buttons.previous", "menu.buttons.previous-lore", current),
                     clicker -> open(clicker, messages, settings, titleKey, entries,
-                            current - 1, back, titleValues));
+                            current - 1, back, control, titleValues));
         }
         if (current < pages - 1) {
             menu.set(settings.nextSlot(), button(messages, settings.nextPage(),
                             "menu.buttons.next", "menu.buttons.next-lore", current + 2),
                     clicker -> open(clicker, messages, settings, titleKey, entries,
-                            current + 1, back, titleValues));
+                            current + 1, back, control, titleValues));
         }
         if (back != null) {
             menu.set(settings.backSlot(), MenuItems.of(settings.previousPage(),
                             messages.render("menu.buttons.back"),
                             List.of(messages.render("menu.buttons.back-lore"))),
                     back);
+        }
+        if (control != null) {
+            menu.set(settings.controlSlot(),
+                    MenuItems.of(control.icon(), control.display(), control.lore()),
+                    control.action());
         }
         menu.set(settings.closeSlot(), MenuItems.of(settings.close(),
                         messages.render("menu.buttons.close"),

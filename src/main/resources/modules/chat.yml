@@ -1,7 +1,7 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   C H A T                                                              │
-# │   /msg  /reply  /socialspy                                             │
+# │   /msg  /reply  /socialspy  /msgtoggle  /ignore  /mail                 │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -58,6 +58,25 @@ chat:
   # Off means /socialspy stops working for everyone, permission or not.
   spy-enabled: true
 
+# ── Mail ─────────────────────────────────────────────────────────────────
+#
+# Letters for players who were not online to hear it said. Whoever they are for
+# is told how much is waiting the next time they log in.
+mail:
+  # Letters older than this are dropped when the server starts. 0 keeps them
+  # for ever, which on a busy server means a table that only ever grows.
+  keep-days: 60
+
+  # The most letters one player may have waiting. A sender is told when the
+  # inbox is full rather than having the letter quietly dropped.
+  inbox-size: 50
+
+  # How many one page of /mail shows. Maximum 20.
+  page-size: 8
+
+  # The longest a letter may be. Anything past this is cut off.
+  max-length: 256
+
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 
@@ -96,3 +115,15 @@ commands:
   socialspy:
     enabled: true
 
+  msgtoggle:
+    enabled: true
+
+  ignore:
+    enabled: true
+
+  mail:
+    enabled: true
+    sound:
+      key: entity.villager.trade
+      volume: 0.5
+      pitch: 1.4

@@ -4,7 +4,7 @@
 # │   /heal  /feed  /fly  /god  /ping  /fix  /trash  /speed  /top  /near   │
 # │   /invsee  /ecsee  /tps  /getpos  /suicide  /burn  /craft  /anvil      │
 # │   /smithingtable  /grindstone  /stonecutter  /loom  /cartography       │
-# │   /enchanting  /enderchest                                             │
+# │   /enchanting  /enderchest  /jump                                      │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -300,3 +300,17 @@ commands:
       spread: 0.4
       height: 1.8
       speed: 0.02
+
+  jump:
+    enabled: true
+    cooldown-seconds: 3
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.6
+      pitch: 1.6
+    particle:
+      name: PORTAL
+      count: 20
+      spread: 0.3
+      height: 1.8
+      speed: 0.04

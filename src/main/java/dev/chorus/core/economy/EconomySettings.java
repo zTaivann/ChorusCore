@@ -2,8 +2,8 @@ package dev.chorus.core.economy;
 
 import org.bukkit.configuration.ConfigurationSection;
 
-public record EconomySettings(double minimumPayment, double maximumPayment, boolean logPayments,
-                              int logKeepDays, int logPageSize, int topSize) {
+public record EconomySettings(double minimumPayment, double maximumPayment, double confirmAbove,
+                              boolean logPayments, int logKeepDays, int logPageSize, int topSize) {
 
     private static final int MAX_PAGE = 50;
 
@@ -12,10 +12,16 @@ public record EconomySettings(double minimumPayment, double maximumPayment, bool
         return new EconomySettings(
                 Math.max(0.01, economy.getDouble("minimum-payment", 0.01)),
                 Math.max(0, economy.getDouble("maximum-payment", 0)),
+                Math.max(0, economy.getDouble("confirm-above", 0)),
                 log == null || log.getBoolean("enabled", true),
                 log == null ? 30 : Math.max(0, log.getInt("keep-days", 30)),
                 clamp(log == null ? 10 : log.getInt("page-size", 10)),
                 clamp(economy.getInt("top-size", 10)));
+    }
+
+    /** A threshold of zero means a payment is never worth asking twice about. */
+    public boolean needsConfirming(double amount) {
+        return confirmAbove > 0 && amount >= confirmAbove;
     }
 
     /** A maximum of zero means there is no ceiling. */

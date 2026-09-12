@@ -86,9 +86,11 @@ public final class WarpModule implements ChorusModule {
         plugin.provide(warps);
 
         commands.add(plugin.register(new WarpCommand(support, warps, details, teleports)));
-        commands.add(plugin.register(new WarpListCommand(support, warps, details)));
+        commands.add(plugin.register(new WarpListCommand(support, warps, details,
+                () -> config.section("warps").getString("sort", "name"))));
         commands.add(plugin.register(new SetWarpCommand(support, warps, logger)));
-        commands.add(plugin.register(new DelWarpCommand(support, warps, details, logger)));
+        commands.add(plugin.register(
+                new DelWarpCommand(support, warps, details, plugin.confirmations(), logger)));
         commands.add(plugin.register(new WarpInfoCommand(support, warps, details, plugin.economy())));
         commands.add(plugin.register(new WarpSetCommand(support, warps, details)));
         CommandRules.applyAll(config.section("commands"), commands, logger);

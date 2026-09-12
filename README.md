@@ -1,12 +1,13 @@
 # ChorusCore
 
-A modular core for Paper servers: homes, warps, spawn, teleport requests, economy, private
-messages, staff tools, item tools, kits and the usual utilities. Ninety-one commands across
-twelve modules, every one of them switchable, priced and themed from its own config file, plus
-as many commands of your own as you care to write.
+A modular core for Paper servers: homes, warps, spawn, teleport requests, an economy of its
+own, mail, private messages, sign shops, staff tools, item tools, kits, world controls and the
+usual utilities. A hundred and fourteen commands across fourteen modules, every one of them
+switchable, priced and themed from its own config file, plus as many commands of your own as
+you care to write.
 
 Compiled against the Paper 1.18.2 API and emitting Java 17 bytecode, so a single jar runs on
-anything from **1.18.2 to 26.2**.
+anything from **1.18.2 to 26.2**, on Paper and on Folia.
 
 Addons can build on it: it registers a public API as a Bukkit service and, when
 PlaceholderAPI is installed, exposes its numbers as placeholders.
@@ -18,8 +19,10 @@ PlaceholderAPI is installed, exposes its numbers as placeholders.
 3. The first start needs internet access: the server fetches HikariCP, the SQLite driver and
    the MariaDB driver from Maven Central into its own `libraries/` folder.
 
-Vault is optional: install it plus an economy plugin if you want prices to do anything.
-PlaceholderAPI is optional too, and the expansion registers itself when it is there.
+ChorusCore keeps its own balances, so /pay and /balance work on a bare server. Vault is
+optional: with it installed the same money is offered to every other plugin, and another
+economy plugin can take over instead. PlaceholderAPI is optional too, and the expansion
+registers itself when it is there.
 
 The console says what it found:
 
@@ -35,10 +38,11 @@ The console says what it found:
 
   ChorusCore 0.1.0  ·  Paper 1.21.4
   ✔ Storage        sqlite
-  ✔ Economy        Vault
+  ✔ Economy        built in, 412 accounts
   ▪ Placeholders   PlaceholderAPI not installed
-  ✔ Modules        12 of 12
-  ✔ Commands       91 registered
+  ✔ Scheduling     one server thread
+  ✔ Modules        14 of 14
+  ✔ Commands       114 registered
 
   Ready in 214ms
 
@@ -49,11 +53,16 @@ The console says what it found:
 A tick is something it connected to. `startup-banner: false` in `config.yml` replaces the
 whole thing with one line.
 
+On Folia the Scheduling line reads `Folia regions` instead. Nothing is scheduled on a thread
+that is not allowed to touch what the job is about to touch: work on a player goes to that
+player, work on blocks goes to the region they are in, and everything else to the server as a
+whole.
+
 ## Configuration
 
 ```
 plugins/ChorusCore/
-├── config.yml            storage, economy switch, staff log
+├── config.yml            storage, economy, confirmations, metrics, staff log
 ├── aliases.yml           extra names for every command
 ├── messages.yml          every line the plugin sends to chat
 ├── menus.yml             every word that appears on a screen
@@ -63,13 +72,17 @@ plugins/ChorusCore/
     ├── warps.yml             /warp /warps /setwarp /delwarp /warpinfo /warpset
     ├── spawn.yml             /spawn /setspawn
     ├── teleport.yml          /tpa /tpahere /tpaccept /tpdeny /tpcancel
-    │                         /tptoggle /back
-    ├── economy.yml           /pay /balance /baltop /eco /paylog
-    ├── chat.yml              /msg /reply /socialspy
+    │                         /tptoggle /tpauto /tpoffline /back
+    ├── economy.yml           /pay /paytoggle /balance /baltop /eco /paylog
+    ├── chat.yml              /msg /reply /socialspy /msgtoggle /ignore /mail
     ├── players.yml           /afk /seen /playtime /whois /list /ptime /pweather
-    ├── items.yml             /hat /condense /clearinventory /itemname /lore
+    │                         /nick /realname
+    ├── items.yml             /hat /condense /clearinventory /restore /itemname /lore
     │                         /more /skull /unbreakable /glow /enchant /stack
-    ├── kits.yml              /kit /kits /kitedit
+    │                         /give /exp
+    ├── kits.yml              /kit /kits /kitedit /kitreset
+    ├── world.yml             /world /time /weather /spawnmob /sweep
+    ├── shops.yml             [Buy] and [Sell] signs, /sell /worth /setworth
     ├── staff.yml             /tp /tphere /tppos /tpall /vanish /gamemode /gmc
     │                         /gms /gma /gmsp /freeze /sudo /lockdown /tempfly
     │                         /note /stafflog
@@ -77,12 +90,13 @@ plugins/ChorusCore/
     │                         /tps /getpos /suicide /burn /top /near /invsee
     │                         /ecsee /craft /anvil /smithingtable /grindstone
     │                         /stonecutter /loom /cartography /enchanting
-    │                         /enderchest
+    │                         /enderchest /jump
     └── custom-commands.yml   the /discord and /rules of your server
 ```
 
-`/chorus reload` re-reads all of them. The `storage` section, `aliases.yml` and adding or
-removing a custom command are the three things that need a full restart.
+`/chorus reload` re-reads all of them, and `/chorus reload <module>` re-reads one. The
+`storage` section, `aliases.yml` and adding or removing a custom command are the three things
+that need a full restart.
 
 ### Per-command rules
 
@@ -236,12 +250,17 @@ overall limit, for the worlds where homes should be rare.
 `/homeicon` sets what one home looks like in the grid. Renaming or moving a home keeps its
 icon and the day it was made.
 
+`/home <player>:<home>` takes staff to another player's home and needs `chorus.home.others`.
+It only reaches a player who is online, since homes are held in memory for whoever is here
+and nowhere else while they are not. `/sethome` over a home you already have asks to be run a
+second time before it moves it.
+
 ### Warps
 
 | Command | Permission | Default |
 | --- | --- | --- |
 | `/warp <name> [player]` | `chorus.warp.use` | everyone |
-| `/warps` | `chorus.warp.list` | everyone |
+| `/warps [section]` | `chorus.warp.list` | everyone |
 | `/warpinfo <name>` | `chorus.warp.info` | everyone |
 | `/setwarp <name>` | `chorus.warp.set` | op |
 | `/warpset <name> <setting> [value]` | `chorus.warp.set` | op |
@@ -263,6 +282,10 @@ the one they just made costs money:
 Leaving the value off puts a setting back to what `warps.yml` says. A permission set on the
 warp itself wins outright, so one warp can be locked without turning on per-warp permissions
 for every other one. Warps count how often they are used, and `/warpinfo` shows the number.
+
+`/warps` opens a screen of sections once there are two or more; `/warps Towns` goes straight
+into one. `warps.sort` says what order they come in inside a section: `name`, `uses` for the
+most used first, or `created`.
 
 `/warp <name> <player>` sends somebody else, and needs `chorus.warp.use.others`. Their trip
 is free and starts no cooldown: paying for it out of your own pocket is nobody's idea of how
@@ -293,6 +316,8 @@ their own fall back to `fallback-world`, and then to the single spawn.
 | `/tpdeny [player]` | `chorus.tpa.deny` | everyone |
 | `/tpcancel [player]` | `chorus.tpa.use` | everyone |
 | `/tptoggle` | `chorus.tpa.toggle` | everyone |
+| `/tpauto` | `chorus.tpa.auto` | everyone |
+| `/tpoffline <player>` | `chorus.tpa.offline` | op |
 | `/back [steps]` | `chorus.back.use` | everyone |
 
 `/tpaccept` and `/tpdeny` answer the most recent request when no name is given. `/tpcancel`
@@ -304,6 +329,14 @@ goes, and `/back 3` goes three places down it. During a warmup the seconds left 
 action bar, and `teleport.safe-landing` stops a teleport dropping a player inside a wall,
 over a void or into lava, looking for somewhere to stand nearby instead.
 
+`/tpauto` accepts every request the moment it arrives instead of asking, and turns
+`/tptoggle` off if it was on. `teleport.invulnerable-seconds` gives a few seconds of not
+being hittable on arrival anywhere, which is what keeps a warp into a PvP world from being a
+coin toss; attacking somebody gives it up at once.
+
+`/tpoffline <player>` goes to where somebody logged out, reading the position written down
+when they left. Somebody still online is simply where they are, so it answers for them too.
+
 ### Utility
 
 | Command | Permission | Default |
@@ -314,6 +347,7 @@ over a void or into lava, looking for somewhere to stand nearby instead.
 | `/god [player]` | `chorus.utility.god` | op |
 | `/speed <1-10> [player]` | `chorus.utility.speed` | op |
 | `/top` | `chorus.utility.top` | op |
+| `/jump` | `chorus.utility.jump` | op |
 | `/near [radius]` | `chorus.utility.near` | op |
 | `/invsee <player>` | `chorus.utility.invsee` | op |
 | `/ecsee <player>` | `chorus.utility.ecsee` | op |
@@ -346,15 +380,32 @@ Whatever is left in the `/trash` window when it closes is gone for good.
 | Command | Permission | Default |
 | --- | --- | --- |
 | `/pay <player> <amount>` | `chorus.economy.pay` | everyone |
+| `/paytoggle` | `chorus.economy.toggle` | everyone |
 | `/balance [player]` | `chorus.economy.balance` | everyone |
 | `/baltop` | `chorus.economy.baltop` | everyone |
 | `/eco <give|take|set> <player> <amount>` | `chorus.economy.admin` | op |
 | `/paylog [player]` | `chorus.economy.paylog` | everyone |
 
-Both need Vault plus an economy plugin; without one they say so and nothing else changes.
-Payments go to online players only, are rounded to two decimals, and honour the minimum and
-maximum in `economy.yml`. If the deposit fails after the money left the sender it is put
-straight back.
+ChorusCore is an economy in its own right, so none of this needs another plugin. Balances live
+in the same database as everything else and are held in memory while the server runs, which
+is how a priced command can read one without a round trip.
+
+`economy.provider` in `config.yml` says where the money comes from:
+
+| | |
+| --- | --- |
+| `auto` | the built-in ledger, unless another economy plugin has registered with Vault |
+| `self` | the built-in ledger, whatever else is installed |
+| `vault` | another plugin only; with no Vault every price is ignored |
+| `off` | no economy at all |
+
+With Vault installed the built-in ledger is offered to every other plugin on the server, at a
+low priority, so a shop or jobs plugin spends the same money these commands do and a
+dedicated economy plugin still wins if you install one.
+
+The symbol, decimals, opening balance and the ceiling are all in `config.yml`. Payments go to
+online players only and honour the minimum and maximum in `economy.yml`. If the deposit fails
+after the money left the sender it is put straight back.
 
 `/balance <player>` needs `chorus.economy.balance.others`.
 
@@ -365,9 +416,13 @@ Every payment is written down, and `/paylog` reads it back. `/paylog <player>` a
 `/eco` creates and destroys money rather than moving it, and every use of it goes in the
 staff log. Taking more than somebody has empties the account rather than going negative.
 
-`/baltop` ranks the players who are online, deliberately not the whole server: balances
-belong to whichever economy plugin is installed, and ranking everyone who ever played would
-mean asking it about each of them in turn, on the server thread.
+`/baltop` ranks every account on the server, paged, and adds up what is in circulation. On a
+server whose money belongs to another plugin there is no such list to read, so it falls back
+to ranking whoever is online.
+
+`/paytoggle` stops other players sending money, and is remembered between sessions.
+`economy.confirm-above` makes a payment of a given size ask the sender to run the command
+again before it goes through.
 
 ### Chat
 
@@ -375,6 +430,9 @@ mean asking it about each of them in turn, on the server thread.
 | --- | --- | --- |
 | `/msg <player> <message>` | `chorus.chat.msg` | everyone |
 | `/reply <message>` | `chorus.chat.reply` | everyone |
+| `/msgtoggle` | `chorus.chat.toggle` | everyone |
+| `/ignore <player>` | `chorus.chat.ignore` | everyone |
+| `/mail [read|send|sendall|clear]` | `chorus.mail.use` | everyone |
 | `/socialspy` | `chorus.chat.spy` | op |
 
 `/reply` answers whoever you last spoke to, in either direction. `/socialspy` shows staff a
@@ -383,6 +441,17 @@ off server-wide.
 
 Message text reaches chat as plain text, so a player cannot smuggle colour codes or
 formatting into someone else's screen.
+
+`/msgtoggle` turns private messages off entirely; `/ignore <player>` turns off one person and
+remembers it between sessions. Either way the sender is told the same thing — that the player
+is not taking messages — so being ignored is not announced. `chorus.chat.ignore.bypass`, op by
+default, reaches anybody regardless.
+
+`/mail` leaves a message for somebody who is not here. They are told how much is waiting the
+next time they log in, and reading it marks the whole inbox as seen. `/mail send <player>
+<message>` needs `chorus.mail.send`; `/mail sendall <message>` reaches everybody online and
+needs `chorus.mail.all`. How long letters are kept and how many one player may have waiting
+are in the `mail` section of `chat.yml`.
 
 ### Staff
 
@@ -429,13 +498,15 @@ of `config.yml`.
 
 | Command | Permission | Default |
 | --- | --- | --- |
-| `/afk` | `chorus.players.afk` | everyone |
+| `/afk [reason]` | `chorus.players.afk` | everyone |
 | `/seen <player>` | `chorus.players.seen` | everyone |
 | `/playtime [player]` | `chorus.players.playtime` | everyone |
 | `/whois <player>` | `chorus.players.whois` | op |
 | `/list` | `chorus.players.list` | everyone |
 | `/ptime <time> [player]` | `chorus.players.ptime` | op |
 | `/pweather <clear|rain|reset> [player]` | `chorus.players.pweather` | op |
+| `/nick [player] <name|off>` | `chorus.players.nick` | op |
+| `/realname <nickname>` | `chorus.players.realname` | everyone |
 
 Players are marked away on their own after `auto-afk-minutes` of standing still, and come
 back the moment they move, interact or type a command. `/playtime` reads the figure the
@@ -448,6 +519,19 @@ respects vanish: a player hidden from you is missing from both the names and the
 `/ptime` and `/pweather` change only what one client is shown; the world keeps its own time
 and weather, and so does everybody standing next to them.
 
+`/afk` takes a reason: `/afk eating` tells everybody what you are doing.
+
+`/seen` says when somebody was last here and where they logged out.
+`chorus.players.seen.address` adds the address they came from and every other account that
+has connected from it, which is what turns `/seen` into a way of catching somebody back on a
+second account.
+
+`/nick` changes the name a player is shown by, in chat and in the tab list.
+`chorus.players.nick.colour` is needed for colour codes and the limit in `players.yml` counts
+letters rather than codes, so a coloured nickname is not half as long as a plain one. A name
+that is already the username of somebody online is refused outright, and `/realname` reads a
+nickname back to the account behind it.
+
 ### Items
 
 | Command | Permission | Default |
@@ -455,6 +539,8 @@ and weather, and so does everybody standing next to them.
 | `/hat` | `chorus.items.hat` | op |
 | `/condense` | `chorus.items.condense` | op |
 | `/clearinventory [player]` (also `/clear`) | `chorus.items.clearinventory` | op |
+| `/restore <player> [list|number]` | `chorus.items.restore` | op |
+| `/restore` without restoring | `chorus.items.restore.view` | op |
 | `/itemname <text>` | `chorus.items.itemname` | op |
 | `/lore <add\|set\|remove\|clear>` | `chorus.items.lore` | op |
 | `/more [amount]` | `chorus.items.more` | op |
@@ -463,10 +549,64 @@ and weather, and so does everybody standing next to them.
 | `/glow` | `chorus.items.glow` | op |
 | `/enchant <enchantment> [level]` | `chorus.items.enchant` | op |
 | `/stack` | `chorus.items.stack` | op |
+| `/give [player] <item> [amount]` | `chorus.items.give` | op |
+| `/exp [show|give|take|set|reset] [player] [amount]` | `chorus.items.exp` | op |
 
 `/condense` only takes untouched stacks: anything named, enchanted or damaged is left alone,
 so a mistyped command can never eat a special item. What packs into what is listed in
 `items.yml`.
+
+`/give` hands out items by name, to yourself when no player is given; anything that does not
+fit drops at their feet. `/exp` works in points, or in levels when the amount ends in `L`:
+`/exp give Notch 5L`. `/clearinventory` asks to be run a second time before it empties
+anything.
+
+#### Inventory backups
+
+**A player never loses everything without a copy of it being kept.** One is taken when they
+
+- **die** — with what killed them, and who, if it was a player
+- **join** and **leave**, so a rollback has both ends of a session
+- **change world**, named after the world they left
+- are emptied by **`/clear`** or by a **kit** with `clear-inventory`
+
+Each copy holds the inventory, the ender chest, the experience, the health, the food and where
+they were.
+
+`/restore <player>` opens a screen of them, newest first. Clicking one lays that inventory out
+exactly as it was carried, armour and offhand included, so the decision is made **looking at
+the items rather than guessing**. From there:
+
+- **Restore inventory** puts those items back
+- **Hand the items over** gives them back **without taking away what they carry now**, for
+  when somebody should get their diamonds back but has since earned a new set. Anything that
+  does not fit drops at their feet
+- **Ender chest** opens the ender chest from the same moment, with its own restore button
+- **Restore everything** does the inventory, the ender chest, the experience, the health and
+  the food
+
+A filter on the bottom row cycles through the reasons that actually have something under
+them, so forty deaths do not stand between you and the clear you are looking for.
+
+Restoring takes a copy of what it replaces, so restoring the wrong one is itself undoable.
+
+`chorus.items.restore.view` opens the screens without the restore buttons, for staff who
+should be able to look into a dispute without being able to hand out diamonds.
+
+The commands still work for anyone who would rather type:
+
+```
+/restore Notch list     what there is, with when, why and who
+/restore Notch 3        the third one down, everything
+```
+
+**It works on a player who is not online.** Nothing can be handed to somebody who is not
+there, so the restore waits in the database and is applied the moment they log in — they are
+told who did it.
+
+The copy keeps the whole item — enchantments, lore, custom model data, another plugin's tags.
+The `backups` block in `items.yml` sets how long copies are kept, how many per player, which
+moments take one, and what the screen looks like.
 
 `chorus.items.format` lets a player use MiniMessage tags in `/itemname` and `/lore`. Without
 it their text is used exactly as typed.
@@ -487,6 +627,7 @@ never disappears into an ordinary one.
 | `/kit [name]` | `chorus.kits.use` | everyone |
 | `/kits` | `chorus.kits.list` | everyone |
 | `/kitedit [kit] [setting] [value]` | `chorus.kits.edit` | op |
+| `/kitreset <kit|*> [player]` | `chorus.kits.reset` | op |
 
 Kits live in `modules/kits.yml`, one block each: the items, what taking one costs, how long before
 the same player may take it again, and whether it is one-time. `/kit` on its own opens the
@@ -495,6 +636,10 @@ same grid `/kits` does; `/kit <name>` takes one straight away.
 Each kit also carries its own permission. Left out, it defaults to `chorus.kits.use.<name>`;
 set it to `''` and anyone may take that kit. `kits.first-join` names the kit handed out the
 first time a player ever joins.
+
+`/kitreset <kit> [player]` clears a cooldown, or lets a one-time kit be taken again;
+`/kitreset * <player>` does every kit at once. The player has to be online, since the record
+of what they have taken is only loaded while they are.
 
 Enchantments are written the way the game writes them today — `protection`, `sharpness`,
 `unbreaking` — not the old `PROTECTION_ENVIRONMENTAL` spellings, so the same file works on
@@ -562,6 +707,76 @@ becomes a chat message. The commands still work for anyone who would rather type
 Whatever the screen writes goes back into `modules/kits.yml` in exactly the form above, so a
 kit built in game can still be opened in a text editor afterwards.
 
+### World
+
+| Command | Permission | Default |
+| --- | --- | --- |
+| `/world [name]` | `chorus.world.go` | op |
+| `/time [when] [world\|all]` | `chorus.world.time` | op |
+| `/weather <clear\|rain\|storm> [minutes] [world]` | `chorus.world.weather` | op |
+| `/spawnmob <mob> [amount] [player]` | `chorus.world.spawnmob` | op |
+| `/sweep [what] [radius]` | `chorus.world.sweep` | op |
+
+`/world` with no name lists the worlds with their kind and how many players are in each.
+Turning on `world.per-world-permission` makes each one need `chorus.world.go.<name>` as well,
+which is how a creative or event world stays shut without a second plugin.
+
+`/time` accepts `day`, `noon`, `dusk`, `night`, `midnight`, `dawn` or a number of ticks, and
+always moves **forwards** to the next time it will be, so asking for morning in the afternoon
+does not wind the day back under everything that counts from it. `/time day all` does every
+world at once.
+
+`/spawnmob` puts mobs where somebody is standing, capped by `world.spawnmob-limit`.
+
+`/sweep` clears entities out. The word can be a group or the name of one kind of mob:
+
+```
+/sweep drops 50        loose items within fifty blocks
+/sweep monsters        every monster in this world
+/sweep zombie 30       just the zombies nearby
+```
+
+Groups: `drops`, `experience`, `arrows`, `boats`, `minecarts`, `vehicles`, `monsters`,
+`animals`, `ambient`, `tamed`, `named`, `villagers`, `armourstands`, `frames`, `paintings`,
+`mobs` and `all`. **A player is never swept**, and `all` leaves out the things a server builds
+rather than spawns — armour stands, paintings, item frames and villagers each have to be named
+before they go. Without a radius it takes the whole world, which is the version that asks to be
+run twice.
+
+### Shops
+
+| Command | Permission | Default |
+| --- | --- | --- |
+| `/sell <hand\|all\|item> [amount]` | `chorus.shops.sell` | everyone |
+| `/worth [hand\|item] [amount]` | `chorus.shops.worth` | everyone |
+| `/setworth [item] <price>` | `chorus.shops.admin` | op |
+
+Shops run by the server, on signs. Four lines: what the sign does, how many, what, and for
+how much.
+
+```
+[Buy]            [Sell]
+64               32
+diamond          iron_ingot
+250              40
+```
+
+Right-clicking buys or sells. Making one needs `chorus.shops.create`, using one needs
+`chorus.shops.use`, and `shops.signs` turns the whole thing off. A `[Sell]` sign may leave the
+price line empty, in which case the item is worth whatever the list in `shops.yml` says; a
+`[Buy]` sign always has to name its price.
+
+Nothing runs out of stock — these are the server's own shops, which is what those two words on
+the first line have meant since somebody first wrote them.
+
+`/sell all` sells everything you are carrying that has a price, which is what a player coming
+back from a mine actually wants. **Anything renamed, enchanted or damaged is left alone**, so
+a named sword can never go for the price of the metal.
+
+`shops.sell-multiplier` scales every price on the way out, so `0.8` pays eighty per cent
+without editing the list. `/setworth diamond 75` writes a price straight into `shops.yml`, and
+a price of `0` takes the item off the list.
+
 ### Custom commands
 
 `modules/custom-commands.yml` is where `/discord`, `/rules` and the rest of your server's own
@@ -577,7 +792,34 @@ says or does is picked up by `/chorus reload`.
 
 ### Administration
 
-`/chorus reload` — `chorus.admin`, op by default.
+| Command | Permission | Default |
+| --- | --- | --- |
+| `/commands [module|search] [page]` (also `/help`) | `chorus.help` | everyone |
+| `/chorus reload [module]` | `chorus.admin` | op |
+| `/chorus status` | `chorus.admin` | op |
+| `/chorus debug` | `chorus.admin` | op |
+
+`/commands` lists only what the player actually holds the permission for and that is switched
+on, grouped by module, so it is never a catalogue of things that will refuse them.
+`/commands homes` narrows it to one module, and any other word searches the names.
+
+`/chorus reload` re-reads everything; `/chorus reload kits` re-reads one module without
+touching the rest of the server. `/chorus debug` prints the server version, the Java version,
+the scheduling model, memory, the storage and economy in use, which modules are on and off
+and what else is installed — one block to paste into a bug report.
+
+#### Confirmations
+
+The things that cannot be taken back ask to be run a second time first: `/clearinventory`,
+`/delhome`, `/delwarp`, `/sethome` over a home you already have, `/sweep` of a whole world
+and a payment over `economy.confirm-above`. The window is `confirmations.seconds` in
+`config.yml`; `0` asks for nothing and `chorus.bypass.confirm` skips them.
+
+#### Metrics
+
+`metrics: true` in `config.yml` sends the server version, the storage type, the economy mode
+and how many modules are on to bStats. No player data of any kind. Set it to `false` to send
+nothing.
 
 ## Permissions worth knowing
 
@@ -589,6 +831,7 @@ says or does is picked up by `/chorus reload`.
 | `chorus.teleport.instant` | Skips every teleport warmup. |
 | `chorus.bypass.cooldown` | Ignores every cooldown. |
 | `chorus.bypass.price` | Never pays. |
+| `chorus.bypass.confirm` | Skips every confirmation prompt. |
 | `chorus.back.ondeath` | Lets `/back` return to where the player died. |
 | `chorus.economy.balance.others` | Reads someone else's balance. |
 | `chorus.utility.invsee.edit` | Allows editing through `/invsee`, `/ecsee` needs its own. |
@@ -600,6 +843,13 @@ says or does is picked up by `/chorus reload`.
 | `chorus.tpa.toggle.bypass` | Reaches players who have `/tptoggle` on. |
 | `chorus.chat.spy` | Uses /socialspy and receives the copies. |
 | `chorus.kits.use.<name>` | Required per kit, unless that kit sets its own permission. |
+| `chorus.home.others` | Allows `/home <player>:<home>`. |
+| `chorus.tpa.offline` | Allows `/tpoffline`. |
+| `chorus.players.seen.address` | Adds the address and shared accounts to `/seen`. |
+| `chorus.players.nick.colour` | Allows colour codes in a nickname. |
+| `chorus.world.go.<name>` | Required per world when `world.per-world-permission` is on. |
+| `chorus.shops.create` | Makes a `[Buy]` or `[Sell]` sign. |
+| `chorus.mail.all` | Sends mail to everybody at once. |
 
 LuckPerms examples:
 
@@ -659,7 +909,7 @@ scoreboard plugin shows any of this without depending on ChorusCore at all.
 | `%chorus_homes_free%` | How many more they may set. |
 | `%chorus_warps_total%` | Warps on the server. |
 | `%chorus_warps_available%` | Warps this player may use. |
-| `%chorus_balance%` | Their balance, formatted by the economy plugin. |
+| `%chorus_balance%` | Their balance, formatted the way the economy writes it. |
 | `%chorus_balance_raw%` | The same as a plain number. |
 | `%chorus_playtime%` | How long they have played. |
 | `%chorus_afk%` | `true` or `false`. |
@@ -675,11 +925,15 @@ SQLite by default: one file in the plugin folder, nothing to configure. For seve
 sharing data, set `storage.type` to `mysql` and fill in the `mysql` section. The same driver
 handles MySQL and MariaDB.
 
-Every query runs off the main thread, so the server never waits on the database.
+Every query runs off the main thread, so the server never waits on the database. Balances are
+the one thing held in memory as well, because a priced command has to read one the instant it
+runs; changes are written back behind the scenes.
 
 The tables are `chorus_homes`, `chorus_locations` (warps and spawn points, under different
 categories), `chorus_warp_details`, `chorus_kit_uses`, `chorus_player_flags`,
-`chorus_payments`, `chorus_notes` and `chorus_staff_log`.
+`chorus_players` (names, nicknames, addresses and where each player logged out),
+`chorus_balances`, `chorus_payments`, `chorus_mail`, `chorus_inventory_backups`,
+`chorus_pending_restores`, `chorus_notes` and `chorus_staff_log`.
 
 `chorus_schema_version` records how far each of them has been brought up to date.
 `CREATE TABLE IF NOT EXISTS` cannot add a column to a table that already exists, so each one
@@ -694,9 +948,11 @@ You need a JDK 21 or newer. Nothing else: Gradle downloads itself.
 ./gradlew build
 ```
 
-The jar lands in `build/libs/`. The same command runs the checks in `src/test/java`, which
-hold the config files and the code to a single command list and exercise the SQL against a
-throwaway SQLite file.
+The jar lands in `build/libs/ChorusCore-<version>.jar`, with bStats shaded into it under this
+plugin's own package. The `-plain` jar next to it is the same classes without bStats and is
+not the one to install. The same command runs the checks in `src/test/java`, which hold the
+config files and the code to a single command list and exercise the SQL against a throwaway
+SQLite file.
 
 ## License
 
