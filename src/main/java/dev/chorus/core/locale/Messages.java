@@ -19,7 +19,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Reads messages.yml and hands out ready-to-send components.
+ * Reads messages.yml and menus.yml and hands out ready-to-send components.
+ *
+ * <p>Two files, one set of keys. A line that goes to chat lives in messages.yml and a word
+ * that appears on a screen lives in menus.yml, which is a distinction anybody editing them
+ * cares about and none of the code does. The key says which file it is in: everything
+ * beginning {@code menu.} is a screen.
  *
  * <p>A line with no placeholders is parsed once on load and handed out as it is. A line with
  * placeholders is parsed on the spot, with the values handed to MiniMessage as unparsed tags
@@ -44,7 +49,8 @@ public final class Messages implements MessageApi {
     private static final String SLOT_PREFIX = "chorus_";
 
     private final Plugin plugin;
-    private final ConfigFile file;
+    private final ConfigFile messages;
+    private final ConfigFile menus;
     private final Map<String, Component> entries = new HashMap<>();
     private final Map<String, String> templates = new HashMap<>();
     private final Set<String> muted = new HashSet<>();
@@ -53,29 +59,34 @@ public final class Messages implements MessageApi {
     private Component prefix = Component.empty();
     private String rawPrefix = "";
 
-    private Messages(Plugin plugin, ConfigFile file) {
+    private Messages(Plugin plugin, ConfigFile messages, ConfigFile menus) {
         this.plugin = plugin;
-        this.file = file;
+        this.messages = messages;
+        this.menus = menus;
     }
 
-    public static Messages load(Plugin plugin, ConfigFile file) {
-        Messages messages = new Messages(plugin, file);
-        messages.reload();
-        return messages;
+    public static Messages load(Plugin plugin, ConfigFile messages, ConfigFile menus) {
+        Messages loaded = new Messages(plugin, messages, menus);
+        loaded.reload();
+        return loaded;
     }
 
-    /** Re-reads the already reloaded file. Reloading the file itself is the caller's job. */
+    /** Re-reads the already reloaded files. Reloading the files themselves is the caller's job. */
     public void reload() {
         entries.clear();
         templates.clear();
         muted.clear();
         alreadyReported.clear();
 
-        YamlConfiguration data = file.data();
-        String prefix = data.getString("prefix", "");
+        String prefix = messages.data().getString("prefix", "");
         this.rawPrefix = prefix;
         this.prefix = prefix.isEmpty() ? Component.empty() : TextFormat.parse(prefix);
 
+        read(messages.data(), prefix);
+        read(menus.data(), prefix);
+    }
+
+    private void read(YamlConfiguration data, String prefix) {
         for (String key : data.getKeys(true)) {
             if (data.isConfigurationSection(key)) {
                 continue;
@@ -190,7 +201,8 @@ public final class Messages implements MessageApi {
             return Component.empty();
         }
         if (alreadyReported.add(key)) {
-            plugin.getLogger().warning("Missing message '" + key + "' in messages.yml");
+            plugin.getLogger().warning("Missing line '" + key + "' in "
+                    + (key.startsWith("menu.") ? "menus.yml" : "messages.yml"));
         }
         return Component.text(key);
     }

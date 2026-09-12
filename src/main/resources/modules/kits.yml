@@ -62,7 +62,8 @@ kits:
   #   display           the name shown in /kits. MiniMessage, the old &-codes,
   #                     or both in the same line: '&c&lVIP <gray>kit' works.
   #                     Write && for an & that is not a colour.
-  #   lore              extra lines under that name.
+  #   lore              extra lines under that name. A line that names no colour
+  #                     is drawn grey, not the purple the game falls back to.
   #   icon              the item it is shown as. Either a material name, or the
   #                     same block an item takes, which is what /kitedit writes
   #                     when you drop a real item into the icon slot:
@@ -77,10 +78,8 @@ kits:
   #   one-time          true means once ever, whatever the cooldown says.
   #   max-claims        how many times in total it may ever be taken. 0 is no limit.
   #                     Unlike one-time this still honours the cooldown in between.
-  #   auto-armor        armour goes straight onto the player rather than into
-  #                     their inventory. A slot they have already filled is left
-  #                     alone: taking off enchanted diamond to put a kit's
-  #                     leather on would be a good way to lose it.
+  #   auto-armor        armour goes onto the player instead of into their
+  #                     inventory. A slot they have already filled is left alone.
   #   clear-inventory   empties their inventory before handing the kit over.
   #
   #   requirements      what has to be true before they may take it. Each one is
@@ -173,10 +172,8 @@ kits:
   #   /kitedit vip delete
   #
   # Leaving the value off puts a setting back to its default. Items are written
-  # in the form above rather than as a block of encoded data, which keeps the
-  # file readable and portable between versions; the cost is that anything the
-  # form cannot say, such as custom model data, is not carried over. The
-  # command says so when it happens.
+  # in the form above, so anything it cannot describe, such as custom model data,
+  # is not carried over. The command says so when it happens.
   # Anything that will not fit in the player's inventory lands at their feet.
   definitions:
 

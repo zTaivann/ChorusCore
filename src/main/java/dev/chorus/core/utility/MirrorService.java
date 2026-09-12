@@ -43,8 +43,8 @@ public final class MirrorService implements Listener {
 
     public void open(Player viewer, Player target, InventoryMirror.Kind kind, boolean editable) {
         String titleKey = kind == InventoryMirror.Kind.ENDER_CHEST
-                ? "utility.ecsee-title"
-                : "utility.invsee-title";
+                ? "menu.titles.ecsee"
+                : "menu.titles.invsee";
         Component title = messages.render(titleKey, "player", target.getName());
 
         InventoryMirror mirror = new InventoryMirror(plugin.getServer(), target, kind, editable,

@@ -14,6 +14,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public final class WarpListCommand extends ChorusCommand {
 
@@ -61,50 +63,86 @@ public final class WarpListCommand extends ChorusCommand {
         }
     }
 
+    /**
+     * The grid, or a screen of sections when the warps are grouped into any.
+     *
+     * <p>Twenty warps on one page is a wall of icons. A server that has already sorted them
+     * into Towns, Shops and Events has said how it wants them shown.
+     */
     private void openMenu(Player player, List<NamedLocation> visible) {
-        List<ListMenu.Entry> entries = new ArrayList<>(visible.size());
-        for (NamedLocation warp : visible) {
+        Map<String, List<NamedLocation>> sections = group(visible);
+        if (sections.size() < 2) {
+            openGrid(player, visible, "menu.warps.title", null);
+            return;
+        }
+
+        List<ListMenu.Entry> entries = new ArrayList<>(sections.size());
+        for (Map.Entry<String, List<NamedLocation>> group : sections.entrySet()) {
+            List<NamedLocation> inside = group.getValue();
+            String name = group.getKey().isEmpty()
+                    ? messages.plain("menu.warps.section-loose")
+                    : group.getKey();
+            entries.add(new ListMenu.Entry(
+                    icon(details.of(inside.get(0).name())),
+                    messages.render("menu.warps.section", "section", name),
+                    messages.renderLines("menu.warps.section-lore",
+                            "count", String.valueOf(inside.size())),
+                    clicker -> openGrid(clicker, inside, "menu.warps.section-title",
+                            back -> openMenu(back, visible), "section", name)));
+        }
+        ListMenu.open(player, messages, warps.settings().menu(), "menu.warps.title", entries, 0);
+    }
+
+    private void openGrid(Player player, List<NamedLocation> group, String titleKey,
+                          @Nullable Consumer<Player> back, String... titleValues) {
+        List<ListMenu.Entry> entries = new ArrayList<>(group.size());
+        for (NamedLocation warp : group) {
             WarpDetails detail = details.of(warp.name());
             entries.add(new ListMenu.Entry(
                     icon(detail),
-                    messages.render("warp.menu.entry", "warp", warp.name()),
+                    messages.render("menu.warps.entry", "warp", warp.name()),
                     lore(warp, detail),
                     clicker -> {
                         clicker.closeInventory();
                         clicker.performCommand("warp " + warp.name());
                     }));
         }
-        ListMenu.open(player, messages, warps.settings().menu(), "warp.menu.title", entries, 0);
+        ListMenu.open(player, messages, warps.settings().menu(), titleKey, entries, 0,
+                back, titleValues);
+    }
+
+    /** By section, in the order they were sorted into. Loose warps share the empty name. */
+    private Map<String, List<NamedLocation>> group(List<NamedLocation> visible) {
+        Map<String, List<NamedLocation>> sections = new LinkedHashMap<>();
+        for (NamedLocation warp : visible) {
+            String section = section(warp);
+            sections.computeIfAbsent(section == null ? "" : section,
+                    key -> new ArrayList<>()).add(warp);
+        }
+        return sections;
     }
 
     private List<Component> lore(NamedLocation warp, WarpDetails detail) {
         List<Component> lore = new ArrayList<>(6);
         if (detail.description() != null) {
-            lore.add(messages.render("warp.menu.lore-description",
+            lore.add(messages.render("menu.warps.lore-description",
                     "description", detail.description()));
         }
-        lore.add(messages.render("warp.menu.lore-world", "world", warp.worldName()));
-        lore.add(messages.render("warp.menu.lore-position",
+        lore.add(messages.render("menu.warps.lore-world", "world", warp.worldName()));
+        lore.add(messages.render("menu.warps.lore-position",
                 "x", round(warp.x()), "y", round(warp.y()), "z", round(warp.z())));
         if (detail.uses() > 0) {
-            lore.add(messages.render("warp.menu.lore-uses", "uses", String.valueOf(detail.uses())));
+            lore.add(messages.render("menu.warps.lore-uses", "uses", String.valueOf(detail.uses())));
         }
-        lore.add(messages.render("warp.menu.lore-divider"));
-        lore.add(messages.render("warp.menu.lore-action"));
+        lore.add(messages.render("menu.warps.lore-divider"));
+        lore.add(messages.render("menu.warps.lore-action"));
         return lore;
     }
 
     private void sendList(CommandSender sender, List<NamedLocation> visible) {
         messages.send(sender, "warp.list.header", "count", String.valueOf(visible.size()));
 
-        // Grouped in place: the list arrives sorted by section, so one pass builds the map
-        // and keeps the order it was sorted into.
-        Map<String, List<NamedLocation>> sections = new LinkedHashMap<>();
-        for (NamedLocation warp : visible) {
-            String section = section(warp);
-            sections.computeIfAbsent(section == null ? "" : section, key -> new ArrayList<>()).add(warp);
-        }
-
+        Map<String, List<NamedLocation>> sections = group(visible);
         boolean grouped = sections.size() > 1 || !sections.containsKey("");
         for (Map.Entry<String, List<NamedLocation>> group : sections.entrySet()) {
             if (grouped && !group.getKey().isEmpty()) {

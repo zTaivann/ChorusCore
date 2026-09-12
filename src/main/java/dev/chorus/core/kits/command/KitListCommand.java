@@ -56,25 +56,25 @@ public final class KitListCommand extends PlayerCommand {
         List<ListMenu.Entry> entries = new ArrayList<>(visible.size());
         for (Kit kit : visible) {
             List<Component> lore = new ArrayList<>(kit.lore());
-            lore.add(messages.render("kits.menu.lore-divider"));
+            lore.add(messages.render("menu.kits.lore-divider"));
             lore.add(status(kit, player, now));
             entries.add(new ListMenu.Entry(kit.icon(), kit.display(), lore, clicker -> {
                 clicker.closeInventory();
                 clicker.performCommand("kit " + kit.name());
             }));
         }
-        ListMenu.open(player, messages, settings.get().menu(), "kits.menu.title", entries, 0);
+        ListMenu.open(player, messages, settings.get().menu(), "menu.kits.title", entries, 0);
     }
 
     private Component status(Kit kit, Player player, long now) {
         long left = kits.remaining(player.getUniqueId(), kit, now);
         if (left == Long.MAX_VALUE) {
-            return messages.render("kits.menu.lore-taken");
+            return messages.render("menu.kits.lore-taken");
         }
         if (left > 0) {
-            return messages.render("kits.menu.lore-cooldown", "time", Durations.format(left));
+            return messages.render("menu.kits.lore-cooldown", "time", Durations.format(left));
         }
-        return messages.render("kits.menu.lore-action");
+        return messages.render("menu.kits.lore-action");
     }
 
     private void sendList(Player player, List<Kit> visible) {

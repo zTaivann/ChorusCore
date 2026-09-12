@@ -8,8 +8,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Puts the aliases from aliases.yml into the server's command map.
@@ -30,9 +33,15 @@ public final class CommandAliases {
     private CommandAliases() {
     }
 
-    public static void apply(JavaPlugin plugin, ConfigFile file, List<String> commands) {
+    /**
+     * @return the names taken from the server's own commands, each mapped to the command of
+     *         ours that should answer to it.
+     */
+    public static Map<String, String> apply(JavaPlugin plugin, ConfigFile file,
+                                            List<String> commands, Set<String> switchedOff) {
         CommandMap map = plugin.getServer().getCommandMap();
         String fallbackPrefix = plugin.getName().toLowerCase(Locale.ROOT);
+        Map<String, String> taken = new HashMap<>();
         boolean changed = false;
 
         for (String name : commands) {
@@ -42,8 +51,25 @@ public final class CommandAliases {
             }
 
             List<String> aliases = clean(file.data().getStringList(name), name);
-            boolean taken = takeOverBuiltIn(map, name, command);
-            if (aliases.isEmpty() && !taken) {
+
+            // A command from a module that is switched off answers that it is switched off,
+            // and that is no reason to take a name away from the server. Turning a module
+            // off should give back what was there before, not leave a hole where both were.
+            boolean live = !switchedOff.contains(name);
+            boolean freed = live && takeOverBuiltIn(map, name, command);
+            if (live) {
+                for (String alias : aliases) {
+                    // An alias the server itself answers to, such as clear, has to be freed
+                    // the same way the command's own name does. Bukkit silently drops an
+                    // alias that is already spoken for, so without this the line in
+                    // aliases.yml would do nothing at all and say nothing about it.
+                    if (takeOverBuiltIn(map, alias, command)) {
+                        taken.put(alias, name);
+                        freed = true;
+                    }
+                }
+            }
+            if (aliases.isEmpty() && !freed) {
                 continue;
             }
 
@@ -60,6 +86,7 @@ public final class CommandAliases {
             // when typed but do not turn up in tab completion until the next reconnect.
             plugin.getServer().getOnlinePlayers().forEach(Player::updateCommands);
         }
+        return Map.copyOf(taken);
     }
 
     /**

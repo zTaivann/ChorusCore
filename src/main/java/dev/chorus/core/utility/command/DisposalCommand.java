@@ -27,6 +27,6 @@ public final class DisposalCommand extends PlayerCommand {
 
         int slots = utility.settings().disposal().rows() * 9;
         player.openInventory(player.getServer()
-                .createInventory(null, slots, messages.render("utility.disposal-title")));
+                .createInventory(null, slots, messages.render("menu.titles.disposal")));
     }
 }

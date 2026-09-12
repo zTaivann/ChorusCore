@@ -94,20 +94,20 @@ public final class KitRulesMenu {
 
         if (rules.isEmpty()) {
             menu.set(EMPTY_SLOT, MenuItems.of(settings.disabled(),
-                    messages.render("kits.editor.rule-empty"),
-                    messages.renderLines("kits.editor.rule-empty-lore")));
+                    messages.render("menu.editor.rule-empty"),
+                    messages.renderLines("menu.editor.rule-empty-lore")));
         }
 
         menu.set(menu.size() - 9, MenuItems.of(settings.back(),
-                        messages.render("kits.editor.rule-back"),
-                        messages.renderLines("kits.editor.rule-back-lore",
+                        messages.render("menu.editor.rule-back"),
+                        messages.renderLines("menu.editor.rule-back-lore",
                                 "kit", KitEditor.titled(kit))),
                 clicker -> back.accept(clicker, kit));
 
         // Everything a line may say is written on this button, because it is the button
         // somebody presses when they do not yet know what a line may say.
         menu.set(menu.size() - 5, MenuItems.of(settings.add(),
-                        messages.render("kits.editor.rule-add"),
+                        messages.render("menu.editor.rule-add"),
                         messages.renderLines(addLoreKey(list))),
                 clicker -> askFor(clicker, kit, list, -1, null));
 
@@ -124,7 +124,7 @@ public final class KitRulesMenu {
                          ClickType click) {
         if (click.isShiftClick()) {
             if (editor.removeRule(kit, list, index)) {
-                messages.send(player, "kits.editor.rule-removed", "kit", kit);
+                messages.send(player, "menu.editor.rule-removed", "kit", kit);
             } else {
                 messages.send(player, "error.storage");
             }
@@ -146,7 +146,7 @@ public final class KitRulesMenu {
      */
     private void askFor(Player player, String kit, RuleList list, int index, @Nullable Rule rule) {
         if (rule != null) {
-            messages.send(player, "kits.editor.rule-current", "line", rule.line());
+            messages.send(player, "menu.editor.rule-current", "line", rule.line());
         }
         prompts.ask(player, messages.render(askKey(list), "kit", kit),
                 typed -> {
@@ -162,7 +162,7 @@ public final class KitRulesMenu {
                     boolean saved = index < 0
                             ? editor.addRule(kit, list, written)
                             : editor.setRule(kit, list, index, written);
-                    messages.send(player, saved ? "kits.editor.rule-saved" : "error.storage",
+                    messages.send(player, saved ? "menu.editor.rule-saved" : "error.storage",
                             "kit", kit);
                     open(player, kit, list);
                 },
@@ -171,15 +171,15 @@ public final class KitRulesMenu {
 
     private void askDeny(Player player, String kit, RuleList list, int index, Rule rule) {
         if (rule.deny() != null) {
-            messages.send(player, "kits.editor.rule-current", "line", rule.deny());
+            messages.send(player, "menu.editor.rule-current", "line", rule.deny());
         }
-        prompts.ask(player, messages.render("kits.editor.ask-deny", "kit", kit),
+        prompts.ask(player, messages.render("menu.editor.ask-deny", "kit", kit),
                 typed -> {
                     // "none" puts it back on the general refusal from messages.yml, since an
                     // empty chat line is not something a player can send.
                     String deny = typed.equalsIgnoreCase("none") ? null : typed;
                     boolean saved = editor.setRule(kit, list, index, new Rule(rule.line(), deny));
-                    messages.send(player, saved ? "kits.editor.rule-saved" : "error.storage",
+                    messages.send(player, saved ? "menu.editor.rule-saved" : "error.storage",
                             "kit", kit);
                     open(player, kit, list);
                 },
@@ -198,19 +198,19 @@ public final class KitRulesMenu {
 
         if (known == null) {
             return MenuItems.of(Material.BARRIER,
-                    messages.render("kits.editor.rule-unknown", "index", number),
-                    messages.renderLines("kits.editor.rule-unknown-lore", "line", rule.line()));
+                    messages.render("menu.editor.rule-unknown", "index", number),
+                    messages.renderLines("menu.editor.rule-unknown-lore", "line", rule.line()));
         }
 
         return MenuItems.of(known.material(),
-                messages.render("kits.editor.rule-entry", "index", number, "kind", known.name()),
+                messages.render("menu.editor.rule-entry", "index", number, "kind", known.name()),
                 list.denies()
-                        ? messages.renderLines("kits.editor.requirement-entry-lore",
+                        ? messages.renderLines("menu.editor.requirement-entry-lore",
                                 "line", rule.line(),
                                 "deny", rule.deny() == null
-                                        ? messages.plain("kits.editor.rule-deny-default")
+                                        ? messages.plain("menu.editor.rule-deny-default")
                                         : rule.deny())
-                        : messages.renderLines("kits.editor.rule-entry-lore", "line", rule.line()));
+                        : messages.renderLines("menu.editor.rule-entry-lore", "line", rule.line()));
     }
 
     /** What the line turned out to be, or null when it turned out to be nothing. */
@@ -235,27 +235,27 @@ public final class KitRulesMenu {
 
     private static String titleKey(RuleList list) {
         return switch (list) {
-            case CLAIM_ACTIONS -> "kits.editor.claimactions-title";
-            case FAIL_ACTIONS -> "kits.editor.failactions-title";
-            case REQUIREMENTS -> "kits.editor.requirements-title";
+            case CLAIM_ACTIONS -> "menu.editor.claimactions-title";
+            case FAIL_ACTIONS -> "menu.editor.failactions-title";
+            case REQUIREMENTS -> "menu.editor.requirements-title";
         };
     }
 
     private static String askKey(RuleList list) {
         return switch (list) {
-            case CLAIM_ACTIONS -> "kits.editor.ask-claimaction";
-            case FAIL_ACTIONS -> "kits.editor.ask-failaction";
-            case REQUIREMENTS -> "kits.editor.ask-requirement";
+            case CLAIM_ACTIONS -> "menu.editor.ask-claimaction";
+            case FAIL_ACTIONS -> "menu.editor.ask-failaction";
+            case REQUIREMENTS -> "menu.editor.ask-requirement";
         };
     }
 
     private static String addLoreKey(RuleList list) {
         return list.denies()
-                ? "kits.editor.requirement-add-lore"
-                : "kits.editor.action-add-lore";
+                ? "menu.editor.requirement-add-lore"
+                : "menu.editor.action-add-lore";
     }
 
     private static String badKey(RuleList list) {
-        return list.denies() ? "kits.editor.bad-requirement" : "kits.editor.bad-action";
+        return list.denies() ? "menu.editor.bad-requirement" : "menu.editor.bad-action";
     }
 }

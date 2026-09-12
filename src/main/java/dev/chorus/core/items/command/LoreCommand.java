@@ -77,7 +77,7 @@ public final class LoreCommand extends HeldItemCommand {
                     "max", String.valueOf(items.settings().maxLoreLines()));
             return false;
         }
-        lore.add(items.text(player, join(args, 1)));
+        lore.add(items.lore(player, join(args, 1)));
         return true;
     }
 
@@ -90,7 +90,7 @@ public final class LoreCommand extends HeldItemCommand {
         if (line < 0) {
             return false;
         }
-        lore.set(line, items.text(player, join(args, 2)));
+        lore.set(line, items.lore(player, join(args, 2)));
         return true;
     }
 

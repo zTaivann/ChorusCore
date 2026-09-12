@@ -21,13 +21,42 @@ PlaceholderAPI is installed, exposes its numbers as placeholders.
 Vault is optional: install it plus an economy plugin if you want prices to do anything.
 PlaceholderAPI is optional too, and the expansion registers itself when it is there.
 
+The console says what it found:
+
+```
+  ░█████╗░██╗░░██╗░█████╗░██████╗░██╗░░░██╗░██████╗
+  ██╔══██╗██║░░██║██╔══██╗██╔══██╗██║░░░██║██╔════╝
+  ██║░░╚═╝███████║██║░░██║██████╔╝██║░░░██║╚█████╗░
+  ██║░░██╗██╔══██║██║░░██║██╔══██╗██║░░░██║░╚═══██╗
+  ╚█████╔╝██║░░██║╚█████╔╝██║░░██║╚██████╔╝██████╔╝
+  ░╚════╝░╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝░╚═════╝░╚═════╝░
+  ░█████╗░░█████╗░██████╗░███████╗
+  ...
+
+  ChorusCore 0.1.0  ·  Paper 1.21.4
+  ✔ Storage        sqlite
+  ✔ Economy        Vault
+  ▪ Placeholders   PlaceholderAPI not installed
+  ✔ Modules        12 of 12
+  ✔ Commands       91 registered
+
+  Ready in 214ms
+
+  Thank you for using this plugin!
+  * zTaivann
+```
+
+A tick is something it connected to. `startup-banner: false` in `config.yml` replaces the
+whole thing with one line.
+
 ## Configuration
 
 ```
 plugins/ChorusCore/
 ├── config.yml            storage, economy switch, staff log
 ├── aliases.yml           extra names for every command
-├── messages.yml          every line the plugin sends
+├── messages.yml          every line the plugin sends to chat
+├── menus.yml             every word that appears on a screen
 └── modules/
     ├── homes.yml             /home /sethome /delhome /homes /renamehome
     │                         /homeicon
@@ -115,8 +144,28 @@ The bottom row is always navigation, so three rows shows eighteen entries a page
 ever moves under the cursor between pages. Set `enabled: false` to go back to the written
 list.
 
-The titles, the entry names and the lore under them live in `messages.yml`, so the wording
-and the colours are yours as well as the layout.
+Every word on a screen lives in `menus.yml`, with a block per screen, so the homes grid and
+the warps grid can say entirely different things:
+
+```yaml
+menu:
+  buttons:                # the navigation strip, shared by every paged screen
+    previous: '<color:#c9a227>« Previous'
+  homes:
+    title: '» YOUR HOMES «'
+    entry: '%home%'
+    lore-action: '➜ Click to teleport'
+  warps:
+    lore-action: '➜ Travel'
+  kits: ...
+  editor: ...             # the whole of /kitedit, prompts included
+```
+
+The rule is the key: anything starting with `menu.` is in `menus.yml`, everything else in
+`messages.yml`.
+
+`/warps` opens a screen of sections when any warp has one, and the warps inside it one click
+further in. Give a warp its section with `/warpset shop section Towns`.
 
 ### Colours
 
@@ -141,9 +190,10 @@ Values are put in as text, never as formatting. A player whose home is called `<
 those five characters, not a colour, and the same goes for `&`-codes — nobody can write their
 way into looking like somebody else.
 
-Item names and lore are not quietly italicised the way the game does it by default, and what
-you write is stored exactly as you wrote it. The formatting happens when the line is drawn,
-so an editor screen shows you the plain text back.
+Item names and lore are not quietly italicised the way the game does it by default, and a line
+of lore that names no colour is drawn grey rather than the purple the game falls back to.
+Neither is written into your file: what you type is stored exactly as you typed it, the styling
+happens when the line is drawn, and an editor screen shows you the plain text back.
 
 ### Aliases
 
@@ -155,7 +205,11 @@ delhome: [ removehome, remhome ]
 tpa: [ call, tpask ]
 ```
 
-An alias another plugin already owns is skipped rather than fought over.
+An alias another plugin already owns is skipped. A name the **server itself** answers to is
+taken over: `/clear` reaches `/clearinventory`, `/tps` reaches this plugin's. The line is
+rewritten before it is dispatched, so `/clear Notch` is `/clearinventory Notch` all the way
+down — its arguments, its permission, its messages. The original stays reachable as
+`/minecraft:clear`, and switching a module off gives its names back.
 
 ## Commands
 
@@ -400,7 +454,7 @@ and weather, and so does everybody standing next to them.
 | --- | --- | --- |
 | `/hat` | `chorus.items.hat` | op |
 | `/condense` | `chorus.items.condense` | op |
-| `/clearinventory [player]` | `chorus.items.clearinventory` | op |
+| `/clearinventory [player]` (also `/clear`) | `chorus.items.clearinventory` | op |
 | `/itemname <text>` | `chorus.items.itemname` | op |
 | `/lore <add\|set\|remove\|clear>` | `chorus.items.lore` | op |
 | `/more [amount]` | `chorus.items.more` | op |

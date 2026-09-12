@@ -13,6 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -43,7 +44,10 @@ public final class KitReader {
             String key = name.toLowerCase(Locale.ROOT);
             kits.put(key, kit(key, name, block, onProblem));
         }
-        return Map.copyOf(kits);
+        // Wrapped rather than copied: Map.copyOf gives back a map in whatever order it likes,
+        // and the order kits are listed in is the order the file puts them in. A server owner
+        // who moves a kit to the top of kits.yml means it to be at the top of the screen.
+        return Collections.unmodifiableMap(kits);
     }
 
     private static Kit kit(String key, String name, ConfigurationSection block,
@@ -72,7 +76,7 @@ public final class KitReader {
     }
 
     private static List<Component> lore(List<String> lines) {
-        return lines.stream().map(TextFormat::forItem).toList();
+        return lines.stream().map(TextFormat::forLore).toList();
     }
 
     private static List<KitItem> items(List<Map<?, ?>> entries, boolean placeholders,
@@ -135,7 +139,9 @@ public final class KitReader {
             meta.displayName(TextFormat.forItem(name));
         }
         if (entry.get("lore") instanceof List<?> lines) {
-            meta.lore(lines.stream().map(line -> TextFormat.forItem(String.valueOf(line))).toList());
+            meta.lore(lines.stream()
+                    .map(line -> TextFormat.forLore(String.valueOf(line)))
+                    .toList());
         }
         if (entry.get("enchantments") instanceof Map<?, ?> enchantments) {
             enchant(meta, enchantments, kit, onProblem);

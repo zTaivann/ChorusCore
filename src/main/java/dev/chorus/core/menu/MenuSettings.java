@@ -53,6 +53,11 @@ public record MenuSettings(boolean enabled, int rows, Material icon, @Nullable M
         return size() - 1;
     }
 
+    /** Only drawn on a screen that was opened from another one. */
+    public int backSlot() {
+        return size() - 7;
+    }
+
     private static @Nullable Material material(@Nullable String name, @Nullable Material fallback,
                                                Consumer<String> onBadMaterial) {
         if (name == null || name.isBlank()) {

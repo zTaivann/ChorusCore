@@ -56,19 +56,19 @@ public final class HomeListCommand extends PlayerCommand {
         for (Home home : owned) {
             entries.add(new ListMenu.Entry(
                     icon(home),
-                    messages.render("home.menu.entry", "home", home.name()),
+                    messages.render("menu.homes.entry", "home", home.name()),
                     List.of(
-                            messages.render("home.menu.lore-world", "world", home.worldName()),
-                            messages.render("home.menu.lore-position",
+                            messages.render("menu.homes.lore-world", "world", home.worldName()),
+                            messages.render("menu.homes.lore-position",
                                     "x", round(home.x()), "y", round(home.y()), "z", round(home.z())),
-                            messages.render("home.menu.lore-divider"),
-                            messages.render("home.menu.lore-action")),
+                            messages.render("menu.homes.lore-divider"),
+                            messages.render("menu.homes.lore-action")),
                     clicker -> {
                         clicker.closeInventory();
                         clicker.performCommand("home " + home.name());
                     }));
         }
-        ListMenu.open(player, messages, homes.settings().menu(), "home.menu.title", entries, 0);
+        ListMenu.open(player, messages, homes.settings().menu(), "menu.homes.title", entries, 0);
     }
 
     private void sendList(Player player, List<Home> owned) {

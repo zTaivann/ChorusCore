@@ -8,7 +8,8 @@
 # This file only holds things the whole plugin shares. Everything else has its own file:
 #
 #   aliases.yml           extra names for the commands
-#   messages.yml          every line the plugin sends
+#   messages.yml          every line the plugin sends to chat
+#   menus.yml             every word that appears on a screen
 #   modules/homes.yml     /home /sethome /delhome /homes
 #   modules/warps.yml     /warp /warps /setwarp /delwarp
 #   modules/spawn.yml     /spawn /setspawn
@@ -24,6 +25,12 @@
 #
 # /chorus reload re-reads all of them. Only the storage section and aliases.yml
 # need a full server restart.
+
+# ── Startup ──────────────────────────────────────────────────────────────
+#
+# The name in the console at startup, and a line for the database, the economy
+# and PlaceholderAPI. false prints one line instead.
+startup-banner: true
 
 # ── Storage ──────────────────────────────────────────────────────────────
 storage:

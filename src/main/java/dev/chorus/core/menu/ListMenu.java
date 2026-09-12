@@ -5,6 +5,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -36,13 +37,31 @@ public final class ListMenu {
 
     public static void open(Player viewer, Messages messages, MenuSettings settings,
                             String titleKey, List<Entry> entries, int page) {
+        open(viewer, messages, settings, titleKey, entries, page, null);
+    }
+
+    /**
+     * The same with a way back, for a screen that was opened from another one.
+     *
+     * @param back        what the back button does, or null for a screen that is the first one.
+     * @param titleValues anything else the title names, beyond the page it is on.
+     */
+    public static void open(Player viewer, Messages messages, MenuSettings settings,
+                            String titleKey, List<Entry> entries, int page,
+                            @Nullable Consumer<Player> back, String... titleValues) {
         int perPage = settings.perPage();
         int pages = Math.max(1, (entries.size() + perPage - 1) / perPage);
         int current = Math.min(Math.max(0, page), pages - 1);
 
-        Menu menu = new Menu(viewer.getServer(), messages.render(titleKey,
-                "page", String.valueOf(current + 1),
-                "pages", String.valueOf(pages)), settings.rows());
+        String[] values = new String[titleValues.length + 4];
+        values[0] = "page";
+        values[1] = String.valueOf(current + 1);
+        values[2] = "pages";
+        values[3] = String.valueOf(pages);
+        System.arraycopy(titleValues, 0, values, 4, titleValues.length);
+
+        Menu menu = new Menu(viewer.getServer(),
+                messages.render(titleKey, values), settings.rows());
 
         int first = current * perPage;
         for (int index = 0; index < perPage && first + index < entries.size(); index++) {
@@ -53,16 +72,25 @@ public final class ListMenu {
 
         if (current > 0) {
             menu.set(settings.previousSlot(), button(messages, settings.previousPage(),
-                            "menu.previous", "menu.previous-lore", current),
-                    clicker -> open(clicker, messages, settings, titleKey, entries, current - 1));
+                            "menu.buttons.previous", "menu.buttons.previous-lore", current),
+                    clicker -> open(clicker, messages, settings, titleKey, entries,
+                            current - 1, back, titleValues));
         }
         if (current < pages - 1) {
             menu.set(settings.nextSlot(), button(messages, settings.nextPage(),
-                            "menu.next", "menu.next-lore", current + 2),
-                    clicker -> open(clicker, messages, settings, titleKey, entries, current + 1));
+                            "menu.buttons.next", "menu.buttons.next-lore", current + 2),
+                    clicker -> open(clicker, messages, settings, titleKey, entries,
+                            current + 1, back, titleValues));
+        }
+        if (back != null) {
+            menu.set(settings.backSlot(), MenuItems.of(settings.previousPage(),
+                            messages.render("menu.buttons.back"),
+                            List.of(messages.render("menu.buttons.back-lore"))),
+                    back);
         }
         menu.set(settings.closeSlot(), MenuItems.of(settings.close(),
-                        messages.render("menu.close"), List.of(messages.render("menu.close-lore"))),
+                        messages.render("menu.buttons.close"),
+                        List.of(messages.render("menu.buttons.close-lore"))),
                 Player::closeInventory);
 
         menu.fill(0, settings.previousSlot(), MenuItems.filler(settings.filler()));

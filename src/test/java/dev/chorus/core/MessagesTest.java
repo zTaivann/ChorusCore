@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Keeps messages.yml and the code that sends from it in step.
+ * Keeps messages.yml, menus.yml and the code that sends from them in step.
  *
  * <p>The list of keys is scanned out of the source rather than written down here, so it can
  * never drift: a message the code sends is by definition one this test looks for.
@@ -30,7 +30,10 @@ class MessagesTest {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
-    /** The top-level sections of messages.yml, which every key begins with. */
+    /** Every file a line can come from. The key says which: menu. is a screen. */
+    private static final List<String> FILES = List.of("messages.yml", "menus.yml");
+
+    /** The top-level sections of both files, which every key begins with. */
     private static final String ROOTS = "error|core|cooldown|economy|chat|home|warp|spawn"
             + "|request|back|teleport|utility|staff|players|items|menu|kits";
 
@@ -50,7 +53,7 @@ class MessagesTest {
 
     @Test
     void everyTemplateParses() {
-        YamlConfiguration messages = Resources.read("messages.yml");
+        YamlConfiguration messages = allLines();
         List<String> broken = messages.getKeys(true).stream()
                 .filter(messages::isString)
                 .filter(key -> !parses(messages.getString(key, "")))
@@ -61,17 +64,17 @@ class MessagesTest {
 
     @Test
     void everyKeyTheCodeSendsExists() throws IOException {
-        YamlConfiguration messages = Resources.read("messages.yml");
+        YamlConfiguration messages = allLines();
         List<String> missing = keysUsedInSources().stream()
                 .filter(key -> !messages.isString(key))
                 .toList();
 
-        assertEquals(List.of(), missing, "messages.yml is missing keys the code sends");
+        assertEquals(List.of(), missing, "no file holds these keys the code sends");
     }
 
     @Test
     void noKeyIsLeftOver() throws IOException {
-        YamlConfiguration messages = Resources.read("messages.yml");
+        YamlConfiguration messages = allLines();
         Set<String> used = keysUsedInSources();
         List<String> unused = messages.getKeys(true).stream()
                 .filter(messages::isString)
@@ -79,7 +82,7 @@ class MessagesTest {
                 .filter(key -> !used.contains(key))
                 .toList();
 
-        assertEquals(List.of(), unused, "messages.yml has keys nothing sends");
+        assertEquals(List.of(), unused, "these lines exist but nothing sends them");
     }
 
     /**
@@ -91,7 +94,7 @@ class MessagesTest {
      */
     @Test
     void noLoreLineIsSentAsOnePieceWhenItAsksForSeveral() throws IOException {
-        YamlConfiguration messages = Resources.read("messages.yml");
+        YamlConfiguration messages = allLines();
         String sources = allSources();
 
         List<String> wrong = messages.getKeys(true).stream()
@@ -114,13 +117,35 @@ class MessagesTest {
      */
     @Test
     void theHelpTextShowsTheCodesRatherThanUsingThem() {
-        YamlConfiguration messages = Resources.read("messages.yml");
+        YamlConfiguration messages = allLines();
         String drawn = PLAIN.serialize(MiniMessage.miniMessage()
                 .deserialize(TextFormat.toTags(
-                        messages.getString("kits.editor.action-add-lore", ""))));
+                        messages.getString("menu.editor.action-add-lore", ""))));
 
         assertTrue(drawn.contains("&a"), "the example colour code should still be readable");
         assertTrue(drawn.contains("<green>"), "the example tag should still be readable");
+    }
+
+    /**
+     * Both files as one, which is how the plugin reads them.
+     *
+     * <p>Which file a line lives in is a question for whoever is editing them, not for the
+     * code: a key is a key. Reading them together is also what catches the same key being
+     * written into both.
+     */
+    private static YamlConfiguration allLines() {
+        YamlConfiguration everything = new YamlConfiguration();
+        for (String file : FILES) {
+            YamlConfiguration read = Resources.read(file);
+            for (String key : read.getKeys(true)) {
+                if (read.isString(key)) {
+                    assertTrue(everything.getString(key) == null,
+                            "'" + key + "' is in more than one file");
+                    everything.set(key, read.getString(key));
+                }
+            }
+        }
+        return everything;
     }
 
     /** Lore keys are the ones whose last segment says so, either way round. */

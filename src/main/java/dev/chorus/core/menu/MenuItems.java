@@ -1,7 +1,7 @@
 package dev.chorus.core.menu;
 
+import dev.chorus.core.locale.TextFormat;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -31,8 +31,8 @@ public final class MenuItems {
             return item;
         }
 
-        meta.displayName(upright(name));
-        meta.lore(lore.stream().map(MenuItems::upright).toList());
+        meta.displayName(TextFormat.upright(name));
+        meta.lore(lore.stream().map(TextFormat::asLore).toList());
         // values() rather than named constants: the set of flags has grown over the years
         // and naming one that a version lacks would fail to link.
         meta.addItemFlags(ItemFlag.values());
@@ -42,18 +42,5 @@ public final class MenuItems {
 
     public static @Nullable ItemStack filler(@Nullable Material material) {
         return material == null ? null : of(material, Component.empty(), List.of());
-    }
-
-    /**
-     * The game draws anything written on an item in italics unless told otherwise, which is
-     * never what a menu wants and is not something the line asked for.
-     *
-     * <p>Set on the outside, so a line that does want italics still gets them: a style on a
-     * child beats the one it inherits.
-     */
-    private static Component upright(Component text) {
-        return text.style().decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET
-                ? text.decoration(TextDecoration.ITALIC, false)
-                : text;
     }
 }

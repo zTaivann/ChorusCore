@@ -78,6 +78,28 @@ class TextFormatTest {
         assertEquals(TextDecoration.State.FALSE, item.style().decoration(TextDecoration.ITALIC));
     }
 
+    /**
+     * The game draws a line of lore purple when nothing says otherwise, which is nobody's
+     * idea of a default and is not something the line asked for.
+     */
+    @Test
+    void loreWithNoColourOfItsOwnIsGrey() {
+        assertEquals(NamedTextColor.GRAY, TextFormat.forLore("Welcome to the server").color());
+    }
+
+    /** A line that does name a colour keeps it, the fallback being only a fallback. */
+    @Test
+    void loreKeepsTheColourItAsksFor() {
+        assertEquals(NamedTextColor.RED, colourOf(TextFormat.forLore("&cDanger")));
+        assertEquals(NamedTextColor.GOLD, colourOf(TextFormat.forLore("<gold>Rich")));
+    }
+
+    /** And that fallback never reaches the file as though somebody had typed it. */
+    @Test
+    void theFallbackIsNotWrittenBackIntoTheConfig() {
+        assertEquals("Welcome", TextFormat.toText(TextFormat.forLore("Welcome")));
+    }
+
     /** But the text can still ask for italics itself, in either format. */
     @Test
     void itemTextCanStillAskForItalics() {

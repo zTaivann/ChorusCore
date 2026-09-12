@@ -10,6 +10,7 @@ import dev.chorus.core.chat.ChatModule;
 import dev.chorus.core.command.ActionGuard;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandAliases;
+import dev.chorus.core.command.CommandOverrides;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Cooldowns;
 import dev.chorus.core.command.DisabledCommand;
@@ -51,7 +52,10 @@ import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -68,7 +72,10 @@ public final class ChorusPlugin extends JavaPlugin {
 
     private final Deque<ChorusModule> modules = new ArrayDeque<>();
     private final List<String> registeredCommands = new ArrayList<>();
+    private final Set<String> switchedOff = new HashSet<>();
     private final Cooldowns cooldowns = new Cooldowns();
+
+    private int modulesOff;
 
     private ConfigFiles configs;
     private Executor mainThread;
@@ -85,6 +92,7 @@ public final class ChorusPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        long started = System.currentTimeMillis();
         configs = new ConfigFiles(this);
         ConfigFile core = configs.get("config.yml");
 
@@ -94,7 +102,7 @@ public final class ChorusPlugin extends JavaPlugin {
             }
         };
         worker = Executors.newFixedThreadPool(2, storageThreadFactory());
-        messages = Messages.load(this, configs.get("messages.yml"));
+        messages = Messages.load(this, configs.get("messages.yml"), configs.get("menus.yml"));
 
         economy = core.section("economy").getBoolean("enabled", true)
                 ? new VaultEconomy(getServer(), getLogger())
@@ -169,10 +177,51 @@ public final class ChorusPlugin extends JavaPlugin {
         getServer().getServicesManager().register(ChorusApi.class, services, this, ServicePriority.Normal);
         hookPlaceholders(staff, players);
 
-        CommandAliases.apply(this, configs.get("aliases.yml"), registeredCommands);
+        CommandOverrides overrides = new CommandOverrides(
+                CommandAliases.apply(this, configs.get("aliases.yml"), registeredCommands,
+                        switchedOff));
+        if (!overrides.isEmpty()) {
+            register(overrides);
+        }
         getServer().getScheduler().runTaskTimer(this,
                 () -> cooldowns.sweep(System.currentTimeMillis()),
                 COOLDOWN_SWEEP_TICKS, COOLDOWN_SWEEP_TICKS);
+
+        announce(core, System.currentTimeMillis() - started);
+    }
+
+    /** The console at the end of a start that worked, so it can say what was found. */
+    private void announce(ConfigFile core, long millis) {
+        if (!core.data().getBoolean("startup-banner", true)) {
+            getLogger().info("Started in " + millis + "ms");
+            return;
+        }
+
+        Console console = new Console(this);
+        console.banner();
+        console.title(getDescription().getVersion(), serverVersion());
+
+        console.connected("Storage", storage.dialect().name().toLowerCase(Locale.ROOT));
+        if (economy instanceof NoEconomy) {
+            console.absent("Economy", economy.status());
+        } else {
+            console.connected("Economy", economy.status());
+        }
+        if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            console.connected("Placeholders", "PlaceholderAPI");
+        } else {
+            console.absent("Placeholders", "PlaceholderAPI not installed");
+        }
+        console.connected("Modules", modules.size() + " of " + (modules.size() + modulesOff));
+        console.connected("Commands", registeredCommands.size() + " registered");
+        console.ready(millis, String.join(", ", getDescription().getAuthors()));
+    }
+
+    /** "1.21.4" out of the long string Bukkit reports, which nobody wants in full. */
+    private String serverVersion() {
+        String bukkit = getServer().getBukkitVersion();
+        int dash = bukkit.indexOf('-');
+        return getServer().getName() + " " + (dash < 0 ? bukkit : bukkit.substring(0, dash));
     }
 
     @Override
@@ -309,7 +358,14 @@ public final class ChorusPlugin extends JavaPlugin {
         }
 
         if (!configs.get(module.configPath()).data().getBoolean("enabled", true)) {
-            module.commandNames().forEach(name -> register(new DisabledCommand(support, name)));
+            module.commandNames().forEach(name -> {
+                register(new DisabledCommand(support, name));
+                // Noted so it does not go on to take /clear away from the server and then
+                // answer that it is switched off. Turning a module off should give the
+                // server back what it had, not leave a hole where both used to be.
+                switchedOff.add(name);
+            });
+            modulesOff++;
             getLogger().info("Module '" + module.name() + "' is switched off in " + module.configPath());
             return;
         }

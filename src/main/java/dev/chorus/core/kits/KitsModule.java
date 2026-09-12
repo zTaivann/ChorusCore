@@ -65,13 +65,14 @@ public final class KitsModule implements ChorusModule {
             throw new IllegalStateException("The kit history table could not be created", exception);
         }
 
-        kits = new KitService(repository, plugin.messages(), plugin.economy(), plugin.worker(), plugin.mainThread());
+        kits = new KitService(repository, plugin.messages(), plugin.economy(),
+                plugin.worker(), plugin.mainThread());
         load();
 
         plugin.register(new KitDataListener(kits, plugin.messages(), plugin.getLogger()));
         commands.add(plugin.register(new KitCommand(support, kits, plugin.getLogger())));
         commands.add(plugin.register(new KitListCommand(support, kits, () -> settings)));
-        KitEditor editor = new KitEditor(config, this::reloadKits);
+        KitEditor editor = new KitEditor(config, this::load);
         KitEditMenu menu = new KitEditMenu(plugin, kits, editor, plugin.messages(), plugin.economy(),
                 plugin.prompts(), KitMenuSettings.read(config.section("kits.editor"), this::warn));
         commands.add(plugin.register(
@@ -98,19 +99,15 @@ public final class KitsModule implements ChorusModule {
     }
 
     /**
-     * Re-reads the kits after /kitedit has changed one.
+     * Reads the kits out of the config already in memory, never off the disk.
      *
-     * <p>From the config already in memory, not from the file. It was just written out of
-     * that same memory, so reading it back would be a second trip to the disk on every click
-     * of a button somebody might click twenty times in a row.
+     * <p>This is also what /kitedit calls after changing one. The file was just written out
+     * of this same memory, so reading it back would be a second trip to the disk on every
+     * click of a button somebody might click twenty times in a row.
      *
      * <p>It does mean an icon arrives here as a plain map rather than as the section a saved
      * file gives back, which is exactly why the reader accepts both.
      */
-    private void reloadKits() {
-        load();
-    }
-
     private void load() {
         ConfigurationSection root = config.section("kits");
         settings = KitSettings.read(root, this::warn);

@@ -2,7 +2,6 @@ package dev.chorus.core.items;
 
 import dev.chorus.core.locale.TextFormat;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 
 public final class ItemService {
@@ -24,26 +23,29 @@ public final class ItemService {
     }
 
     /**
-     * Turns typed text into a component. Only a player holding the format permission gets
-     * their formatting read; for everyone else the text stays exactly as they wrote it.
+     * A typed name. Only a player holding the format permission gets their formatting read;
+     * for everyone else the text stays exactly as they wrote it.
      *
      * <p>Both ways of writing it work, and work together: {@code &c&lRed} and
-     * {@code <red><bold>Red} name the same sword, and a line may use either.
-     *
-     * <p>Names and lore are also given a plain style, because Minecraft renders anything an
-     * item is named in italics by default and nobody ever wants that.
+     * {@code <red><bold>Red} name the same sword, and one line may use either.
      */
-    public Component text(Player author, String raw) {
-        Component text = author.hasPermission(FORMAT_PERMISSION)
+    public Component name(Player author, String raw) {
+        return TextFormat.upright(typed(author, raw));
+    }
+
+    /**
+     * A typed line of lore, which the game would otherwise draw in purple.
+     *
+     * <p>Nobody typing {@code /lore add Forged in the deep} means purple, so a line that
+     * names no colour is drawn in grey like the rest of an item.
+     */
+    public Component lore(Player author, String raw) {
+        return TextFormat.asLore(typed(author, raw));
+    }
+
+    private Component typed(Player author, String raw) {
+        return author.hasPermission(FORMAT_PERMISSION)
                 ? TextFormat.parse(raw)
                 : Component.text(raw);
-
-        // Wrapping rather than setting it on the text itself: children inherit the parent's
-        // style only where they have not chosen one, so somebody who really did ask for
-        // italics still gets them.
-        return Component.text()
-                .decoration(TextDecoration.ITALIC, false)
-                .append(text)
-                .build();
     }
 }

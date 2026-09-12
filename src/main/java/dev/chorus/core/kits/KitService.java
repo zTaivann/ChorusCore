@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,7 +57,7 @@ public final class KitService {
     }
 
     public Optional<Kit> find(String name) {
-        return Optional.ofNullable(kits.get(name.toLowerCase(java.util.Locale.ROOT)));
+        return Optional.ofNullable(kits.get(name.toLowerCase(Locale.ROOT)));
     }
 
     public List<Kit> all() {
@@ -164,28 +165,54 @@ public final class KitService {
      */
     public CompletableFuture<Void> give(Player player, Kit kit) {
         long now = System.currentTimeMillis();
-        CompletableFuture<Void> saved = Queries.run(() -> {
-            repository.markUsed(player.getUniqueId(), kit.name(), now);
+        UUID owner = player.getUniqueId();
+
+        // Written down before the database rather than after it. Everything that decides
+        // whether a kit may be taken reads this map, and the write is a round trip off the
+        // server thread: a player pressing the button twice in the same second would pass
+        // the check twice and be handed a one-time kit twice over. Put back below if the
+        // write turns out to have failed.
+        KitRepository.Use before = remember(owner, kit.name(), now);
+
+        return Queries.<Void>run(() -> {
+            repository.markUsed(owner, kit.name(), now);
             return null;
-        }, worker, mainThread);
-
-        return saved.thenRun(() -> {
-            Map<String, KitRepository.Use> taken = uses.computeIfAbsent(
-                    player.getUniqueId(), owner -> new ConcurrentHashMap<>());
-            KitRepository.Use before = taken.get(kit.name());
-            taken.put(kit.name(),
-                    new KitRepository.Use(now, before == null ? 1 : before.times() + 1));
-
+        }, worker, mainThread).whenComplete((ignored, failure) -> {
+            if (failure != null) {
+                forget(owner, kit.name(), before);
+                return;
+            }
             hand(player, kit);
             KitAction.runAll(kit.claimActions(), player, messages, kit.name());
         });
     }
 
+    private @Nullable KitRepository.Use remember(UUID owner, String kit, long now) {
+        Map<String, KitRepository.Use> taken =
+                uses.computeIfAbsent(owner, id -> new ConcurrentHashMap<>());
+        KitRepository.Use before = taken.get(kit);
+        taken.put(kit, new KitRepository.Use(now, before == null ? 1 : before.times() + 1));
+        return before;
+    }
+
+    /** Undoes that, for the claim that was recorded and then could not be saved. */
+    private void forget(UUID owner, String kit, @Nullable KitRepository.Use before) {
+        Map<String, KitRepository.Use> taken = uses.get(owner);
+        if (taken == null) {
+            return;
+        }
+        if (before == null) {
+            taken.remove(kit);
+        } else {
+            taken.put(kit, before);
+        }
+    }
+
     /**
      * Puts the kit where it belongs.
      *
-     * <p>Armour goes on rather than into the inventory when {@code auto-armor} is on and the slot
-     * is free. Taking off what somebody is already wearing to put the kit's on would be a
+     * <p>Armour goes on rather than into the inventory when {@code auto-armor} is on and the
+     * slot is free. Taking off what somebody is already wearing to put the kit's on would be a
      * good way to lose enchanted diamond, so an occupied slot is left alone and the piece
      * goes in the inventory as any other item would.
      */
@@ -262,8 +289,9 @@ public final class KitService {
             }
         }
     }
+
     public CompletableFuture<Boolean> reset(UUID owner, String kit) {
-        String key = kit.toLowerCase(java.util.Locale.ROOT);
+        String key = kit.toLowerCase(Locale.ROOT);
         return Queries.run(() -> repository.clear(owner, key), worker, mainThread)
                 .thenApply(cleared -> {
                     Map<String, KitRepository.Use> taken = uses.get(owner);

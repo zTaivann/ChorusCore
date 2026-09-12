@@ -39,7 +39,7 @@ public final class ItemNameCommand extends HeldItemCommand {
         }
 
         boolean clearing = args.length == 1 && args[0].toLowerCase(Locale.ROOT).equals("reset");
-        meta.displayName(clearing ? null : items.text(player, String.join(" ", args)));
+        meta.displayName(clearing ? null : items.name(player, String.join(" ", args)));
         item.setItemMeta(meta);
 
         settle(player);

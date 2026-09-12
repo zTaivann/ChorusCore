@@ -60,6 +60,7 @@ public final class KitEditCommand extends PlayerCommand {
             new Setting("onetime", "<true|false>", "kits.edit-help-onetime"),
             new Setting("autoarmor", "<true|false>", "kits.edit-help-autoarmor"),
             new Setting("clearinventory", "<true|false>", "kits.edit-help-clearinventory"),
+            new Setting("placeholders", "<true|false>", "kits.edit-help-placeholders"),
             new Setting("delete", "", "kits.edit-help-delete"));
 
     private final KitService kits;
@@ -165,6 +166,8 @@ public final class KitEditCommand extends PlayerCommand {
         messages.send(player, "kits.edit-info-autoarmor", "autoarmor", word(kit.autoArmor()));
         messages.send(player, "kits.edit-info-clearinventory",
                 "clearinventory", word(kit.clearInventory()));
+        messages.send(player, "kits.edit-info-placeholders",
+                "placeholders", word(kit.placeholders()));
         messages.send(player, "kits.edit-info-items", "count", String.valueOf(kit.items().size()));
         if (!kit.requirements().isEmpty()) {
             messages.send(player, "kits.edit-info-requirements",
@@ -281,7 +284,8 @@ public final class KitEditCommand extends PlayerCommand {
             case "cooldown" -> Durations.format(TimeUnit.SECONDS.toMillis((long) number(value)));
             case "maxclaims" -> (long) number(value) + " " + messages.plain("kits.word-claims");
             case "price" -> economy.format(number(value));
-            case "onetime", "autoarmor", "clearinventory" -> word(Boolean.parseBoolean(value));
+            case "onetime", "autoarmor", "clearinventory", "placeholders" ->
+                    word(Boolean.parseBoolean(value));
             default -> value;
         };
     }
@@ -319,7 +323,7 @@ public final class KitEditCommand extends PlayerCommand {
             return List.of();
         }
         return switch (args[1].toLowerCase(Locale.ROOT)) {
-            case "onetime", "autoarmor", "clearinventory" ->
+            case "onetime", "autoarmor", "clearinventory", "placeholders" ->
                     startingWith(args[2], List.of("true", "false"));
             case "cooldown" -> startingWith(args[2], List.of("0", "60", "3600", "86400"));
             case "maxclaims" -> startingWith(args[2], List.of("0", "1", "5", "10"));

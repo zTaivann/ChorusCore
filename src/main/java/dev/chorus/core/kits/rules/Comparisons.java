@@ -1,5 +1,7 @@
 package dev.chorus.core.kits.rules;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Locale;
 
 /**
@@ -63,7 +65,7 @@ final class Comparisons {
         };
     }
 
-    private static String operatorAt(String filled, String word) {
+    private static @Nullable String operatorAt(String filled, String word) {
         return filled.toLowerCase(Locale.ROOT).contains(" " + word + " ") ? " " + word + " " : null;
     }
 
@@ -74,9 +76,10 @@ final class Comparisons {
                 filled.substring(at + operator.length()).trim()};
     }
 
-    private static Double number(String raw) {
+    /** A currency sign is dropped, since a balance placeholder often carries one. */
+    private static @Nullable Double number(String raw) {
         try {
-            return Double.valueOf(raw.replace(',', '.').replace("$", "").replace(",", ""));
+            return Double.valueOf(raw.replace(',', '.').replace("$", ""));
         } catch (NumberFormatException notANumber) {
             return null;
         }

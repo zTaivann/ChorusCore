@@ -75,7 +75,7 @@ public final class ChatPrompts implements Listener {
                 new Prompt(answer, aborted, System.currentTimeMillis() + TIMEOUT_MILLIS));
 
         player.sendMessage(ask);
-        messages.send(player, "menu.prompt-cancel");
+        messages.send(player, "core.prompt-cancel");
     }
 
     /**
@@ -117,7 +117,7 @@ public final class ChatPrompts implements Listener {
             }
             Player player = plugin.getServer().getPlayer(entry.getKey());
             if (player != null) {
-                messages.send(player, "menu.prompt-expired");
+                messages.send(player, "core.prompt-expired");
             }
             return true;
         });

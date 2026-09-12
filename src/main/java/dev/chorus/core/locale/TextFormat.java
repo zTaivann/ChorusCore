@@ -1,6 +1,7 @@
 package dev.chorus.core.locale;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.Nullable;
@@ -132,28 +133,55 @@ public final class TextFormat {
      * beats the one it inherits.
      */
     public static Component forItem(String raw) {
-        return Component.text()
-                .decoration(TextDecoration.ITALIC, false)
-                .append(parse(raw))
-                .build();
+        return upright(parse(raw));
+    }
+
+    /**
+     * A line of lore, which needs one thing more.
+     *
+     * <p>The game draws a line of lore in purple when nothing says otherwise. Almost nobody
+     * writing {@code lore: Welcome to the server} means purple, and nothing in the line said
+     * so, so the fallback is grey: the colour everything else on an item is written in.
+     * A line that does name a colour still gets it, for the same reason the italics work.
+     */
+    public static Component forLore(String raw) {
+        return asLore(parse(raw));
+    }
+
+    /** Item text as it should be drawn: never italic unless the text itself asked. */
+    public static Component upright(Component text) {
+        return text.style().decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET
+                ? text.decoration(TextDecoration.ITALIC, false)
+                : text;
+    }
+
+    /** A line of lore as it should be drawn: upright, and grey where nothing said otherwise. */
+    public static Component asLore(Component line) {
+        Component upright = upright(line);
+        return upright.color() == null ? upright.color(NamedTextColor.GRAY) : upright;
     }
 
     /**
      * The reverse, for writing an item somebody built in game back into the config.
      *
-     * <p>The italic-off that {@link #forItem} puts on the outside comes back off here. It
-     * belongs to how the game draws an item, not to what the line says, and writing it down
-     * would put a second one on the next time the text came through, and a third the time
-     * after that, until the file was more instruction than text.
+     * <p>What {@link #forItem} and {@link #forLore} put on the outside comes back off here:
+     * the italic-off and the grey. Both belong to how the game draws an item rather than to
+     * what the line says, and writing them down would put a second pair on the next time the
+     * text came through, and a third the time after that, until the file was more instruction
+     * than text.
      */
     public static String toText(@Nullable Component text) {
         if (text == null) {
             return "";
         }
-        Component written =
-                text.style().decoration(TextDecoration.ITALIC) == TextDecoration.State.FALSE
-                        ? text.decoration(TextDecoration.ITALIC, TextDecoration.State.NOT_SET)
-                        : text;
+
+        Component written = text;
+        if (written.style().decoration(TextDecoration.ITALIC) == TextDecoration.State.FALSE) {
+            written = written.decoration(TextDecoration.ITALIC, TextDecoration.State.NOT_SET);
+            if (NamedTextColor.GRAY.equals(written.color())) {
+                written = written.color(null);
+            }
+        }
         return MINI_MESSAGE.serialize(written);
     }
 

@@ -52,7 +52,7 @@ public record KitItem(ItemStack item, @Nullable String name, @Nullable List<Stri
         }
         if (lore != null) {
             meta.lore(lore.stream()
-                    .map(line -> TextFormat.forItem(Placeholders.fill(player, line)))
+                    .map(line -> TextFormat.forLore(Placeholders.fill(player, line)))
                     .toList());
         }
         copy.setItemMeta(meta);

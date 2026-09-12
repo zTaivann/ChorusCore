@@ -6,11 +6,13 @@
 # └────────────────────────────────────────────────────────────────────────┘
 #
 # The real name on the left always works; anything you list is added on top of it.
-# An alias another plugin already owns is skipped, so /home stays yours and the clash
-# just does nothing. Leave a list empty to have no extra names at all.
+# An alias another plugin already owns is skipped. Leave a list empty for no extra
+# names at all.
 #
-# Aliases are applied while the server starts, so changing them needs a restart,
-# not /chorus reload.
+# A name the server itself answers to is taken over: /clear reaches /clearinventory.
+# The original stays available as /minecraft:clear.
+#
+# Changing this file needs a server restart, not /chorus reload.
 
 # Core
 chorus: [ chorusecore ]
@@ -115,7 +117,7 @@ pweather: [ playerweather ]
 # Items
 hat: [ head ]
 condense: [ compress ]
-clearinventory: [ ci, clearinv ]
+clearinventory: [ clear, ci, clearinv ]
 itemname: [ rename ]
 lore: [ itemlore ]
 more: [ fill ]
