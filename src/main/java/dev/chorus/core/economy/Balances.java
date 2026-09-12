@@ -1,6 +1,7 @@
 package dev.chorus.core.economy;
 
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.function.DoubleFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,10 +23,19 @@ import java.util.logging.Logger;
  * table is read once at startup and written back whenever an amount changes. The whole of a
  * large server's ledger is a few megabytes, and a lookup costs a hash.
  *
- * <p>Writes are queued rather than waited on. A balance that changed is already correct for
- * everybody reading it; the row catching up a moment later changes nothing.
+ * <p>Every change goes through {@link #change}, which reads the old amount and writes the new
+ * one in a single step the map will not let anything else interleave with. Checking a balance
+ * and then taking money from it as two separate operations is how a shop gets paid twice on a
+ * server that ticks more than one thread.
+ *
+ * <p>Writes to the database are queued rather than waited on. A balance that changed is
+ * already correct for everybody reading it; the row catching up a moment later changes
+ * nothing.
  */
 public final class Balances {
+
+    /** How long a /baltop ranking is reused before it is worked out again. */
+    private static final long RANKING_MILLIS = 30_000;
 
     private final BalanceRepository repository;
     private final Executor worker;
@@ -32,6 +43,8 @@ public final class Balances {
     private final Map<UUID, Entry> accounts = new ConcurrentHashMap<>();
 
     private volatile Currency currency;
+    private volatile List<Ranked> ranking = List.of();
+    private volatile long rankedAt;
 
     public Balances(BalanceRepository repository, Executor worker, Logger logger, Currency currency) {
         this.repository = repository;
@@ -42,6 +55,7 @@ public final class Balances {
 
     public void apply(Currency updated) {
         this.currency = updated;
+        this.rankedAt = 0;
     }
 
     public Currency currency() {
@@ -54,6 +68,7 @@ public final class Balances {
         for (BalanceRepository.Account account : repository.all()) {
             accounts.put(account.player(), new Entry(account.name(), account.balance()));
         }
+        rankedAt = 0;
     }
 
     public int size() {
@@ -73,6 +88,7 @@ public final class Balances {
         double opening = currency.clamp(currency.startingBalance());
         accounts.put(player, new Entry(name, opening));
         write(player, name, opening);
+        rankedAt = 0;
     }
 
     public boolean exists(UUID player) {
@@ -90,11 +106,11 @@ public final class Balances {
 
     public boolean withdraw(OfflinePlayer player, double amount) {
         double taken = currency.round(amount);
-        if (taken <= 0 || !has(player.getUniqueId(), taken)) {
+        if (taken <= 0) {
             return false;
         }
-        set(player, of(player.getUniqueId()) - taken);
-        return true;
+        // Null refuses the change, which is how "not enough" is said without a second read.
+        return change(player, balance -> balance + 1e-9 >= taken ? balance - taken : null);
     }
 
     public boolean deposit(OfflinePlayer player, double amount) {
@@ -102,24 +118,49 @@ public final class Balances {
         if (given <= 0) {
             return false;
         }
-        set(player, of(player.getUniqueId()) + given);
-        return true;
+        return change(player, balance -> balance + given);
     }
 
-    /** The one place a balance changes, so clamping and the write happen exactly once. */
     public void set(OfflinePlayer player, double amount) {
-        UUID id = player.getUniqueId();
-        Entry existing = accounts.get(id);
-        String name = existing != null ? existing.name
-                : player.getName() == null ? id.toString() : player.getName();
-        double balance = currency.clamp(amount);
+        change(player, balance -> amount);
+    }
 
-        accounts.put(id, new Entry(name, balance));
-        write(id, name, balance);
+    /**
+     * Reads and writes one balance as a single step.
+     *
+     * @param update the new amount, or null to leave it alone
+     * @return whether anything changed
+     */
+    private boolean change(OfflinePlayer player, DoubleFunction<@Nullable Double> update) {
+        UUID id = player.getUniqueId();
+        String fallback = player.getName() == null ? id.toString() : player.getName();
+        Entry[] written = new Entry[1];
+
+        accounts.compute(id, (key, existing) -> {
+            double current = existing == null
+                    ? currency.clamp(currency.startingBalance())
+                    : existing.balance;
+            Double next = update.apply(current);
+            if (next == null) {
+                return existing;
+            }
+            Entry updated = new Entry(existing == null ? fallback : existing.name,
+                    currency.clamp(next));
+            written[0] = updated;
+            return updated;
+        });
+
+        if (written[0] == null) {
+            return false;
+        }
+        write(id, written[0].name, written[0].balance);
+        rankedAt = 0;
+        return true;
     }
 
     public void forget(UUID player) {
         accounts.remove(player);
+        rankedAt = 0;
         worker.execute(() -> {
             try {
                 repository.delete(player);
@@ -130,17 +171,14 @@ public final class Balances {
     }
 
     /**
-     * The richest accounts, newest balance first.
+     * The richest accounts, richest first.
      *
-     * <p>Sorted from memory rather than asked of the database, which keeps /baltop off the
-     * worker threads entirely and lets it answer for players who have never been online at
-     * the same time as anybody.
+     * <p>Ranked from memory rather than asked of the database, and the ranking is kept for
+     * half a minute: sorting every account on a server with a hundred thousand of them is not
+     * something to do again because two people ran /baltop in the same breath.
      */
     public List<Ranked> top(int limit, int offset) {
-        List<Ranked> ranked = new ArrayList<>(accounts.size());
-        accounts.forEach((id, entry) -> ranked.add(new Ranked(id, entry.name, entry.balance)));
-        ranked.sort(Comparator.comparingDouble(Ranked::balance).reversed());
-
+        List<Ranked> ranked = rank();
         int from = Math.min(offset, ranked.size());
         return List.copyOf(ranked.subList(from, Math.min(from + limit, ranked.size())));
     }
@@ -151,6 +189,22 @@ public final class Balances {
             sum += entry.balance;
         }
         return sum;
+    }
+
+    private List<Ranked> rank() {
+        long now = System.currentTimeMillis();
+        List<Ranked> cached = ranking;
+        if (now - rankedAt < RANKING_MILLIS && !cached.isEmpty()) {
+            return cached;
+        }
+
+        List<Ranked> ranked = new ArrayList<>(accounts.size());
+        accounts.forEach((id, entry) -> ranked.add(new Ranked(id, entry.name, entry.balance)));
+        ranked.sort(Comparator.comparingDouble(Ranked::balance).reversed());
+
+        ranking = List.copyOf(ranked);
+        rankedAt = now;
+        return ranking;
     }
 
     private void write(UUID player, String name, double balance) {

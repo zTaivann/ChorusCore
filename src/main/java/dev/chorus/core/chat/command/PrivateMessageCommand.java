@@ -17,7 +17,7 @@ abstract class PrivateMessageCommand extends PlayerCommand {
 
     protected final PrivateMessages chat;
 
-    private final PlayerFlagService flags;
+    protected final PlayerFlagService flags;
     private final IgnoreList ignores;
 
     protected PrivateMessageCommand(CommandSupport support, PrivateMessages chat,

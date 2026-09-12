@@ -10,15 +10,22 @@ import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.items.command.ClearInventoryCommand;
 import dev.chorus.core.items.command.CondenseCommand;
 import dev.chorus.core.items.command.EnchantCommand;
+import dev.chorus.core.items.command.BookCommand;
+import dev.chorus.core.items.command.EditSignCommand;
 import dev.chorus.core.items.command.ExperienceCommand;
+import dev.chorus.core.items.command.FireworkCommand;
 import dev.chorus.core.items.command.GiveCommand;
 import dev.chorus.core.items.command.GlowCommand;
+import dev.chorus.core.items.command.ItemDbCommand;
 import dev.chorus.core.items.command.HatCommand;
 import dev.chorus.core.items.command.ItemNameCommand;
 import dev.chorus.core.items.command.LoreCommand;
 import dev.chorus.core.items.command.MoreCommand;
 import dev.chorus.core.items.command.RestoreCommand;
 import dev.chorus.core.menu.MenuSettings;
+import dev.chorus.core.items.command.PotionCommand;
+import dev.chorus.core.items.command.RecipeCommand;
+import dev.chorus.core.items.SignClipboard;
 import dev.chorus.core.items.command.SkullCommand;
 import dev.chorus.core.items.command.StackCommand;
 import dev.chorus.core.items.command.UnbreakableCommand;
@@ -57,7 +64,8 @@ public final class ItemsModule implements ChorusModule {
     @Override
     public List<String> commandNames() {
         return List.of("hat", "condense", "clearinventory", "itemname", "lore", "more", "skull",
-                "unbreakable", "glow", "enchant", "stack", "restore", "give", "exp");
+                "unbreakable", "glow", "enchant", "stack", "restore", "give", "exp",
+                "itemdb", "recipe", "book", "firework", "potion", "editsign");
     }
 
     @Override
@@ -80,6 +88,16 @@ public final class ItemsModule implements ChorusModule {
         commands.add(plugin.register(new StackCommand(support)));
         commands.add(plugin.register(new GiveCommand(support)));
         commands.add(plugin.register(new ExperienceCommand(support)));
+        commands.add(plugin.register(new ItemDbCommand(support)));
+        commands.add(plugin.register(new RecipeCommand(support)));
+        commands.add(plugin.register(new BookCommand(support)));
+        commands.add(plugin.register(new FireworkCommand(support)));
+        commands.add(plugin.register(new PotionCommand(support)));
+
+        SignClipboard clipboard = new SignClipboard();
+        plugin.register(clipboard);
+        commands.add(plugin.register(
+                new EditSignCommand(support, clipboard, plugin.reserved()::isReserved)));
         commands.add(plugin.register(new RestoreCommand(support, plugin.backups(),
                 new BackupMenu(plugin.messages(), plugin.backups(),
                         MenuSettings.read(config.section("backups.menu"), Material.PAPER, this::warn)),

@@ -9,6 +9,7 @@ import dev.chorus.core.audit.SqlAuditRepository;
 import dev.chorus.core.backup.BackupListener;
 import dev.chorus.core.backup.InventoryBackups;
 import dev.chorus.core.backup.SqlBackupRepository;
+import dev.chorus.core.block.ReservedBlocks;
 import dev.chorus.core.chat.ChatModule;
 import dev.chorus.core.command.ActionGuard;
 import dev.chorus.core.command.ChorusCommand;
@@ -87,7 +88,7 @@ public final class ChorusPlugin extends JavaPlugin {
     public static final String TELEPORT_CONFIG = "modules/teleport.yml";
 
     private static final long COOLDOWN_SWEEP_TICKS = 20L * 60 * 5;
-    private static final int BSTATS_ID = 27418;
+    private static final int BSTATS_ID = 34019;
     private static final String CORE = "core";
 
     private final Deque<ChorusModule> modules = new ArrayDeque<>();
@@ -96,6 +97,7 @@ public final class ChorusPlugin extends JavaPlugin {
     private final List<String> modulesOff = new ArrayList<>();
     private final Set<String> switchedOff = new HashSet<>();
     private final Cooldowns cooldowns = new Cooldowns();
+    private final ReservedBlocks reserved = new ReservedBlocks();
 
     private String installing = CORE;
 
@@ -188,7 +190,7 @@ public final class ChorusPlugin extends JavaPlugin {
         prompts = new ChatPrompts(this, messages, mainThread, schedulers);
         register(prompts);
         prompts.start();
-        register(new RootCommand(this, support));
+        register(new RootCommand(this, support, confirmations));
         register(new HelpCommand(this, support));
 
         services = new ChorusServices(getDescription().getVersion(), economy(), teleports, messages);
@@ -282,6 +284,7 @@ public final class ChorusPlugin extends JavaPlugin {
             metrics.shutdown();
         }
         cooldowns.clear();
+        reserved.clear();
         if (confirmations != null) {
             confirmations.clear();
         }
@@ -353,6 +356,11 @@ public final class ChorusPlugin extends JavaPlugin {
 
     public Confirmations confirmations() {
         return confirmations;
+    }
+
+    /** The blocks modules have claimed, so nothing else rewrites them. */
+    public ReservedBlocks reserved() {
+        return reserved;
     }
 
     public Economy economy() {

@@ -128,6 +128,11 @@ public final class InventoryBackups {
         return Queries.run(() -> repository.findFor(owner, limit()), worker, mainThread);
     }
 
+    /** The newest copies from anybody, for a report that does not name who. */
+    public CompletableFuture<List<InventorySnapshot>> recent() {
+        return Queries.run(() -> repository.recent(limit()), worker, mainThread);
+    }
+
     /** One by its row, read again so a screen left open never restores something stale. */
     public CompletableFuture<InventorySnapshot> find(long id) {
         return Queries.run(() -> repository.find(id), worker, mainThread);

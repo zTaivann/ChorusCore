@@ -14,6 +14,9 @@ public enum PlayerFlag {
     /** Turns down every private message, from anybody. */
     MESSAGES_BLOCKED("messages-blocked"),
 
+    /** Makes /reply answer whoever last spoke to them rather than whoever they last wrote to. */
+    REPLY_TO_SENDER("reply-to-sender"),
+
     /** Turns down every payment, so nobody can push money onto them. */
     PAYMENTS_BLOCKED("payments-blocked"),
 

@@ -60,6 +60,23 @@ enabled: true
 
 # ── Settings ──────────────────────────────────────────────────────────────
 utility:
+  # Signs that do what a command does. Write one of these on the first line and the
+  # command runs as the player who clicks it, so its permission, cooldown and price
+  # all still apply:
+  #
+  #   [Heal] [Feed] [Repair] [Disposal] [Workbench] [Enchant] [Gamemode] [Kit]
+  #   [Balance] [Spawn] [Free]
+  #
+  # The middle lines are the arguments and the last line may be a price:
+  #
+  #   [Kit]          [Gamemode]      [Free]
+  #   starter        creative        64
+  #                                  bread
+  #   100            0
+  #
+  # Making one needs chorus.signs.create.<kind>; using one chorus.signs.use.<kind>.
+  signs: true
+
   heal:
     extinguish: true
     clear-effects: false
@@ -314,3 +331,37 @@ commands:
       spread: 0.3
       height: 1.8
       speed: 0.04
+
+  bottom:
+    enabled: true
+    cooldown-seconds: 3
+    sound:
+      key: entity.enderman.teleport
+      volume: 0.6
+      pitch: 0.8
+
+  break:
+    enabled: true
+    sound:
+      key: block.stone.break
+      volume: 0.6
+      pitch: 1.0
+
+  depth:
+    enabled: true
+    sound:
+      volume: 0.3
+      pitch: 1.4
+
+  compass:
+    enabled: true
+    sound:
+      volume: 0.3
+      pitch: 1.4
+
+  rest:
+    enabled: true
+    sound:
+      key: block.note_block.harp
+      volume: 0.5
+      pitch: 0.8

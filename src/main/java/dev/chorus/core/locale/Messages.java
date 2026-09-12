@@ -7,8 +7,10 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
@@ -110,6 +112,23 @@ public final class Messages implements MessageApi {
             return;
         }
         target.sendMessage(render(key, placeholders));
+    }
+
+    /**
+     * One line to everybody online, and to the console.
+     *
+     * <p>Rendered once and sent many times, since a broadcast on a full server is the worst
+     * place to parse the same template two hundred times.
+     */
+    public void broadcast(Server server, String key, String... placeholders) {
+        if (muted.contains(key)) {
+            return;
+        }
+        Component line = render(key, placeholders);
+        for (Player player : server.getOnlinePlayers()) {
+            player.sendMessage(line);
+        }
+        server.getConsoleSender().sendMessage(line);
     }
 
     /** For lines a command builds itself, such as the clickable teleport buttons. */

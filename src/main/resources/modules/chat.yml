@@ -127,3 +127,10 @@ commands:
       key: entity.villager.trade
       volume: 0.5
       pitch: 1.4
+
+  rtoggle:
+    enabled: true
+    sound:
+      key: block.lever.click
+      volume: 0.5
+      pitch: 1.3

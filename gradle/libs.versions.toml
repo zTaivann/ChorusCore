@@ -8,8 +8,8 @@ vault = "1.7"
 placeholderapi = "2.11.6"
 junit = "5.11.4"
 annotations = "26.0.2"
-bstats = "3.1.0"
-shadow = "9.2.2"
+bstats = "3.2.1"
+shadow = "9.3.1"
 
 [libraries]
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }

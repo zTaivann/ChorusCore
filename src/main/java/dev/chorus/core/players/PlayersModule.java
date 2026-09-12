@@ -29,6 +29,7 @@ public final class PlayersModule implements ChorusModule {
 
     private ConfigFile config;
     private AfkService afk;
+    private GeoLookup geo;
 
     public PlayersModule(ChorusPlugin plugin, CommandSupport support) {
         this.plugin = plugin;
@@ -60,13 +61,15 @@ public final class PlayersModule implements ChorusModule {
         config = plugin.configs().get(CONFIG);
         afk = new AfkService(plugin, plugin.messages(), plugin.schedulers(),
                 PlayerSettings.read(config.section("players")));
+        geo = new GeoLookup(plugin.worker());
+        geo.apply(config.section("players"));
         plugin.register(afk);
         afk.start();
 
         commands.add(plugin.register(new AfkCommand(support, afk)));
         commands.add(plugin.register(new SeenCommand(support, afk, plugin.profiles())));
         commands.add(plugin.register(new PlaytimeCommand(support)));
-        commands.add(plugin.register(new WhoisCommand(support, afk)));
+        commands.add(plugin.register(new WhoisCommand(support, afk, geo)));
         commands.add(plugin.register(new ListCommand(support, afk)));
         commands.add(plugin.register(new PlayerTimeCommand(support)));
         commands.add(plugin.register(new PlayerWeatherCommand(support)));
@@ -81,6 +84,9 @@ public final class PlayersModule implements ChorusModule {
         if (afk != null) {
             afk.shutdown();
         }
+        if (geo != null) {
+            geo.clear();
+        }
     }
 
     @Override
@@ -89,6 +95,7 @@ public final class PlayersModule implements ChorusModule {
             return;
         }
         afk.apply(PlayerSettings.read(config.section("players")));
+        geo.apply(config.section("players"));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 }

@@ -34,6 +34,38 @@ shops:
   # false leaves [Buy] and [Sell] signs as ordinary signs.
   signs: true
 
+  # ── Chest shops ─────────────────────────────────────────────────────────
+  #
+  # Shops players run themselves. Put a sign on a chest, barrel or trapped chest with
+  # [Shop] on the first line while holding what you want to trade, and the price is
+  # asked for in chat. Write "buy" on the second line to make a shop that buys instead.
+  #
+  # The container, its sign and the other half of a double chest are all protected: they
+  # cannot be broken, exploded, pushed by a piston, merged into by a second chest or
+  # drained by a hopper.
+  chest:
+    enabled: true
+
+    # Shops per player. Raise it for a rank with chorus.shops.chest.limit.<number>.
+    default-limit: 5
+
+    # The item turning slowly above the chest, so you can see what a shop sells without
+    # reading the sign. It is never written to the world file, so one can never be left
+    # behind by a crash, and it cannot be picked up, merged or sucked into a hopper.
+    display: true
+
+    # What making one costs. 0 is free.
+    creation-cost: 0.0
+
+    # Stops a hopper emptying a shop without anybody paying for anything.
+    protect-hoppers: true
+
+    # The most one item may be priced at, so a mistyped price cannot empty somebody.
+    max-price: 1000000.0
+
+    # How far from the shop a trade may still be finished, in blocks.
+    reach: 8
+
   # Every price below is multiplied by this when something is sold. 0.8 pays
   # eighty per cent, which is the usual way to keep money from piling up.
   sell-multiplier: 1.0
@@ -125,3 +157,10 @@ commands:
       key: block.note_block.pling
       volume: 0.6
       pitch: 1.8
+
+  shop:
+    enabled: true
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.4

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-final class SqlHomeRepository implements HomeRepository {
+public final class SqlHomeRepository implements HomeRepository {
 
     private static final String SELECT_BY_OWNER = """
             SELECT name, world_id, world_name, x, y, z, yaw, pitch, created_at, icon
@@ -26,7 +26,7 @@ final class SqlHomeRepository implements HomeRepository {
     private final List<String> steps;
     private final String upsert;
 
-    SqlHomeRepository(Storage storage) {
+    public SqlHomeRepository(Storage storage) {
         this.storage = storage;
         this.steps = List.of(createTable(storage.dialect()), addIcon(storage.dialect()));
         this.upsert = upsert(storage.dialect());

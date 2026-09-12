@@ -108,6 +108,24 @@ public final class SqlBackupRepository implements BackupRepository {
     }
 
     @Override
+    public List<InventorySnapshot> recent(int limit) throws SQLException {
+        String sql = "SELECT " + COLUMNS + " FROM chorus_inventory_backups"
+                + " ORDER BY taken_at DESC LIMIT ?";
+        try (Connection connection = storage.connection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, limit);
+
+            try (ResultSet rows = statement.executeQuery()) {
+                List<InventorySnapshot> found = new ArrayList<>();
+                while (rows.next()) {
+                    found.add(read(rows));
+                }
+                return found;
+            }
+        }
+    }
+
+    @Override
     public @Nullable InventorySnapshot find(long id) throws SQLException {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(SELECT_ONE)) {

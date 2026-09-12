@@ -4,6 +4,7 @@ import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Durations;
 import dev.chorus.core.players.AfkService;
+import dev.chorus.core.players.GeoLookup;
 import dev.chorus.core.players.Playtime;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -31,10 +32,12 @@ public final class WhoisCommand extends ChorusCommand {
             DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
 
     private final AfkService afk;
+    private final GeoLookup geo;
 
-    public WhoisCommand(CommandSupport support, AfkService afk) {
+    public WhoisCommand(CommandSupport support, AfkService afk, GeoLookup geo) {
         super(support, "whois", "chorus.players.whois");
         this.afk = afk;
+        this.geo = geo;
     }
 
     @Override
@@ -96,9 +99,11 @@ public final class WhoisCommand extends ChorusCommand {
             messages.send(sender, "players.whois-flags", "flags", flags);
         }
         if (sender.hasPermission(IP_PERMISSION)) {
-            InetSocketAddress address = target.getAddress();
-            messages.send(sender, "players.whois-address", "address",
-                    address == null ? "?" : address.getAddress().getHostAddress());
+            InetSocketAddress socket = target.getAddress();
+            String address = socket == null ? "" : socket.getAddress().getHostAddress();
+            messages.send(sender, "players.whois-address",
+                    "address", address.isEmpty() ? "?" : address);
+            country(sender, address);
         }
     }
 
@@ -115,6 +120,23 @@ public final class WhoisCommand extends ChorusCommand {
         if (target.isBanned()) {
             messages.send(sender, "players.whois-banned");
         }
+    }
+
+    /**
+     * The country, when the server has asked for it.
+     *
+     * <p>Sent as its own line a moment later rather than held up the card, since it means
+     * waiting on a service somewhere else and the rest of the answer is already known.
+     */
+    private void country(CommandSender sender, String address) {
+        if (!geo.enabled() || address.isEmpty()) {
+            return;
+        }
+        geo.countryOf(address).whenComplete((country, failure) -> {
+            if (failure == null && country != null && !country.isEmpty()) {
+                messages.send(sender, "players.whois-country", "country", country);
+            }
+        });
     }
 
     private static String flagsOf(Player target) {

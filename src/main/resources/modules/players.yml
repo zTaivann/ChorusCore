@@ -67,6 +67,15 @@ players:
   # The longest a nickname may be, counting letters rather than colour codes.
   max-nick-length: 16
 
+  # Adds the country to /whois, for whoever holds chorus.players.whois.ip.
+  #
+  # There is no country in a player.s connection. The only way to know is to ask a service
+  # outside this server, which means sending that player.s address to it. That is a real
+  # decision, so it is off until you turn it on. Answers are kept until the next restart.
+  geoip:
+    enabled: false
+    endpoint: 'https://ipapi.co/%address%/country_name/'
+
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 

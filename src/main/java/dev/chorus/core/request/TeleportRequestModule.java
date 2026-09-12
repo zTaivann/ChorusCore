@@ -12,6 +12,7 @@ import dev.chorus.core.request.command.BackCommand;
 import dev.chorus.core.request.command.TeleportRequestCommand;
 import dev.chorus.core.request.command.TeleportResponseCommand;
 import dev.chorus.core.request.command.TpCancelCommand;
+import dev.chorus.core.request.command.TpAllRequestCommand;
 import dev.chorus.core.request.command.TpAutoCommand;
 import dev.chorus.core.request.command.TpOfflineCommand;
 import dev.chorus.core.request.command.TpToggleCommand;
@@ -58,7 +59,7 @@ public final class TeleportRequestModule implements ChorusModule {
     @Override
     public List<String> commandNames() {
         return List.of("tpa", "tpahere", "tpaccept", "tpdeny", "tpcancel", "tptoggle", "back",
-                "tpauto", "tpoffline");
+                "tpauto", "tpoffline", "tpaall");
     }
 
     @Override
@@ -79,6 +80,7 @@ public final class TeleportRequestModule implements ChorusModule {
         commands.add(plugin.register(new TpToggleCommand(support, flags)));
         commands.add(plugin.register(new BackCommand(support, teleports)));
         commands.add(plugin.register(new TpAutoCommand(support, flags)));
+        commands.add(plugin.register(new TpAllRequestCommand(support, requests, teleports, flags)));
         commands.add(plugin.register(new TpOfflineCommand(support, plugin.profiles(), teleports)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 

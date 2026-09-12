@@ -89,6 +89,9 @@ commands:
   tpoffline:
     description: Teleport to where a player logged out.
     usage: /tpoffline [player]
+  tpaall:
+    description: Ask everybody online to come to you.
+    usage: /tpaall
 
   heal:
     description: Restore health.
@@ -166,6 +169,9 @@ commands:
   msgtoggle:
     description: Turn private messages off or on.
     usage: /msgtoggle
+  rtoggle:
+    description: Choose which end of a conversation /reply answers.
+    usage: /rtoggle
   ignore:
     description: Stop hearing from a player.
     usage: /ignore [player|list]
@@ -185,6 +191,21 @@ commands:
   jump:
     description: Teleport to the block you are looking at.
     usage: /jump
+  bottom:
+    description: Teleport to the lowest space under you.
+    usage: /bottom
+  break:
+    description: Break the block you are looking at.
+    usage: /break
+  depth:
+    description: Show how far you are from sea level.
+    usage: /depth
+  compass:
+    description: Show which way you are facing.
+    usage: /compass
+  rest:
+    description: Count a player as having slept.
+    usage: /rest [player]
   near:
     description: List the players around you.
     usage: /near [radius]
@@ -324,6 +345,24 @@ commands:
   exp:
     description: Give, take or show experience.
     usage: /exp [show|give|take|set|reset] [player] [amount]
+  itemdb:
+    description: Show what an item is called.
+    usage: /itemdb [item]
+  recipe:
+    description: Show how something is made.
+    usage: /recipe [item|hand] [number]
+  book:
+    description: Reopen or rename a signed book.
+    usage: /book [author|title] [text]
+  firework:
+    description: Build the firework in your hand.
+    usage: /firework [shape:|colour:|power|clear|fire]
+  potion:
+    description: Write effects onto the potion in your hand.
+    usage: /potion [effect] [level] [seconds]
+  editsign:
+    description: Rewrite the sign you are looking at.
+    usage: /editsign [set|clear|copy|paste]
 
   kit:
     description: Take a kit.
@@ -353,6 +392,15 @@ commands:
   sweep:
     description: Clear entities out of the world.
     usage: /sweep [what] [radius]
+  tree:
+    description: Grow a tree where you are looking.
+    usage: /tree [kind]
+  spawner:
+    description: Change what a spawner makes.
+    usage: /spawner [mob] [delay]
+  unlimited:
+    description: Place the held block without using it up.
+    usage: /unlimited [list|clear]
 
   sell:
     description: Sell items to the server.
@@ -363,6 +411,9 @@ commands:
   setworth:
     description: Set what an item sells for.
     usage: /setworth [item] [price]
+  shop:
+    description: Manage the chest shop you are looking at.
+    usage: /shop [info|price|mode|remove|list]
 
   commands:
     description: List the commands you can use.
@@ -869,3 +920,138 @@ permissions:
   chorus.shops.admin:
     description: Allows /setworth.
     default: op
+  chorus.utility.bottom:
+    description: Allows /bottom.
+    default: op
+  chorus.utility.break:
+    description: Allows /break.
+    default: op
+  chorus.utility.depth:
+    description: Allows /depth.
+    default: true
+  chorus.utility.compass:
+    description: Allows /compass.
+    default: true
+  chorus.utility.rest:
+    description: Allows /rest.
+    default: op
+  chorus.world.tree:
+    description: Allows /tree.
+    default: op
+  chorus.world.spawner:
+    description: Allows /spawner.
+    default: op
+  chorus.world.unlimited:
+    description: Allows /unlimited.
+    default: op
+  chorus.items.itemdb:
+    description: Allows /itemdb.
+    default: true
+  chorus.items.recipe:
+    description: Allows /recipe.
+    default: true
+  chorus.items.book:
+    description: Allows /book.
+    default: op
+  chorus.items.book.author:
+    description: Allows changing the title and author of a book.
+    default: op
+  chorus.items.firework:
+    description: Allows /firework.
+    default: op
+  chorus.items.potion:
+    description: Allows /potion.
+    default: op
+  chorus.items.potion.unsafe:
+    description: Allows potion levels beyond what the game brews.
+    default: false
+  chorus.items.editsign:
+    description: Allows /editsign.
+    default: op
+  chorus.tpa.all:
+    description: Allows /tpaall.
+    default: op
+  chorus.mail.read.others:
+    description: Allows reading another player's mail.
+    default: op
+  chorus.players.whois.country:
+    description: Adds the country to /whois when GeoIP is switched on.
+    default: op
+  chorus.shops.chest.use:
+    description: Allows trading at a chest shop and /shop.
+    default: true
+  chorus.shops.chest.create:
+    description: Allows making a chest shop.
+    default: true
+  chorus.shops.chest.admin:
+    description: Reaches every chest shop, whoever owns it.
+    default: op
+  chorus.shops.chest.unlimited:
+    description: Allows a chest shop with no stock and no till.
+    default: op
+  chorus.signs.create.heal:
+    description: Allows making a [Heal] sign.
+    default: op
+  chorus.signs.use.heal:
+    description: Allows using a [Heal] sign.
+    default: true
+  chorus.signs.create.feed:
+    description: Allows making a [Feed] sign.
+    default: op
+  chorus.signs.use.feed:
+    description: Allows using a [Feed] sign.
+    default: true
+  chorus.signs.create.repair:
+    description: Allows making a [Repair] sign.
+    default: op
+  chorus.signs.use.repair:
+    description: Allows using a [Repair] sign.
+    default: true
+  chorus.signs.create.disposal:
+    description: Allows making a [Disposal] sign.
+    default: op
+  chorus.signs.use.disposal:
+    description: Allows using a [Disposal] sign.
+    default: true
+  chorus.signs.create.workbench:
+    description: Allows making a [Workbench] sign.
+    default: op
+  chorus.signs.use.workbench:
+    description: Allows using a [Workbench] sign.
+    default: true
+  chorus.signs.create.enchant:
+    description: Allows making an [Enchant] sign.
+    default: op
+  chorus.signs.use.enchant:
+    description: Allows using an [Enchant] sign.
+    default: true
+  chorus.signs.create.gamemode:
+    description: Allows making a [Gamemode] sign.
+    default: op
+  chorus.signs.use.gamemode:
+    description: Allows using a [Gamemode] sign.
+    default: true
+  chorus.signs.create.kit:
+    description: Allows making a [Kit] sign.
+    default: op
+  chorus.signs.use.kit:
+    description: Allows using a [Kit] sign.
+    default: true
+  chorus.signs.create.balance:
+    description: Allows making a [Balance] sign.
+    default: op
+  chorus.signs.use.balance:
+    description: Allows using a [Balance] sign.
+    default: true
+  chorus.signs.create.spawn:
+    description: Allows making a [Spawn] sign.
+    default: op
+  chorus.signs.use.spawn:
+    description: Allows using a [Spawn] sign.
+    default: true
+  chorus.signs.create.free:
+    description: Allows making a [Free] sign.
+    default: op
+  chorus.signs.use.free:
+    description: Allows using a [Free] sign.
+    default: true

@@ -6,10 +6,17 @@ import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
+import dev.chorus.core.shops.chest.ChestShopDisplays;
+import dev.chorus.core.shops.chest.ChestShopListener;
+import dev.chorus.core.shops.chest.ChestShopSettings;
+import dev.chorus.core.shops.chest.ChestShops;
+import dev.chorus.core.shops.chest.SqlChestShopRepository;
 import dev.chorus.core.shops.command.SellCommand;
+import dev.chorus.core.shops.command.ShopCommand;
 import dev.chorus.core.shops.command.SetWorthCommand;
 import dev.chorus.core.shops.command.WorthCommand;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +32,9 @@ public final class ShopsModule implements ChorusModule {
     private ConfigFile config;
     private WorthTable worth;
     private ShopSignListener signs;
+    private ChestShops chestShops;
+    private ChestShopListener chestSigns;
+    private ChestShopDisplays displays;
 
     public ShopsModule(ChorusPlugin plugin, CommandSupport support) {
         this.plugin = plugin;
@@ -43,7 +53,7 @@ public final class ShopsModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("sell", "worth", "setworth");
+        return List.of("sell", "worth", "setworth", "shop");
     }
 
     @Override
@@ -59,14 +69,49 @@ public final class ShopsModule implements ChorusModule {
         commands.add(plugin.register(new SellCommand(support, worth, plugin.economy())));
         commands.add(plugin.register(new WorthCommand(support, worth, plugin.economy())));
         commands.add(plugin.register(new SetWorthCommand(support, worth, plugin.economy())));
+        SqlChestShopRepository store = new SqlChestShopRepository(plugin.storage());
+        try {
+            store.createTables();
+        } catch (SQLException exception) {
+            throw new IllegalStateException("The chest shop table could not be created", exception);
+        }
+        chestShops = new ChestShops(store, plugin.worker(), plugin.getLogger());
+        try {
+            chestShops.load();
+        } catch (SQLException exception) {
+            throw new IllegalStateException("The chest shops could not be read", exception);
+        }
+
+        displays = new ChestShopDisplays(plugin, chestShops);
+        displays.apply(config.section("shops").getBoolean("chest.display", true));
+
+        chestSigns = new ChestShopListener(chestShops, displays, plugin.messages(),
+                plugin.economy(), plugin.prompts(),
+                ChestShopSettings.read(config.section("shops")));
+        plugin.register(chestSigns);
+        // The worlds are already loaded by the time a module starts, so the chunk events
+        // alone would leave every existing shop bare until somebody walked away and back.
+        displays.showEverything();
+        // So /editsign and anything else that rewrites a block leaves a shop alone.
+        plugin.reserved().register(block -> chestShops.at(block) != null);
+        commands.add(plugin.register(new ShopCommand(support, chestShops, displays,
+                plugin.economy(), plugin.confirmations())));
+
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
         applySigns();
 
-        plugin.getLogger().info("Shops: " + worth.size() + " items have a price.");
+        plugin.getLogger().info("Shops: " + worth.size() + " items have a price, "
+                + chestShops.size() + " chest shops.");
     }
 
     @Override
     public void disable() {
+        if (displays != null) {
+            displays.clear();
+        }
+        if (chestShops != null) {
+            chestShops.clear();
+        }
     }
 
     @Override
@@ -75,6 +120,8 @@ public final class ShopsModule implements ChorusModule {
             return;
         }
         readWorth();
+        chestSigns.apply(ChestShopSettings.read(config.section("shops")));
+        displays.apply(config.section("shops").getBoolean("chest.display", true));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
         applySigns();
     }

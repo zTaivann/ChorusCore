@@ -2,6 +2,7 @@ package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.items.ItemAttributes;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -23,6 +24,7 @@ import java.util.Map;
 public final class GiveCommand extends ChorusCommand {
 
     private static final String OTHERS = "chorus.items.give.others";
+    private static final String FORMAT = "chorus.items.format";
     private static final int MAX_AMOUNT = 2304;
 
     public GiveCommand(CommandSupport support) {
@@ -42,6 +44,7 @@ public final class GiveCommand extends ChorusCommand {
         Player target;
         String itemName;
         String amountRaw;
+        int after;
 
         if (first != null && first.isItem()) {
             if (!(sender instanceof Player self)) {
@@ -50,7 +53,8 @@ public final class GiveCommand extends ChorusCommand {
             }
             target = self;
             itemName = args[0];
-            amountRaw = args.length > 1 ? args[1] : null;
+            amountRaw = args.length > 1 && isAmount(args[1]) ? args[1] : null;
+            after = amountRaw == null ? 1 : 2;
         } else {
             if (args.length < 2) {
                 messages.send(sender, "items.give-usage");
@@ -65,7 +69,8 @@ public final class GiveCommand extends ChorusCommand {
                 return;
             }
             itemName = args[1];
-            amountRaw = args.length > 2 ? args[2] : null;
+            amountRaw = args.length > 2 && isAmount(args[2]) ? args[2] : null;
+            after = amountRaw == null ? 2 : 3;
         }
 
         Material material = Material.matchMaterial(itemName);
@@ -82,7 +87,14 @@ public final class GiveCommand extends ChorusCommand {
             return;
         }
 
-        hand(target, material, amount);
+        List<String> extras = List.of(args).subList(Math.min(after, args.length), args.length);
+        ItemStack stack = new ItemStack(material, 1);
+        if (!extras.isEmpty()) {
+            ItemAttributes.apply(stack, extras, sender.hasPermission(FORMAT),
+                    word -> messages.send(sender, "items.give-ignored", "word", word));
+        }
+
+        hand(target, stack, amount);
         settle(sender);
 
         String item = material.name().toLowerCase(Locale.ROOT);
@@ -96,17 +108,24 @@ public final class GiveCommand extends ChorusCommand {
                 "amount", String.valueOf(amount), "item", item);
     }
 
-    private static void hand(Player target, Material material, int amount) {
+    /** Handed out in stack-sized batches, with whatever does not fit dropped at their feet. */
+    private static void hand(Player target, ItemStack template, int amount) {
         int left = amount;
-        int stackSize = material.getMaxStackSize();
+        int stackSize = template.getType().getMaxStackSize();
         while (left > 0) {
             int batch = Math.min(stackSize, left);
             left -= batch;
-            Map<Integer, ItemStack> rejected =
-                    target.getInventory().addItem(new ItemStack(material, batch));
+
+            ItemStack giving = template.clone();
+            giving.setAmount(batch);
+            Map<Integer, ItemStack> rejected = target.getInventory().addItem(giving);
             rejected.values().forEach(
                     stack -> target.getWorld().dropItemNaturally(target.getLocation(), stack));
         }
+    }
+
+    private static boolean isAmount(String raw) {
+        return amount(raw) > 0;
     }
 
     private static int amount(String raw) {

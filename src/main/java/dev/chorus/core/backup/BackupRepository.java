@@ -19,6 +19,9 @@ public interface BackupRepository {
     @Nullable
     InventorySnapshot find(long id) throws SQLException;
 
+    /** The newest copies from anybody, for the times a report does not name who. */
+    List<InventorySnapshot> recent(int limit) throws SQLException;
+
     /** Anything older than the cutoff, and anything past the limit a player may keep. */
     void prune(long before, int keepPerPlayer) throws SQLException;
 

@@ -12,12 +12,17 @@ import java.util.UUID;
 /**
  * Who last spoke to whom, and who is watching.
  *
+ * <p>The two directions are kept apart. They only differ when a conversation is interrupted:
+ * you message Anna, then Ben messages you, and {@code /r} has to decide which of them it
+ * means. {@code /rtoggle} lets each player say.
+ *
  * <p>Commands and the quit listener all run on the server thread, so plain collections are
  * enough and cheaper than concurrent ones.
  */
 public final class PrivateMessages {
 
-    private final Map<UUID, UUID> lastPartner = new HashMap<>();
+    private final Map<UUID, UUID> sentTo = new HashMap<>();
+    private final Map<UUID, UUID> heardFrom = new HashMap<>();
     private final Set<UUID> spies = new HashSet<>();
 
     private volatile ChatSettings settings;
@@ -34,14 +39,21 @@ public final class PrivateMessages {
         this.settings = updated;
     }
 
-    public @Nullable UUID lastPartner(UUID player) {
-        return lastPartner.get(player);
+    /**
+     * Who {@code /reply} would answer.
+     *
+     * @param preferSender true to answer whoever last spoke to them, false to carry on the
+     *                     conversation they started. Either way the other one stands in when
+     *                     there is nothing on the preferred side.
+     */
+    public @Nullable UUID replyTarget(UUID player, boolean preferSender) {
+        UUID first = preferSender ? heardFrom.get(player) : sentTo.get(player);
+        return first != null ? first : (preferSender ? sentTo : heardFrom).get(player);
     }
 
-    /** Both sides point at each other, so /reply works from either end. */
     public void remember(UUID from, UUID to) {
-        lastPartner.put(from, to);
-        lastPartner.put(to, from);
+        sentTo.put(from, to);
+        heardFrom.put(to, from);
     }
 
     /** @return the state the player is now in. */
@@ -59,15 +71,16 @@ public final class PrivateMessages {
 
     public void forget(UUID player) {
         spies.remove(player);
-        UUID partner = lastPartner.remove(player);
-        // Their partner's arrow points back at a player who is gone, so drop that too.
-        if (partner != null && player.equals(lastPartner.get(partner))) {
-            lastPartner.remove(partner);
-        }
+        sentTo.remove(player);
+        heardFrom.remove(player);
+        // Anybody still pointing at a player who is gone would otherwise keep a dead name.
+        sentTo.values().removeIf(player::equals);
+        heardFrom.values().removeIf(player::equals);
     }
 
     void clear() {
-        lastPartner.clear();
+        sentTo.clear();
+        heardFrom.clear();
         spies.clear();
     }
 }

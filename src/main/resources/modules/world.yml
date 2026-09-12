@@ -20,6 +20,23 @@ world:
   # The most mobs one /spawnmob may place at once.
   spawnmob-limit: 20
 
+  # Clears the ground on a timer, with a warning first. The one piece of housekeeping
+  # every busy server ends up asking somebody to do by hand.
+  auto-sweep:
+    enabled: false
+
+    # How often it runs.
+    minutes: 15
+
+    # How long before it happens everybody is told. 0 clears without warning.
+    warn-seconds: 30
+
+    # Any of the groups /sweep accepts. drops is the one worth running on a timer.
+    target: drops
+
+    # Leave empty for every world, or name the ones to clear.
+    worlds: []
+
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 
@@ -84,3 +101,25 @@ commands:
       key: entity.generic.explode
       volume: 0.4
       pitch: 1.6
+
+  tree:
+    enabled: true
+    cooldown-seconds: 3
+    sound:
+      key: block.grass.place
+      volume: 0.6
+      pitch: 1.0
+
+  spawner:
+    enabled: true
+    sound:
+      key: block.note_block.pling
+      volume: 0.5
+      pitch: 0.8
+
+  unlimited:
+    enabled: true
+    sound:
+      key: block.lever.click
+      volume: 0.5
+      pitch: 1.4

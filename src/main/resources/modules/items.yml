@@ -233,3 +233,44 @@ commands:
       key: entity.experience_orb.pickup
       volume: 0.6
       pitch: 1.2
+
+  itemdb:
+    enabled: true
+    sound:
+      volume: 0.4
+      pitch: 1.5
+
+  recipe:
+    enabled: true
+    sound:
+      key: block.note_block.chime
+      volume: 0.5
+      pitch: 1.4
+
+  book:
+    enabled: true
+    sound:
+      key: item.book.page_turn
+      volume: 0.7
+      pitch: 1.0
+
+  firework:
+    enabled: true
+    sound:
+      key: entity.firework_rocket.launch
+      volume: 0.5
+      pitch: 1.2
+
+  potion:
+    enabled: true
+    sound:
+      key: block.brewing_stand.brew
+      volume: 0.6
+      pitch: 1.2
+
+  editsign:
+    enabled: true
+    sound:
+      key: block.wood.place
+      volume: 0.5
+      pitch: 1.2

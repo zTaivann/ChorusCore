@@ -6,6 +6,7 @@ import dev.chorus.core.chat.command.IgnoreCommand;
 import dev.chorus.core.chat.command.MessageCommand;
 import dev.chorus.core.chat.command.MessageToggleCommand;
 import dev.chorus.core.chat.command.ReplyCommand;
+import dev.chorus.core.chat.command.ReplyToggleCommand;
 import dev.chorus.core.chat.command.SocialSpyCommand;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
@@ -55,7 +56,7 @@ public final class ChatModule implements ChorusModule, Listener {
 
     @Override
     public List<String> commandNames() {
-        return List.of("msg", "reply", "socialspy", "msgtoggle", "ignore", "mail");
+        return List.of("msg", "reply", "socialspy", "msgtoggle", "ignore", "mail", "rtoggle");
     }
 
     @Override
@@ -88,7 +89,8 @@ public final class ChatModule implements ChorusModule, Listener {
         commands.add(plugin.register(new SocialSpyCommand(support, chat)));
         commands.add(plugin.register(new MessageToggleCommand(support, plugin.flags())));
         commands.add(plugin.register(new IgnoreCommand(support, ignores)));
-        commands.add(plugin.register(new MailCommand(support, mail)));
+        commands.add(plugin.register(new MailCommand(support, mail, plugin.profiles())));
+        commands.add(plugin.register(new ReplyToggleCommand(support, plugin.flags())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 

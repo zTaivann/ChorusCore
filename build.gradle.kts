@@ -70,8 +70,13 @@ tasks.test {
  */
 tasks.shadowJar {
     archiveClassifier = ""
+
+    // Nothing but bStats travels inside the jar. The drivers are fetched by the server at
+    // startup and the rest is compile-time only.
+    dependencies {
+        exclude { it.moduleGroup != "org.bstats" }
+    }
     relocate("org.bstats", "dev.chorus.core.libs.bstats")
-    minimize()
 }
 
 tasks.build {

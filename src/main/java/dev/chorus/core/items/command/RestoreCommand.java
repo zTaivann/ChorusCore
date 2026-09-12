@@ -51,7 +51,7 @@ public final class RestoreCommand extends ChorusCommand {
             return;
         }
         if (args.length == 0) {
-            messages.send(sender, "items.restore-usage");
+            recent(sender);
             return;
         }
 
@@ -71,6 +71,40 @@ public final class RestoreCommand extends ChorusCommand {
                 return;
             }
             open(sender, found.get().player(), found.get().name(), args);
+        });
+    }
+
+    /**
+     * The newest copies from anybody, for a report that does not name who.
+     *
+     * <p>Somebody says a player lost their things and cannot remember the name. This is the
+     * screen that answers that, and every line names the player to carry on with.
+     */
+    private void recent(CommandSender sender) {
+        if (!ready(sender)) {
+            return;
+        }
+        backups.recent().whenComplete((found, failure) -> {
+            if (failure != null) {
+                messages.send(sender, "error.storage");
+                return;
+            }
+            if (found.isEmpty()) {
+                messages.send(sender, "items.restore-nothing-recent");
+                return;
+            }
+
+            settle(sender);
+            messages.send(sender, "items.restore-recent-header",
+                    "count", String.valueOf(found.size()));
+            for (InventorySnapshot snapshot : found) {
+                messages.send(sender, "items.restore-recent-entry",
+                        "player", snapshot.actor(),
+                        "reason", snapshot.reason(),
+                        "world", snapshot.world(),
+                        "ago", Durations.format(System.currentTimeMillis() - snapshot.takenAt()));
+            }
+            messages.send(sender, "items.restore-usage");
         });
     }
 

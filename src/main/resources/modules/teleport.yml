@@ -183,3 +183,11 @@ commands:
       key: entity.enderman.teleport
       volume: 0.6
       pitch: 0.8
+
+  tpaall:
+    enabled: true
+    cooldown-seconds: 30
+    sound:
+      key: entity.experience_orb.pickup
+      volume: 0.5
+      pitch: 1.2

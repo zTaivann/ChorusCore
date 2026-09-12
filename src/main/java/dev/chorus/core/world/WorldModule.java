@@ -8,8 +8,11 @@ import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.teleport.TeleportService;
 import dev.chorus.core.world.command.SpawnMobCommand;
+import dev.chorus.core.world.command.SpawnerCommand;
 import dev.chorus.core.world.command.SweepCommand;
 import dev.chorus.core.world.command.TimeCommand;
+import dev.chorus.core.world.command.TreeCommand;
+import dev.chorus.core.world.command.UnlimitedCommand;
 import dev.chorus.core.world.command.WeatherCommand;
 import dev.chorus.core.world.command.WorldCommand;
 
@@ -27,6 +30,8 @@ public final class WorldModule implements ChorusModule {
     private final List<ChorusCommand> commands = new ArrayList<>();
 
     private ConfigFile config;
+    private UnlimitedPlacing placing;
+    private AutoSweep autoSweep;
 
     public WorldModule(ChorusPlugin plugin, CommandSupport support, TeleportService teleports) {
         this.plugin = plugin;
@@ -46,7 +51,8 @@ public final class WorldModule implements ChorusModule {
 
     @Override
     public List<String> commandNames() {
-        return List.of("world", "time", "weather", "spawnmob", "sweep");
+        return List.of("world", "time", "weather", "spawnmob", "sweep",
+                "tree", "spawner", "unlimited");
     }
 
     @Override
@@ -60,12 +66,27 @@ public final class WorldModule implements ChorusModule {
         commands.add(plugin.register(new SpawnMobCommand(support,
                 () -> config.section("world").getInt("spawnmob-limit", 20))));
         commands.add(plugin.register(new SweepCommand(support, plugin.confirmations())));
+        commands.add(plugin.register(new TreeCommand(support)));
+        commands.add(plugin.register(new SpawnerCommand(support)));
+
+        placing = new UnlimitedPlacing();
+        plugin.register(placing);
+        commands.add(plugin.register(new UnlimitedCommand(support, placing)));
+
+        autoSweep = new AutoSweep(plugin.getServer(), plugin.schedulers(), plugin.messages());
+        autoSweep.apply(config.section("world"));
 
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 
     @Override
     public void disable() {
+        if (placing != null) {
+            placing.clearAll();
+        }
+        if (autoSweep != null) {
+            autoSweep.stop();
+        }
     }
 
     @Override
@@ -73,6 +94,7 @@ public final class WorldModule implements ChorusModule {
         if (config == null) {
             return;
         }
+        autoSweep.apply(config.section("world"));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 }

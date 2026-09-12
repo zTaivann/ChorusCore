@@ -100,6 +100,17 @@ menu:
     restore-ender: '<color:#3f9e4d>✚ Restore ender chest'
     restore-ender-lore: '<dark_gray>▪ <gray>Puts only these items back<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><color:#3f9e4d>➜ <gray>Click to restore'
 
+  # ── Chest shop signs ────────────────────────────────────────────────────
+  #
+  # The four lines a [Shop] sign shows once it is made.
+  shops:
+    sign-owner: '<color:#1f7a3f>%player%'
+    sign-selling: '<color:#1a1a1a>Selling <color:#333333>%amount%'
+    sign-buying: '<color:#1a1a1a>Buying <color:#333333>%amount%'
+    sign-item: '<color:#333333>%item%'
+    sign-price: '<color:#8a5a1f>%price% <color:#1a1a1a>each'
+
+
   # ── Screens that show an inventory ──────────────────────────────────────
   titles:
     disposal: '<color:#1a1a1a>» <gradient:#8a4a2f:#b8724a>DISPOSAL</gradient> <color:#1a1a1a>«'
