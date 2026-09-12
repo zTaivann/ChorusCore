@@ -36,8 +36,8 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
         List<Requirement> requirements = new ArrayList<>(entries.size());
         for (Object entry : entries) {
             Requirement requirement = entry instanceof Map<?, ?> block
-                    ? parse(text(block.get("condition")), text(block.get("deny")))
-                    : parse(String.valueOf(entry), null);
+                    ? of(text(block.get("condition")), text(block.get("deny")))
+                    : of(String.valueOf(entry), null);
             if (requirement == null) {
                 onProblem.accept("kit '" + kit + "' has a requirement this plugin does not know: '"
                         + entry + "'");
@@ -48,7 +48,8 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
         return List.copyOf(requirements);
     }
 
-    private static @Nullable Requirement parse(@Nullable String line, @Nullable String deny) {
+    /** One line on its own, for a screen that has to say whether it is a line at all. */
+    public static @Nullable Requirement of(@Nullable String line, @Nullable String deny) {
         if (line == null || line.isBlank()) {
             return null;
         }

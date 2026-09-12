@@ -76,7 +76,7 @@ public final class MirrorService implements Listener {
             event.setCancelled(true);
             return;
         }
-        // Shift-clicking from the player's own bags also lands in the window.
+        // Shift-clicking from the player's own inventory also lands in the window.
         scheduleWriteBack(mirror);
     }
 

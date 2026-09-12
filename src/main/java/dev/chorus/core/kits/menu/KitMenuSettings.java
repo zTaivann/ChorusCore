@@ -18,7 +18,8 @@ public record KitMenuSettings(int itemRows, @Nullable Material filler, Material 
                               Material lore, Material items,
                               Material preview, Material cooldown, Material maxClaims,
                               Material price, Material permission, Material enabled,
-                              Material disabled, Material newKit, Material back,
+                              Material disabled, Material requirements, Material claimActions,
+                              Material failActions, Material add, Material newKit, Material back,
                               Material delete, Material close) {
 
     public static KitMenuSettings read(ConfigurationSection editor, Consumer<String> onBadMaterial) {
@@ -35,6 +36,10 @@ public record KitMenuSettings(int itemRows, @Nullable Material filler, Material 
                 material(editor, "permission", Material.NAME_TAG, onBadMaterial),
                 material(editor, "enabled", Material.LIME_DYE, onBadMaterial),
                 material(editor, "disabled", Material.GRAY_DYE, onBadMaterial),
+                material(editor, "requirements", Material.COMPARATOR, onBadMaterial),
+                material(editor, "claim-actions", Material.EXPERIENCE_BOTTLE, onBadMaterial),
+                material(editor, "fail-actions", Material.FIRE_CHARGE, onBadMaterial),
+                material(editor, "add", Material.EMERALD, onBadMaterial),
                 material(editor, "new-kit", Material.WRITABLE_BOOK, onBadMaterial),
                 material(editor, "back", Material.ARROW, onBadMaterial),
                 material(editor, "delete", Material.LAVA_BUCKET, onBadMaterial),

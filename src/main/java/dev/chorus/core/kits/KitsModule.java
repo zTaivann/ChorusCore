@@ -117,8 +117,7 @@ public final class KitsModule implements ChorusModule {
 
         ConfigurationSection definitions = root.getConfigurationSection("definitions");
         Map<String, Kit> loaded = KitReader.read(
-                definitions != null ? definitions : new MemoryConfiguration(),
-                plugin.messages(), this::warn);
+                definitions != null ? definitions : new MemoryConfiguration(), this::warn);
         kits.apply(loaded, settings.firstJoinKit());
 
         if (!settings.firstJoinKit().isEmpty() && !loaded.containsKey(settings.firstJoinKit())) {

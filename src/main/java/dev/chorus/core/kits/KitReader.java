@@ -3,9 +3,8 @@ package dev.chorus.core.kits;
 import dev.chorus.core.items.Enchantments;
 import dev.chorus.core.kits.rules.KitAction;
 import dev.chorus.core.kits.rules.Requirement;
-import dev.chorus.core.locale.Messages;
+import dev.chorus.core.locale.TextFormat;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
@@ -26,7 +25,7 @@ public final class KitReader {
     private KitReader() {
     }
 
-    public static Map<String, Kit> read(ConfigurationSection definitions, Messages messages,
+    public static Map<String, Kit> read(ConfigurationSection definitions,
                                         Consumer<String> onProblem) {
         Map<String, Kit> kits = new LinkedHashMap<>();
         for (String name : definitions.getKeys(false)) {
@@ -42,42 +41,73 @@ public final class KitReader {
                 continue;
             }
             String key = name.toLowerCase(Locale.ROOT);
-            kits.put(key, new Kit(
-                    key,
-                    messages.parse(block.getString("display", name)),
-                    lore(block.getStringList("lore"), messages),
-                    icon(block.get("icon"), messages, key, onProblem),
-                    Math.max(0, block.getInt("cooldown-seconds", 0)),
-                    block.getBoolean("one-time", false),
-                    Math.max(0, block.getInt("max-claims", 0)),
-                    Math.max(0, block.getDouble("price", 0)),
-                    block.getString("permission", "chorus.kits.use." + key),
-                    block.getBoolean("auto-armor", true),
-                    block.getBoolean("clear-inventory", false),
-                    Requirement.read(block.getList("requirements", List.of()), key, onProblem),
-                    KitAction.read(block.getStringList("claim-actions"), key, onProblem),
-                    KitAction.read(block.getStringList("fail-actions"), key, onProblem),
-                    items(block.getMapList("items"), messages, key, onProblem)));
+            kits.put(key, kit(key, name, block, onProblem));
         }
         return Map.copyOf(kits);
     }
 
-    private static List<Component> lore(List<String> lines, Messages messages) {
-        return lines.stream().map(line -> plain(messages.parse(line))).toList();
+    private static Kit kit(String key, String name, ConfigurationSection block,
+                           Consumer<String> onProblem) {
+        // Read once and used twice: the items are built differently when it is on, and the
+        // editor has to be able to show which way round it is.
+        boolean placeholders = block.getBoolean("placeholders", false);
+
+        return new Kit(
+                key,
+                TextFormat.forItem(block.getString("display", name)),
+                lore(block.getStringList("lore")),
+                icon(block.get("icon"), key, onProblem),
+                Math.max(0, block.getInt("cooldown-seconds", 0)),
+                block.getBoolean("one-time", false),
+                Math.max(0, block.getInt("max-claims", 0)),
+                Math.max(0, block.getDouble("price", 0)),
+                block.getString("permission", "chorus.kits.use." + key),
+                block.getBoolean("auto-armor", true),
+                block.getBoolean("clear-inventory", false),
+                placeholders,
+                Requirement.read(block.getList("requirements", List.of()), key, onProblem),
+                KitAction.read(block.getStringList("claim-actions"), key, onProblem),
+                KitAction.read(block.getStringList("fail-actions"), key, onProblem),
+                items(block.getMapList("items"), placeholders, key, onProblem));
     }
 
-    private static List<ItemStack> items(List<Map<?, ?>> entries, Messages messages,
-                                         String kit, Consumer<String> onProblem) {
-        List<ItemStack> items = new ArrayList<>(entries.size());
+    private static List<Component> lore(List<String> lines) {
+        return lines.stream().map(TextFormat::forItem).toList();
+    }
+
+    private static List<KitItem> items(List<Map<?, ?>> entries, boolean placeholders,
+                                       String kit, Consumer<String> onProblem) {
+        List<KitItem> items = new ArrayList<>(entries.size());
         for (Map<?, ?> entry : entries) {
-            ItemStack item = item(entry, messages, kit, onProblem);
+            ItemStack item = item(entry, kit, onProblem);
             if (item == null) {
                 onProblem.accept("kit '" + kit + "' lists an item with no usable material");
                 continue;
             }
-            items.add(item);
+            items.add(placeholders ? personal(entry, item) : KitItem.plain(item));
         }
         return List.copyOf(items);
+    }
+
+    /**
+     * Keeps the written text alongside the built item, but only where it would change from
+     * one player to the next.
+     *
+     * <p>An item with no {@code %} in it is the same for everybody however the kit is set up,
+     * and there is no sense in rebuilding it sixty times a day to find that out.
+     */
+    private static KitItem personal(Map<?, ?> entry, ItemStack item) {
+        String name = text(entry.get("name"));
+        List<String> lore = entry.get("lore") instanceof List<?> lines
+                ? lines.stream().map(String::valueOf).toList()
+                : null;
+
+        boolean namedByPlayer = name != null && name.indexOf('%') >= 0;
+        boolean loredByPlayer = lore != null && lore.stream().anyMatch(line -> line.indexOf('%') >= 0);
+        if (!namedByPlayer && !loredByPlayer) {
+            return KitItem.plain(item);
+        }
+        return new KitItem(item, namedByPlayer ? name : null, loredByPlayer ? lore : null);
     }
 
     /**
@@ -87,7 +117,7 @@ public final class KitReader {
      * sword reads better than one shown as a plain one, and there was no reason for the icon
      * to understand less than the contents do.
      */
-    private static @Nullable ItemStack item(Map<?, ?> entry, Messages messages, String kit,
+    private static @Nullable ItemStack item(Map<?, ?> entry, String kit,
                                             Consumer<String> onProblem) {
         Material material = material(text(entry.get("material")), null, onProblem);
         if (material == null) {
@@ -102,10 +132,10 @@ public final class KitReader {
 
         String name = text(entry.get("name"));
         if (name != null) {
-            meta.displayName(plain(messages.parse(name)));
+            meta.displayName(TextFormat.forItem(name));
         }
         if (entry.get("lore") instanceof List<?> lines) {
-            meta.lore(lines.stream().map(line -> plain(messages.parse(String.valueOf(line)))).toList());
+            meta.lore(lines.stream().map(line -> TextFormat.forItem(String.valueOf(line))).toList());
         }
         if (entry.get("enchantments") instanceof Map<?, ?> enchantments) {
             enchant(meta, enchantments, kit, onProblem);
@@ -134,12 +164,12 @@ public final class KitReader {
     }
 
     /** The icon: a bare material name for the simple case, or an item block for the rest. */
-    private static ItemStack icon(Object written, Messages messages, String kit,
+    private static ItemStack icon(Object written, String kit,
                                   Consumer<String> onProblem) {
         Map<?, ?> block = asBlock(written);
 
         if (block != null) {
-            ItemStack item = item(block, messages, kit, onProblem);
+            ItemStack item = item(block, kit, onProblem);
             if (item != null) {
                 return item;
             }
@@ -167,11 +197,6 @@ public final class KitReader {
             }
             meta.addEnchant(enchantment, amount(level), true);
         });
-    }
-
-    /** Item names and lore are rendered in italics by default, which nobody ever wants. */
-    private static Component plain(Component text) {
-        return Component.text().decoration(TextDecoration.ITALIC, false).append(text).build();
     }
 
     private static @Nullable Material material(@Nullable String name, @Nullable Material fallback,

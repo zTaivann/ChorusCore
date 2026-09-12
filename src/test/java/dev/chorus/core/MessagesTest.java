@@ -1,6 +1,8 @@
 package dev.chorus.core;
 
+import dev.chorus.core.locale.TextFormat;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * never drift: a message the code sends is by definition one this test looks for.
  */
 class MessagesTest {
+
+    private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
     /** The top-level sections of messages.yml, which every key begins with. */
     private static final String ROOTS = "error|core|cooldown|economy|chat|home|warp|spawn"
@@ -101,6 +105,24 @@ class MessagesTest {
                 "these lore lines hold a newline but are rendered as one piece; use renderLines");
     }
 
+    /**
+     * The menus explain how to colour a line, so the examples have to survive being drawn.
+     *
+     * <p>An unescaped one turns into the colour it is describing and explains nothing, which
+     * is a failure nobody notices until somebody opens the screen and finds a blank space
+     * where the instruction was.
+     */
+    @Test
+    void theHelpTextShowsTheCodesRatherThanUsingThem() {
+        YamlConfiguration messages = Resources.read("messages.yml");
+        String drawn = PLAIN.serialize(MiniMessage.miniMessage()
+                .deserialize(TextFormat.toTags(
+                        messages.getString("kits.editor.action-add-lore", ""))));
+
+        assertTrue(drawn.contains("&a"), "the example colour code should still be readable");
+        assertTrue(drawn.contains("<green>"), "the example tag should still be readable");
+    }
+
     /** Lore keys are the ones whose last segment says so, either way round. */
     private static boolean isLore(String key) {
         String last = key.substring(key.lastIndexOf('.') + 1);
@@ -131,9 +153,10 @@ class MessagesTest {
         return keys;
     }
 
+    /** Through the same two steps the plugin uses, old codes to tags and then to text. */
     private static boolean parses(String template) {
         try {
-            MiniMessage.miniMessage().deserialize(template);
+            MiniMessage.miniMessage().deserialize(TextFormat.toTags(template));
             return true;
         } catch (RuntimeException rejected) {
             return false;

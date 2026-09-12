@@ -40,6 +40,10 @@ public final class KitEditMenu {
 
     private static final int ROWS = 5;
     private static final int HEADER_SLOT = 4;
+    private static final int REQUIREMENTS_SLOT = 10;
+    private static final int CLAIM_ACTIONS_SLOT = 12;
+    private static final int FAIL_ACTIONS_SLOT = 14;
+    private static final int PLACEHOLDERS_SLOT = 16;
     private static final int ICON_SLOT = 19;
     private static final int ITEMS_SLOT = 21;
     private static final int PREVIEW_SLOT = 23;
@@ -62,6 +66,7 @@ public final class KitEditMenu {
     private final Economy economy;
     private final ChatPrompts prompts;
     private final KitMenuSettings settings;
+    private final KitRulesMenu rules;
 
     public KitEditMenu(Plugin plugin, KitService kits, KitEditor editor, Messages messages,
                        Economy economy, ChatPrompts prompts, KitMenuSettings settings) {
@@ -72,6 +77,7 @@ public final class KitEditMenu {
         this.economy = economy;
         this.prompts = prompts;
         this.settings = settings;
+        this.rules = new KitRulesMenu(editor, messages, prompts, settings, this::open);
     }
 
     /** The list of kits, which is where the editor starts. */
@@ -84,7 +90,7 @@ public final class KitEditMenu {
                 break;
             }
             menu.set(slot++, MenuItems.of(kit.icon(),
-                            messages.render("kits.editor.list-entry", "kit", kit.name()),
+                            messages.render("kits.editor.list-entry", "kit", KitEditor.titled(kit.name())),
                             messages.renderLines("kits.editor.list-entry-lore",
                                     "items", String.valueOf(kit.items().size()))),
                     clicker -> open(clicker, kit.name()));
@@ -107,13 +113,15 @@ public final class KitEditMenu {
         }
 
         Menu menu = new Menu(player.getServer(),
-                messages.render("kits.editor.title", "kit", kit.name()), ROWS);
+                messages.render("kits.editor.title", "kit", KitEditor.titled(kit.name())), ROWS);
 
         menu.set(HEADER_SLOT, MenuItems.of(kit.icon(),
-                        messages.render("kits.editor.header", "kit", kit.name()),
+                        messages.render("kits.editor.header", "kit", KitEditor.titled(kit.name())),
                         messages.renderLines("kits.editor.header-lore",
                                 "display", PLAIN.serialize(kit.display()))),
                 clicker -> ask(clicker, kit, "kits.editor.ask-display", "display"));
+
+        lists(menu, kit);
 
         menu.set(ICON_SLOT, button(settings.icon(), "kits.editor.icon", "kits.editor.icon-lore",
                         "icon", kit.icon().getType().name().toLowerCase(Locale.ROOT)),
@@ -153,6 +161,34 @@ public final class KitEditMenu {
 
         menu.fill(0, menu.size(), MenuItems.filler(settings.filler()));
         menu.open(player);
+    }
+
+    /**
+     * The three lists, each on a screen of its own.
+     *
+     * <p>A kit can hold a dozen actions and half as many requirements, and putting them on
+     * this screen would leave no room for anything else and no way to say which line was
+     * being changed. Each one opens where its lines are one to an item.
+     */
+    private void lists(Menu menu, Kit kit) {
+        menu.set(REQUIREMENTS_SLOT, button(settings.requirements(), "kits.editor.requirements",
+                        "kits.editor.requirements-lore",
+                        "count", String.valueOf(kit.requirements().size())),
+                clicker -> rules.open(clicker, kit.name(), KitEditor.RuleList.REQUIREMENTS));
+
+        menu.set(CLAIM_ACTIONS_SLOT, button(settings.claimActions(), "kits.editor.claimactions",
+                        "kits.editor.claimactions-lore",
+                        "count", String.valueOf(kit.claimActions().size())),
+                clicker -> rules.open(clicker, kit.name(), KitEditor.RuleList.CLAIM_ACTIONS));
+
+        menu.set(FAIL_ACTIONS_SLOT, button(settings.failActions(), "kits.editor.failactions",
+                        "kits.editor.failactions-lore",
+                        "count", String.valueOf(kit.failActions().size())),
+                clicker -> rules.open(clicker, kit.name(), KitEditor.RuleList.FAIL_ACTIONS));
+
+        menu.set(PLACEHOLDERS_SLOT, toggle(kit.placeholders(), "kits.editor.placeholders",
+                        "kits.editor.placeholders-lore", word(kit.placeholders())),
+                clicker -> set(clicker, kit, "placeholders", String.valueOf(!kit.placeholders())));
     }
 
     private void settings(Menu menu, Kit kit) {
@@ -277,15 +313,19 @@ public final class KitEditMenu {
     }
 
     /**
-     * One slot for the icon.
+     * One slot for the icon, and one slot that means one.
      *
-     * <p>Click an item in your bags to put a copy on the slot, click the slot to take it off
-     * again. The whole item is kept rather than its kind alone, so a kit shown as a named,
+     * <p>Click an item in your inventory and it takes the slot, whatever was already on it. Having
+     * to take the old icon off before the new one would go on was a step that existed for no
+     * reason other than that the same screen also lays out sixty items at once; here the
+     * slot is full by definition, so filling it is replacing it.
+     *
+     * <p>The whole item is kept rather than its kind alone, so a kit shown as a named,
      * enchanted sword stays that sword.
      */
     private void openIcon(Player player, Kit kit) {
         PaletteMenu slot = new PaletteMenu(player.getServer(),
-                messages.render("kits.editor.icon-title", "kit", kit.name()), 1,
+                messages.render("kits.editor.icon-title", "kit", KitEditor.titled(kit.name())), 1, 1,
                 (closer, contents) -> {
                     ItemStack chosen = firstOf(contents);
                     if (chosen == null) {
@@ -302,6 +342,7 @@ public final class KitEditMenu {
                 });
 
         slot.fill(new ItemStack[]{kit.icon().clone()});
+        slot.surround(MenuItems.filler(settings.filler()));
         slot.open(player);
     }
 
@@ -310,11 +351,11 @@ public final class KitEditMenu {
      *
      * <p>Starts holding what the kit holds and works the same way: click to copy on, click to
      * take off. Whatever is on it when the screen closes becomes the kit, and nothing has
-     * left the player's bags to get there.
+     * left the player's inventory to get there.
      */
     private void openItems(Player player, Kit kit) {
         PaletteMenu items = new PaletteMenu(player.getServer(),
-                messages.render("kits.editor.items-title", "kit", kit.name()),
+                messages.render("kits.editor.items-title", "kit", KitEditor.titled(kit.name())),
                 settings.itemRows(),
                 (closer, contents) -> {
                     KitEditor.Result result = editor.setItems(kit.name(), contents);
@@ -340,7 +381,7 @@ public final class KitEditMenu {
         List<ItemStack> contents = kit.contents();
         int rows = Math.max(1, Math.min(6, (contents.size() + 8) / 9));
         Menu menu = new Menu(player.getServer(),
-                messages.render("kits.editor.preview-title", "kit", kit.name()), rows);
+                messages.render("kits.editor.preview-title", "kit", KitEditor.titled(kit.name())), rows);
 
         for (int slot = 0; slot < Math.min(contents.size(), menu.size()); slot++) {
             menu.set(slot, contents.get(slot));

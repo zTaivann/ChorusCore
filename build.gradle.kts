@@ -58,3 +58,42 @@ tasks.test {
         events("passed", "failed", "skipped")
     }
 }
+
+/**
+ * The jar is built against 1.18.2 so that it runs on everything from there upwards, which
+ * also means the compiler never sees what became of an API since. `apicheck` compiles the
+ * same sources against the newest Paper release: a method that has been removed or renamed
+ * in the years between fails here rather than on somebody's server. It produces nothing,
+ * needs a JDK 25, and is deliberately not part of `build`.
+ */
+val modernApi: Configuration = configurations.create("modernApi")
+
+dependencies {
+    modernApi(libs.modern.paper.api)
+    // 1.18.2 handed these down with the API; newer Paper does not. They are compile-time
+    // only either way, so nothing about the jar changes.
+    modernApi(libs.annotations)
+    modernApi(libs.hikaricp)
+    modernApi(libs.sqlite.jdbc)
+    modernApi(libs.mariadb.client)
+    modernApi(libs.vault.api) { isTransitive = false }
+    modernApi(libs.placeholder.api) { isTransitive = false }
+}
+
+tasks.register<JavaCompile>("apicheck") {
+    group = "verification"
+    description = "Compiles the same sources against the newest Paper API."
+
+    source = sourceSets.main.get().allJava
+    classpath = modernApi
+    destinationDirectory = layout.buildDirectory.dir("apicheck")
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+
+    options.encoding = "UTF-8"
+    // Whatever that compiler's own release is: the point is to read the new API, and the
+    // 17 the jar is built for cannot read class files written by 25.
+    options.release = null
+    options.compilerArgs = listOf("-Xlint:all")
+}

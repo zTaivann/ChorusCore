@@ -43,7 +43,7 @@ public record KitAction(Kind kind, String argument) {
     public static List<KitAction> read(List<String> lines, String kit, Consumer<String> onProblem) {
         List<KitAction> actions = new ArrayList<>(lines.size());
         for (String line : lines) {
-            KitAction action = parse(line);
+            KitAction action = of(line);
             if (action == null) {
                 onProblem.accept("kit '" + kit + "' has an action this plugin does not know: '"
                         + line + "'");
@@ -54,7 +54,8 @@ public record KitAction(Kind kind, String argument) {
         return List.copyOf(actions);
     }
 
-    private static @Nullable KitAction parse(String line) {
+    /** One line on its own, for a screen that has to say whether it is a line at all. */
+    public static @Nullable KitAction of(String line) {
         String trimmed = line.trim();
         int colon = trimmed.indexOf(':');
         String name = (colon < 0 ? trimmed : trimmed.substring(0, colon)).trim().toUpperCase(Locale.ROOT);

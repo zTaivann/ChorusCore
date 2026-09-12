@@ -40,7 +40,7 @@ plugins/ChorusCore/
     ├── players.yml           /afk /seen /playtime /whois /list /ptime /pweather
     ├── items.yml             /hat /condense /clearinventory /itemname /lore
     │                         /more /skull /unbreakable /glow /enchant /stack
-    ├── kits.yml              /kit /kits
+    ├── kits.yml              /kit /kits /kitedit
     ├── staff.yml             /tp /tphere /tppos /tpall /vanish /gamemode /gmc
     │                         /gms /gma /gmsp /freeze /sudo /lockdown /tempfly
     │                         /note /stafflog
@@ -117,6 +117,33 @@ list.
 
 The titles, the entry names and the lore under them live in `messages.yml`, so the wording
 and the colours are yours as well as the layout.
+
+### Colours
+
+Every line the plugin writes — `messages.yml`, kit names, item lore, warp descriptions —
+takes MiniMessage tags and the old `&`-codes, in the same line if you like:
+
+```yaml
+'&c&lRed Bold'
+'<red><bold>Red Bold'
+'&6Gold and <gradient:#1f8f8c:#3fb8b4>a gradient'
+```
+
+Both hex spellings work as well: `&#a1b2c3`, and `&x&a&1&b&2&c&3` the way the old proxies
+wrote it. A colour code clears the formatting before it, exactly as it does in vanilla, so
+`&l&cText` comes out red and not bold. A doubled `&&` writes the character itself, for a line
+that needs to talk about a code without becoming one.
+
+This is the same everywhere, including `/itemname` and `/lore`, which take either format from
+anyone holding `chorus.items.format`.
+
+Values are put in as text, never as formatting. A player whose home is called `<red>` sees
+those five characters, not a colour, and the same goes for `&`-codes — nobody can write their
+way into looking like somebody else.
+
+Item names and lore are not quietly italicised the way the game does it by default, and what
+you write is stored exactly as you wrote it. The formatting happens when the line is drawn,
+so an editor screen shows you the plain text back.
 
 ### Aliases
 
@@ -396,7 +423,7 @@ takes one off, and levels beyond the vanilla maximum need `chorus.items.enchant.
 
 `/glow` gives an item the enchanted shimmer without an enchantment behind it, and says so
 rather than hiding the enchantments of an item that already has some. `/stack` merges the
-loose piles in your bags, matching on name, lore, enchantments and damage, so a renamed sword
+loose piles in your inventory, matching on name, lore, enchantments and damage, so a renamed sword
 never disappears into an ordinary one.
 
 ### Kits
@@ -405,6 +432,7 @@ never disappears into an ordinary one.
 | --- | --- | --- |
 | `/kit [name]` | `chorus.kits.use` | everyone |
 | `/kits` | `chorus.kits.list` | everyone |
+| `/kitedit [kit] [setting] [value]` | `chorus.kits.edit` | op |
 
 Kits live in `modules/kits.yml`, one block each: the items, what taking one costs, how long before
 the same player may take it again, and whether it is one-time. `/kit` on its own opens the
@@ -418,7 +446,67 @@ Enchantments are written the way the game writes them today — `protection`, `s
 `unbreaking` — not the old `PROTECTION_ENVIRONMENTAL` spellings, so the same file works on
 every supported version.
 
-Anything that will not fit in the player's bags lands at their feet rather than vanishing.
+Anything that will not fit in the player's inventory lands at their feet rather than vanishing.
+
+**Beyond the items**, a kit can take:
+
+```yaml
+auto-armor: true          armour goes on rather than into the inventory
+clear-inventory: false    empties the inventory before handing it over
+max-claims: 5             how many times in total it may ever be taken
+placeholders: true        fills %player%, %date% and %time% into item text
+
+requirements:             what has to be true before they may take it
+  - 'permission: chorus.kits.vip'
+  - condition: 'placeholder: %player_level% >= 10'
+    deny: '<red>Come back at level 10.'
+
+claim-actions:            what happens when they take it
+  - 'message: <green>Enjoy your %kit% kit.'
+  - 'sound: entity.player.levelup 1 1.4'
+  - 'console: lp user %player% parent add vip'
+
+fail-actions:             what happens when they are refused
+  - 'sound: block.note_block.bass 0.5 0.7'
+```
+
+Requirements come in five kinds — `permission`, `placeholder`, `money`, `playtime` and `kit`
+— and `placeholder` is the one that makes the others optional: anything any plugin exposes
+through PlaceholderAPI can gate a kit, compared with `>=`, `<=`, `==`, `!=`, `>`, `<` or
+`contains`. Actions come in eight: `message`, `broadcast`, `actionbar`, `title`, `sound`,
+`console`, `player` and `close`, run in the order they are listed.
+
+`placeholders: true` is what turns `%player%` in a sword's lore into the name of whoever
+claimed it. Only the items that actually hold a `%` are rebuilt per player, so a kit of sixty
+plain items pays nothing for it.
+
+#### The kit editor
+
+`/kitedit` opens the whole of that as a screen. Every setting is a button:
+
+- **Icon** — click an item in your inventory and it takes the slot, replacing whatever was on it.
+  The whole item is kept, so a kit shown as a named, enchanted sword stays that sword.
+- **Items** — lay the kit out by clicking. The screen copies rather than moves, so nothing
+  ever leaves your inventory and a kit full of diamond cannot be turned into a diamond machine.
+- **Cooldown, max claims, price** — left click raises, right lowers, shift makes the step a
+  big one, and `Q` asks for the exact figure in chat.
+- **Requirements, claim actions, fail actions** — each opens a screen of its own with one
+  line to an item. Click a line to rewrite it, shift-click to remove it, and on a requirement
+  right-click to give it the sentence the player sees when it turns them away. A line the
+  plugin cannot make sense of is shown in red rather than hidden, so a typo can be found here
+  instead of only being missed in game. The **Add** button on each of those screens lists
+  every type it accepts, with an example of each and the comparisons a requirement can make,
+  and the prompt that asks for the line repeats them — nothing has to be looked up elsewhere.
+- **One-time, auto armour, clear first, placeholders** — click to switch.
+- **Display name, lore, permission** — click and type the value in chat. What you type is
+  stored exactly as you typed it; the editor shows it back as plain text.
+
+Nothing in the screen sends you away to type a command, and nothing you type in a prompt
+becomes a chat message. The commands still work for anyone who would rather type:
+`/kitedit vip cooldown 3600`, `/kitedit vip items`, `/kitedit vip create`, and so on.
+
+Whatever the screen writes goes back into `modules/kits.yml` in exactly the form above, so a
+kit built in game can still be opened in a text editor afterwards.
 
 ### Custom commands
 

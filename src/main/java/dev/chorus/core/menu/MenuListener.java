@@ -38,6 +38,10 @@ public final class MenuListener implements Listener {
             } else {
                 palette.putOn(event.getCurrentItem());
             }
+            // Cancelling a click tells the client to put back what it thought was there,
+            // which is the screen as it was a moment ago. Sending it again is what makes
+            // the copy appear under the cursor rather than on the next click after that.
+            player.updateInventory();
         }
     }
 

@@ -184,10 +184,10 @@ public final class KitService {
     /**
      * Puts the kit where it belongs.
      *
-     * <p>Armour goes on rather than into the bags when {@code auto-armor} is on and the slot
+     * <p>Armour goes on rather than into the inventory when {@code auto-armor} is on and the slot
      * is free. Taking off what somebody is already wearing to put the kit's on would be a
      * good way to lose enchanted diamond, so an occupied slot is left alone and the piece
-     * goes in the bags as any other item would.
+     * goes in the inventory as any other item would.
      */
     private void hand(Player player, Kit kit) {
         PlayerInventory inventory = player.getInventory();
@@ -195,8 +195,10 @@ public final class KitService {
             inventory.clear();
         }
 
-        List<ItemStack> loose = new ArrayList<>(kit.contents().size());
-        for (ItemStack item : kit.contents()) {
+        // Built for this player, so an item whose lore mentions them says their name.
+        List<ItemStack> contents = kit.contents(player);
+        List<ItemStack> loose = new ArrayList<>(contents.size());
+        for (ItemStack item : contents) {
             if (!kit.autoArmor() || !equip(inventory, item)) {
                 loose.add(item);
             }

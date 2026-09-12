@@ -652,7 +652,7 @@ permissions:
     description: Allows /lore.
     default: op
   chorus.items.format:
-    description: Allows MiniMessage tags in /itemname and /lore.
+    description: Allows colour codes and MiniMessage tags in /itemname and /lore.
     default: op
   chorus.items.more:
     description: Allows /more.

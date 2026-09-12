@@ -48,6 +48,10 @@ kits:
     permission: NAME_TAG
     enabled: LIME_DYE
     disabled: GRAY_DYE
+    requirements: COMPARATOR
+    claim-actions: EXPERIENCE_BOTTLE
+    fail-actions: FIRE_CHARGE
+    add: EMERALD
     new-kit: WRITABLE_BOOK
     back: ARROW
     delete: LAVA_BUCKET
@@ -55,7 +59,9 @@ kits:
 
   # ── The kits themselves ─────────────────────────────────────────────────
   #
-  #   display           the name shown in /kits, in MiniMessage.
+  #   display           the name shown in /kits. MiniMessage, the old &-codes,
+  #                     or both in the same line: '&c&lVIP <gray>kit' works.
+  #                     Write && for an & that is not a colour.
   #   lore              extra lines under that name.
   #   icon              the item it is shown as. Either a material name, or the
   #                     same block an item takes, which is what /kitedit writes
@@ -72,10 +78,10 @@ kits:
   #   max-claims        how many times in total it may ever be taken. 0 is no limit.
   #                     Unlike one-time this still honours the cooldown in between.
   #   auto-armor        armour goes straight onto the player rather than into
-  #                     their bags. A slot they have already filled is left
+  #                     their inventory. A slot they have already filled is left
   #                     alone: taking off enchanted diamond to put a kit's
   #                     leather on would be a good way to lose it.
-  #   clear-inventory   empties their bags before handing the kit over.
+  #   clear-inventory   empties their inventory before handing the kit over.
   #
   #   requirements      what has to be true before they may take it. Each one is
   #                     written type: value, and takes either shape:
@@ -114,10 +120,26 @@ kits:
   #   price             what taking it costs, through Vault.
   #   permission        who may take it. Leave it out and it defaults to
   #                     chorus.kits.use.<name>. Set it to '' for everyone.
+  #   placeholders      fills %placeholders% into the name and the lore of the
+  #                     items themselves, at the moment the kit is handed over:
+  #
+  #                       placeholders: true
+  #                       items:
+  #                         - material: DIAMOND_SWORD
+  #                           name: '<gold>%player%''s Blade'
+  #                           lore:
+  #                             - '<gray>Claimed on %date%'
+  #
+  #                     %player%, %date% and %time% are this plugin's own, and
+  #                     anything PlaceholderAPI knows works too when it is
+  #                     installed. Off by default, and only the items that
+  #                     actually hold a % are rebuilt per player, so leaving it
+  #                     on costs a kit of plain items nothing.
+  #
   #   items             what is in it. Each entry takes:
   #                       material      required, a Bukkit material name
   #                       amount        defaults to 1
-  #                       name          renames the item, in MiniMessage
+  #                       name          renames the item, in codes or tags
   #                       lore          lines under the item name
   #                       enchantments  vanilla names, for example
   #                                     protection, sharpness, unbreaking.
@@ -126,12 +148,18 @@ kits:
   #                                     spellings, so use them.
   #                       unbreakable   true for a tool that never wears out
   #
-  # Anything that will not fit in the player's bags lands at their feet.
+  # Anything that will not fit in the player's inventory lands at their feet.
   #
   # ── Editing kits in game ────────────────────────────────────────────────
   #
-  # /kitedit writes back into this file, in exactly the form above, so a kit
-  # made in game can still be opened in a text editor afterwards:
+  # /kitedit on its own opens the screen, where every setting above is a button:
+  # the icon is set by clicking an item in your inventory, numbers are nudged
+  # with the mouse or typed in chat, and the requirements, the claim actions and
+  # fail actions each open a screen of their own with one line to an item, so a
+  # single action can be rewritten or taken out without touching the rest.
+  #
+  # /kitedit <kit> <setting> writes back into this file, in exactly the form
+  # above, so a kit made in game can still be opened in a text editor:
   #
   #   /kitedit vip create           makes it out of whatever you are carrying
   #   /kitedit vip items            replaces its items with what you carry now
@@ -149,7 +177,7 @@ kits:
   # file readable and portable between versions; the cost is that anything the
   # form cannot say, such as custom model data, is not carried over. The
   # command says so when it happens.
-  # Anything that will not fit in the player's bags lands at their feet.
+  # Anything that will not fit in the player's inventory lands at their feet.
   definitions:
 
     starter:
@@ -187,6 +215,7 @@ kits:
       price: 0.0
       auto-armor: true
       clear-inventory: false
+      placeholders: true
       claim-actions:
         - 'sound: entity.player.levelup 0.6 1.4'
         - 'actionbar: <green>Daily kit claimed'
@@ -195,6 +224,10 @@ kits:
       items:
         - material: GOLDEN_APPLE
           amount: 2
+          name: '&6Daily Apple'
+          lore:
+            - '&7Claimed by %player%'
+            - '&7on %date%'
         - material: COOKED_BEEF
           amount: 16
         - material: IRON_INGOT

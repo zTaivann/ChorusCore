@@ -5,6 +5,7 @@ import dev.chorus.core.kits.rules.Requirement;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -21,15 +22,25 @@ import java.util.List;
 public record Kit(String name, Component display, List<Component> lore, ItemStack icon,
                   int cooldownSeconds, boolean oneTime, int maxClaims, double price,
                   String permission, boolean autoArmor, boolean clearInventory,
-                  List<Requirement> requirements, List<KitAction> claimActions,
-                  List<KitAction> failActions, List<ItemStack> items) {
+                  boolean placeholders, List<Requirement> requirements, List<KitAction> claimActions,
+                  List<KitAction> failActions, List<KitItem> items) {
 
     public boolean allowed(Player player) {
         return permission.isEmpty() || player.hasPermission(permission);
     }
 
-    /** Fresh copies, so handing the kit out never touches what the config loaded. */
+    /**
+     * Fresh copies for one player, with their placeholders filled in.
+     *
+     * <p>Handing out copies is what stops a kit being drained by giving it away, and the
+     * player is what turns {@code %player%} in a piece of lore into a name.
+     */
+    public List<ItemStack> contents(@Nullable Player player) {
+        return items.stream().map(item -> item.build(player)).toList();
+    }
+
+    /** The same for a screen nobody is taking the kit from, where a placeholder stays a word. */
     public List<ItemStack> contents() {
-        return items.stream().map(ItemStack::clone).toList();
+        return contents(null);
     }
 }

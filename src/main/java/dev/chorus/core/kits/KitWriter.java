@@ -1,7 +1,7 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.core.locale.TextFormat;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -24,8 +24,6 @@ import java.util.Map;
  * custom model data, a plugin's own tags — is not carried over, and the command says so.
  */
 final class KitWriter {
-
-    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     private KitWriter() {
     }
@@ -72,11 +70,11 @@ final class KitWriter {
             return written;
         }
         if (meta.hasDisplayName()) {
-            written.put("name", serialise(meta.displayName()));
+            written.put("name", TextFormat.toText(meta.displayName()));
         }
         List<Component> lore = meta.lore();
         if (lore != null && !lore.isEmpty()) {
-            written.put("lore", lore.stream().map(KitWriter::serialise).toList());
+            written.put("lore", lore.stream().map(TextFormat::toText).toList());
         }
         if (meta.isUnbreakable()) {
             written.put("unbreakable", true);
@@ -93,9 +91,5 @@ final class KitWriter {
     /** Namespaced keys, matching what the reader looks up. */
     private static String key(Enchantment enchantment) {
         return enchantment.getKey().getKey();
-    }
-
-    private static String serialise(Component text) {
-        return text == null ? "" : MINI_MESSAGE.serialize(text);
     }
 }

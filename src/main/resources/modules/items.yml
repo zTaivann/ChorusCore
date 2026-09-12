@@ -50,7 +50,8 @@
 # Teleport commands show their particles twice: once where the player left from
 # and once where they arrive.
 
-# chorus.items.format lets a player use MiniMessage tags in /itemname and /lore.
+# chorus.items.format lets a player colour /itemname and /lore, with MiniMessage
+# tags or the old &-codes, or both in the same line.
 # Without it their text is used exactly as typed, tags and all.
 
 # Switches off every command in this file at once.

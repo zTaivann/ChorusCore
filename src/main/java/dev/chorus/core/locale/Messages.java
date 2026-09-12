@@ -74,7 +74,7 @@ public final class Messages implements MessageApi {
         YamlConfiguration data = file.data();
         String prefix = data.getString("prefix", "");
         this.rawPrefix = prefix;
-        this.prefix = prefix.isEmpty() ? Component.empty() : MINI_MESSAGE.deserialize(prefix);
+        this.prefix = prefix.isEmpty() ? Component.empty() : TextFormat.parse(prefix);
 
         for (String key : data.getKeys(true)) {
             if (data.isConfigurationSection(key)) {
@@ -88,7 +88,7 @@ public final class Messages implements MessageApi {
                 muted.add(key);
                 continue;
             }
-            String filled = template.replace("%prefix%", prefix);
+            String filled = TextFormat.toTags(template.replace("%prefix%", prefix));
             templates.put(key, filled);
             entries.put(key, MINI_MESSAGE.deserialize(filled));
         }
@@ -111,7 +111,7 @@ public final class Messages implements MessageApi {
      * a custom command, honouring {@code %prefix%} the same way.
      */
     public Component parse(String raw) {
-        return MINI_MESSAGE.deserialize(raw.replace("%prefix%", rawPrefix));
+        return TextFormat.parse(raw.replace("%prefix%", rawPrefix));
     }
 
     /**

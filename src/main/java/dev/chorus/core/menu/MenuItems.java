@@ -1,7 +1,9 @@
 package dev.chorus.core.menu;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
@@ -25,17 +27,33 @@ public final class MenuItems {
         ItemStack item = template.clone();
         item.setAmount(1);
         ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(name);
-            meta.lore(lore);
-            // values() rather than named constants: the set of flags has grown over the
-            // years and naming one that a version lacks would fail to link.
-            meta.addItemFlags(org.bukkit.inventory.ItemFlag.values());
-            item.setItemMeta(meta);
+        if (meta == null) {
+            return item;
         }
+
+        meta.displayName(upright(name));
+        meta.lore(lore.stream().map(MenuItems::upright).toList());
+        // values() rather than named constants: the set of flags has grown over the years
+        // and naming one that a version lacks would fail to link.
+        meta.addItemFlags(ItemFlag.values());
+        item.setItemMeta(meta);
         return item;
     }
+
     public static @Nullable ItemStack filler(@Nullable Material material) {
         return material == null ? null : of(material, Component.empty(), List.of());
+    }
+
+    /**
+     * The game draws anything written on an item in italics unless told otherwise, which is
+     * never what a menu wants and is not something the line asked for.
+     *
+     * <p>Set on the outside, so a line that does want italics still gets them: a style on a
+     * child beats the one it inherits.
+     */
+    private static Component upright(Component text) {
+        return text.style().decoration(TextDecoration.ITALIC) == TextDecoration.State.NOT_SET
+                ? text.decoration(TextDecoration.ITALIC, false)
+                : text;
     }
 }
