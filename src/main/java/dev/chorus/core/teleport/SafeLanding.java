@@ -31,6 +31,8 @@ public final class SafeLanding {
             "SWEET_BERRY_BUSH", "WITHER_ROSE", "POWDER_SNOW", "END_PORTAL", "NETHER_PORTAL",
             "END_GATEWAY", "POINTED_DRIPSTONE");
 
+    private static final String WATER = "WATER";
+
     private static final double WIDTH = 0.6;
     private static final double HEIGHT = 1.8;
 
@@ -124,7 +126,15 @@ public final class SafeLanding {
     private static boolean supported(World world, Location at) {
         Block under = world.getBlockAt(
                 at.getBlockX(), (int) Math.floor(at.getY() - EPSILON), at.getBlockZ());
-        if (under.isPassable() || deadly(under)) {
+        if (deadly(under)) {
+            return false;
+        }
+        // Water holds a player up well enough. Refusing it turns every warp, home and
+        // teleport on a coast or a river into "there is nowhere safe to land there".
+        if (WATER.equals(under.getType().name())) {
+            return true;
+        }
+        if (under.isPassable()) {
             return false;
         }
         return under.getBoundingBox().getMaxY() >= at.getY() - EPSILON;

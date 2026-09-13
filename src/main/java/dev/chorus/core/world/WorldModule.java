@@ -70,7 +70,8 @@ public final class WorldModule implements ChorusModule {
         commands.add(plugin.register(new TreeCommand(support)));
         commands.add(plugin.register(new SpawnerCommand(support)));
         commands.add(plugin.register(new LocateCommand(support,
-                () -> config.section("world").getInt("locate-radius-chunks", 100),
+                () -> config.section("world").getInt("locate-radius-chunks", 64),
+                () -> config.section("world").getInt("locate-biome-radius-blocks", 400),
                 () -> config.section("world").getBoolean("locate-unexplored", false))));
 
         placing = new UnlimitedPlacing();

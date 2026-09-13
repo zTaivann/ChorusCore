@@ -39,9 +39,10 @@ public final class TeleportHereCommand extends PlayerCommand {
         }
 
         settle(player);
-        teleports.teleport(target, player.getLocation(), rules(), name());
-        messages.send(player, "staff.tphere-done", "player", target.getName());
-        messages.send(target, "staff.tp-moved", "target", player.getName());
+        teleports.teleport(target, player.getLocation(), rules(), name(), () -> {
+            messages.send(player, "staff.tphere-done", "player", target.getName());
+            messages.send(target, "staff.tp-moved", "target", player.getName());
+        });
     }
 
     @Override

@@ -52,12 +52,13 @@ public final class TeleportToCommand extends ChorusCommand {
         }
 
         settle(sender);
-        teleports.teleport(traveller, destination.getLocation(), rules(), name());
-        messages.send(sender, "staff.tp-done",
-                "player", traveller.getName(), "target", destination.getName());
-        if (!traveller.equals(sender)) {
-            messages.send(traveller, "staff.tp-moved", "target", destination.getName());
-        }
+        teleports.teleport(traveller, destination.getLocation(), rules(), name(), () -> {
+            messages.send(sender, "staff.tp-done",
+                    "player", traveller.getName(), "target", destination.getName());
+            if (!traveller.equals(sender)) {
+                messages.send(traveller, "staff.tp-moved", "target", destination.getName());
+            }
+        });
     }
 
     @Override

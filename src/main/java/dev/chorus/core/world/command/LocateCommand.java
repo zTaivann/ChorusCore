@@ -44,15 +44,35 @@ public final class LocateCommand extends PlayerCommand {
     private static final String BIOME = "biome";
     private static final String TELEPORT_PERMISSION = "chorus.staff.tppos";
 
-    /** The structure search counts chunks and the biome search counts blocks. */
-    private static final int BLOCKS_PER_CHUNK = 16;
+    /**
+     * How many samples across a biome search is allowed to take.
+     *
+     * <p>A biome search is noise sampled on the server thread, and there is no background
+     * version of it in the API. Left to itself it scales with the square of the radius: a
+     * 1600 block search took forty-five seconds here and the watchdog stopped the server.
+     *
+     * <p>So the interval between samples is worked out from the radius rather than fixed,
+     * which makes every search cost the same however far it reaches. A wider search steps
+     * over more ground, so a small patch of a biome can be stepped past — that is the trade,
+     * and it is the right way round.
+     */
+    private static final int SAMPLES_ACROSS = 16;
+
+    /** Sampling closer together than this buys nothing: biomes are laid out in fours. */
+    private static final int MIN_STEP = 16;
+
+    /** Past this the steps are so coarse that the answer stops meaning anything. */
+    private static final int MAX_BIOME_RADIUS = 3200;
 
     private final IntSupplier radius;
+    private final IntSupplier biomeRadius;
     private final BooleanSupplier unexplored;
 
-    public LocateCommand(CommandSupport support, IntSupplier radius, BooleanSupplier unexplored) {
+    public LocateCommand(CommandSupport support, IntSupplier radius, IntSupplier biomeRadius,
+                         BooleanSupplier unexplored) {
         super(support, "locate", "chorus.world.locate");
         this.radius = radius;
+        this.biomeRadius = biomeRadius;
         this.unexplored = unexplored;
     }
 
@@ -96,7 +116,31 @@ public final class LocateCommand extends PlayerCommand {
         }
 
         settle(player);
-        report(player, found.name(), player.getLocation(), found.where());
+        surfaced(player, found.name(), player.getLocation(), found.where());
+    }
+
+    /**
+     * Reports the ground rather than the point the search handed back.
+     *
+     * <p>A biome search answers with a height somewhere in the column the biome occupies,
+     * which over an ocean is a dozen blocks above the water. Sending somebody there lands
+     * them in mid-air, or refuses because there is nothing to stand on.
+     *
+     * <p>The chunk is fetched in the background: reading a heightmap out of an unloaded
+     * chunk on the server thread is how a command stalls everybody else.
+     */
+    private void surfaced(Player player, String kind, Location from, Location found) {
+        found.getWorld().getChunkAtAsync(found).whenComplete((chunk, missing) ->
+                schedulers.region(found, () -> {
+                    if (!player.isOnline()) {
+                        return;
+                    }
+                    Location ground = found.clone();
+                    if (missing == null) {
+                        ground.setY(found.getWorld().getHighestBlockYAt(found) + 1);
+                    }
+                    report(player, kind, from, ground);
+                }));
     }
 
     /** A structure, and a biome as well when the player did not say which they meant. */
@@ -115,9 +159,11 @@ public final class LocateCommand extends PlayerCommand {
             return null;
         }
 
+        int reach = Math.max(MIN_STEP, Math.min(MAX_BIOME_RADIUS, biomeRadius.getAsInt()));
+        int step = Math.max(MIN_STEP, reach / SAMPLES_ACROSS);
+
         Location from = player.getLocation();
-        return new Found(key(wanted), from.getWorld()
-                .locateNearestBiome(from, biome, radius.getAsInt() * BLOCKS_PER_CHUNK));
+        return new Found(key(wanted), from.getWorld().locateNearestBiome(from, biome, reach, step));
     }
 
     private @Nullable Location search(Player player, StructureType type) {

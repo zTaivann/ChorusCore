@@ -61,13 +61,16 @@ public final class TpPosCommand extends ChorusCommand {
         Location destination = new Location(world, x, y, z, standing.getYaw(), standing.getPitch());
 
         settle(sender);
-        teleports.teleport(traveller, destination, rules(), name());
-        messages.send(sender, "staff.tppos-done",
-                "player", traveller.getName(),
-                "x", String.valueOf(destination.getBlockX()),
-                "y", String.valueOf(destination.getBlockY()),
-                "z", String.valueOf(destination.getBlockZ()),
-                "world", world.getName());
+        // Reported on arrival rather than on the command: a teleport can still be refused
+        // for having nowhere to land, and saying it worked first and then that it did not
+        // is worse than saying nothing until it has.
+        teleports.teleport(traveller, destination, rules(), name(), () ->
+                messages.send(sender, "staff.tppos-done",
+                        "player", traveller.getName(),
+                        "x", String.valueOf(destination.getBlockX()),
+                        "y", String.valueOf(destination.getBlockY()),
+                        "z", String.valueOf(destination.getBlockZ()),
+                        "world", destination.getWorld().getName()));
     }
 
     private @Nullable Player self(CommandSender sender) {

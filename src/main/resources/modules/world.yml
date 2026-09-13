@@ -20,12 +20,19 @@ world:
   # The most mobs one /spawnmob may place at once.
   spawnmob-limit: 20
 
-  # How far /locate looks, in chunks. Searching is real work, and a large radius on a
-  # world that has not been generated out that far is a lot of it.
+  # How far /locate looks for a structure, in chunks.
+  locate-radius-chunks: 64
+
+  # How far /locate looks for a biome, in blocks.
   #
-  # The server counts a structure search in chunks and a biome search in blocks, so this
-  # is converted for the biome one. Both end up looking equally far.
-  locate-radius-chunks: 100
+  # A biome search is worked out on the server thread by sampling the world's noise, and
+  # there is no version of it that runs in the background. The interval between samples is
+  # worked out from this radius so that a search always costs the same however far it
+  # reaches: a wider one steps over more ground, so a small patch of a biome can be stepped
+  # past. That is the trade, and it is the right way round.
+  #
+  # Anything above 3200 is treated as 3200.
+  locate-biome-radius-blocks: 400
 
   # true makes /locate look for structures nobody has been to yet, which is what the
   # vanilla command does and is far more expensive. false finds the nearest one either way.
