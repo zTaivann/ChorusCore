@@ -36,7 +36,7 @@ class KitRulesTest {
     @Test
     void aRefusalLineSurvivesTheFile() throws InvalidConfigurationException {
         List<Rule> written = List.of(
-                Rule.of("permission: chorus.kits.use.vip"),
+                Rule.of("permission: chorus.kit.vip"),
                 new Rule("placeholder: %player_level% >= 10", "<red>Come back at level 10."));
 
         assertEquals(written, throughTheFile(written));
@@ -90,7 +90,7 @@ class KitRulesTest {
         }
 
         List<Rule> requirements = throughTheFile(List.of(
-                Rule.of("permission: chorus.kits.use.vip"),
+                Rule.of("permission: chorus.kit.vip"),
                 new Rule("money: 500", "<red>Not enough.")));
 
         for (Rule rule : requirements) {

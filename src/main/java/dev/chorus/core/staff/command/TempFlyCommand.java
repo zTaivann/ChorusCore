@@ -4,6 +4,7 @@ import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Durations;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.staff.TempFlyService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -39,7 +40,7 @@ public final class TempFlyCommand extends ChorusCommand {
             return;
         }
 
-        int minutes = parse(args[1]);
+        int minutes = Numbers.integer(args[1], -1);
         if (minutes < 0 || minutes > MAX_MINUTES) {
             messages.send(sender, "staff.tempfly-range", "max", String.valueOf(MAX_MINUTES));
             return;
@@ -69,13 +70,6 @@ public final class TempFlyCommand extends ChorusCommand {
         messages.send(target, "staff.tempfly-received", "time", time);
     }
 
-    private static int parse(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

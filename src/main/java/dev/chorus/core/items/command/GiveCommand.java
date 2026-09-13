@@ -100,7 +100,9 @@ public final class GiveCommand extends ChorusCommand {
         List<String> extras = List.of(args).subList(Math.min(after, args.length), args.length);
         ItemStack stack = new ItemStack(material, 1);
         if (!extras.isEmpty()) {
-            ItemAttributes.apply(stack, extras, sender.hasPermission(FORMAT),
+            ItemAttributes.apply(stack, extras,
+                    new ItemAttributes.Allowed(sender.hasPermission(FORMAT),
+                            items.settings().restrictions(), sender),
                     word -> messages.send(sender, "items.give-ignored", "word", word));
         }
 

@@ -3,6 +3,7 @@ package dev.chorus.core.world.command;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Confirmations;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.world.EntitySweep;
 import dev.chorus.core.world.SweepTarget;
 import org.bukkit.Location;
@@ -140,12 +141,8 @@ public final class SweepCommand extends ChorusCommand {
 
     /** Negative for anything that is not a usable radius. */
     private static int radius(String raw) {
-        try {
-            int value = Integer.parseInt(raw);
-            return value <= 0 ? -1 : Math.min(MAX_RADIUS, value);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        int value = Numbers.integer(raw, -1);
+        return value <= 0 ? -1 : Math.min(MAX_RADIUS, value);
     }
 
     @Override

@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,6 +47,10 @@ public final class Balances {
     private volatile List<Ranked> ranking = List.of();
     private volatile long rankedAt;
 
+    /** Bumped by every change, so a ranking built over one is known to be out of date. */
+    private final AtomicLong changes = new AtomicLong();
+    private volatile long rankedFor = -1;
+
     public Balances(BalanceRepository repository, Executor worker, Logger logger, Currency currency) {
         this.repository = repository;
         this.worker = worker;
@@ -55,7 +60,7 @@ public final class Balances {
 
     public void apply(Currency updated) {
         this.currency = updated;
-        this.rankedAt = 0;
+        this.changes.incrementAndGet();
     }
 
     public Currency currency() {
@@ -68,7 +73,7 @@ public final class Balances {
         for (BalanceRepository.Account account : repository.all()) {
             accounts.put(account.player(), new Entry(account.name(), account.balance()));
         }
-        rankedAt = 0;
+        changes.incrementAndGet();
     }
 
     public int size() {
@@ -88,7 +93,7 @@ public final class Balances {
         double opening = currency.clamp(currency.startingBalance());
         accounts.put(player, new Entry(name, opening));
         write(player, name, opening);
-        rankedAt = 0;
+        changes.incrementAndGet();
     }
 
     public boolean exists(UUID player) {
@@ -154,13 +159,13 @@ public final class Balances {
             return false;
         }
         write(id, written[0].name, written[0].balance);
-        rankedAt = 0;
+        changes.incrementAndGet();
         return true;
     }
 
     public void forget(UUID player) {
         accounts.remove(player);
-        rankedAt = 0;
+        changes.incrementAndGet();
         worker.execute(() -> {
             try {
                 repository.delete(player);
@@ -191,10 +196,16 @@ public final class Balances {
         return sum;
     }
 
+    /** Throws the ranking away, so the next /baltop is worked out from scratch. */
+    public void refresh() {
+        changes.incrementAndGet();
+    }
+
     private List<Ranked> rank() {
+        long generation = changes.get();
         long now = System.currentTimeMillis();
         List<Ranked> cached = ranking;
-        if (now - rankedAt < RANKING_MILLIS && !cached.isEmpty()) {
+        if (rankedFor == generation && now - rankedAt < RANKING_MILLIS) {
             return cached;
         }
 
@@ -204,6 +215,9 @@ public final class Balances {
 
         ranking = List.copyOf(ranked);
         rankedAt = now;
+        // Last, and with the value read before the sort: a change that landed while this was
+        // building leaves the generation behind, and the next call works it out again.
+        rankedFor = generation;
         return ranking;
     }
 

@@ -1,6 +1,7 @@
 package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.items.ItemService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -29,7 +30,7 @@ public final class MoreCommand extends HeldItemCommand {
         }
 
         int most = item.getMaxStackSize();
-        int wanted = args.length == 0 ? most : parse(args[0]);
+        int wanted = args.length == 0 ? most : Numbers.integer(args[0], -1);
         if (wanted < 1 || wanted > most) {
             messages.send(player, "items.more-range", "max", String.valueOf(most));
             return;
@@ -54,13 +55,6 @@ public final class MoreCommand extends HeldItemCommand {
         messages.send(player, "items.more", "amount", String.valueOf(wanted));
     }
 
-    private static int parse(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

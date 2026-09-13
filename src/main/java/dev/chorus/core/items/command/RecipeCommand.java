@@ -2,6 +2,7 @@ package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -51,7 +52,7 @@ public final class RecipeCommand extends ChorusCommand {
             return;
         }
 
-        int which = args.length > 1 ? number(args[1]) : 1;
+        int which = args.length > 1 ? Numbers.integer(args[1], -1) : 1;
         if (which < 1 || which > recipes.size()) {
             messages.send(sender, "items.recipe-unknown",
                     "number", String.valueOf(which), "count", String.valueOf(recipes.size()));
@@ -138,13 +139,6 @@ public final class RecipeCommand extends ChorusCommand {
         return material;
     }
 
-    private static int number(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

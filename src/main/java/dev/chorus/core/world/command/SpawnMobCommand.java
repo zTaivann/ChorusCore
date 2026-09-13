@@ -2,6 +2,7 @@ package dev.chorus.core.world.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -44,7 +45,7 @@ public final class SpawnMobCommand extends ChorusCommand {
             return;
         }
 
-        int wanted = args.length > 1 ? amount(args[1]) : 1;
+        int wanted = args.length > 1 ? Numbers.integer(args[1], -1) : 1;
         if (wanted <= 0) {
             messages.send(sender, "world.spawnmob-usage");
             return;
@@ -102,13 +103,6 @@ public final class SpawnMobCommand extends ChorusCommand {
         }
     }
 
-    private static int amount(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

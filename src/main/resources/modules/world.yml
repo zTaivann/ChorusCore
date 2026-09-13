@@ -20,6 +20,18 @@ world:
   # The most mobs one /spawnmob may place at once.
   spawnmob-limit: 20
 
+  # How far /locate looks, in chunks. Searching is real work, and a large radius on a
+  # world that has not been generated out that far is a lot of it.
+  #
+  # The server counts a structure search in chunks and a biome search in blocks, so this
+  # is converted for the biome one. Both end up looking equally far.
+  locate-radius-chunks: 100
+
+  # true makes /locate look for structures nobody has been to yet, which is what the
+  # vanilla command does and is far more expensive. false finds the nearest one either way.
+  # Biomes are not affected: there is no such thing as an unexplored one.
+  locate-unexplored: false
+
   # Clears the ground on a timer, with a warning first. The one piece of housekeeping
   # every busy server ends up asking somebody to do by hand.
   auto-sweep:
@@ -120,6 +132,12 @@ commands:
 
   unlimited:
     enabled: true
+
+  # Ten seconds between searches: one of these is not free, and holding the key down
+  # would be a way to stall the server from chat.
+  locate:
+    enabled: true
+    cooldown-seconds: 10
     sound:
       key: block.lever.click
       volume: 0.5

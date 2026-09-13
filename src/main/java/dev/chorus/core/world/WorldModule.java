@@ -7,6 +7,7 @@ import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.teleport.TeleportService;
+import dev.chorus.core.world.command.LocateCommand;
 import dev.chorus.core.world.command.SpawnMobCommand;
 import dev.chorus.core.world.command.SpawnerCommand;
 import dev.chorus.core.world.command.SweepCommand;
@@ -52,7 +53,7 @@ public final class WorldModule implements ChorusModule {
     @Override
     public List<String> commandNames() {
         return List.of("world", "time", "weather", "spawnmob", "sweep",
-                "tree", "spawner", "unlimited");
+                "tree", "spawner", "unlimited", "locate");
     }
 
     @Override
@@ -68,6 +69,9 @@ public final class WorldModule implements ChorusModule {
         commands.add(plugin.register(new SweepCommand(support, plugin.confirmations())));
         commands.add(plugin.register(new TreeCommand(support)));
         commands.add(plugin.register(new SpawnerCommand(support)));
+        commands.add(plugin.register(new LocateCommand(support,
+                () -> config.section("world").getInt("locate-radius-chunks", 100),
+                () -> config.section("world").getBoolean("locate-unexplored", false))));
 
         placing = new UnlimitedPlacing();
         plugin.register(placing);

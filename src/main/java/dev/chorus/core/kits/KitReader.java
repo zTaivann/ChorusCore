@@ -65,7 +65,7 @@ public final class KitReader {
                 block.getBoolean("one-time", false),
                 Math.max(0, block.getInt("max-claims", 0)),
                 Math.max(0, block.getDouble("price", 0)),
-                block.getString("permission", "chorus.kits.use." + key),
+                block.getString("permission", "chorus.kit." + key),
                 block.getBoolean("auto-armor", true),
                 block.getBoolean("clear-inventory", false),
                 placeholders,

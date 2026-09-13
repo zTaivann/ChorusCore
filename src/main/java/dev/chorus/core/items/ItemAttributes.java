@@ -12,6 +12,7 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.permissions.Permissible;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -39,13 +40,22 @@ public final class ItemAttributes {
     }
 
     /**
+     * Who is building the item and what they are allowed to put on it.
+     *
+     * @param formatting   whether colour codes in the text are obeyed or shown as typed
+     * @param restrictions the same rules {@code /enchant} answers to
+     */
+    public record Allowed(boolean formatting, ItemRestrictions restrictions, Permissible who) {
+    }
+
+    /**
      * Applies every word to the stack.
      *
-     * @param allowFormatting whether colour codes in the text are obeyed or shown as typed
-     * @param onProblem       told about each word that meant nothing
+     * @param onProblem told about each word that meant nothing, or was not allowed
      */
-    public static void apply(ItemStack stack, List<String> words, boolean allowFormatting,
+    public static void apply(ItemStack stack, List<String> words, Allowed allowed,
                              Consumer<String> onProblem) {
+        boolean allowFormatting = allowed.formatting();
         ItemMeta meta = stack.getItemMeta();
         if (meta == null) {
             words.forEach(onProblem);
@@ -63,7 +73,7 @@ public final class ItemAttributes {
             boolean known = switch (key) {
                 case "name", "n" -> name(meta, value, allowFormatting);
                 case "lore", "l", "desc" -> lore(lore, value);
-                case "enchant", "ench", "e" -> enchant(meta, value);
+                case "enchant", "ench", "e" -> enchant(meta, value, allowed);
                 case "unbreakable", "nobreak" -> unbreakable(meta);
                 case "glow", "shine" -> glow(meta);
                 case "hide", "hideflags" -> hide(meta);
@@ -116,7 +126,13 @@ public final class ItemAttributes {
         return true;
     }
 
-    private static boolean enchant(ItemMeta meta, String value) {
+    /**
+     * The {@code enchant:} word, held to the same rules as {@code /enchant}.
+     *
+     * <p>Without this, a blocked enchantment or a level nobody is allowed to reach could be
+     * put on an item by writing it after {@code /give} instead.
+     */
+    private static boolean enchant(ItemMeta meta, String value, Allowed allowed) {
         int colon = value.lastIndexOf(':');
         String name = colon < 0 ? value : value.substring(0, colon);
         Enchantment enchantment = Enchantments.byName(name);
@@ -135,6 +151,12 @@ public final class ItemAttributes {
         if (level <= 0) {
             meta.removeEnchant(enchantment);
             return true;
+        }
+
+        String id = enchantment.getKey().getKey();
+        if (!allowed.restrictions().mayEnchant(allowed.who(), id)
+                || level > allowed.restrictions().highestLevel(allowed.who(), enchantment)) {
+            return false;
         }
         meta.addEnchant(enchantment, level, true);
         return true;

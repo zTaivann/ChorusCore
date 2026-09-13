@@ -65,7 +65,7 @@ public final class HomeListCommand extends PlayerCommand {
                     messages.render("menu.homes.entry", "home", home.name()),
                     List.of(
                             messages.render("menu.homes.lore-world", "world", home.worldName()),
-                            messages.render("menu.homes.lore-position",
+                            messages.render("menu.homes.lore-location",
                                     "x", round(home.x()), "y", round(home.y()), "z", round(home.z())),
                             messages.render("menu.homes.lore-created",
                                     "date", DATE.format(Instant.ofEpochMilli(home.createdAt()))),

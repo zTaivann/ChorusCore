@@ -422,6 +422,9 @@ commands:
   unlimited:
     description: Place the held block without using it up.
     usage: /unlimited [list|clear]
+  locate:
+    description: Find the nearest structure of a kind.
+    usage: /locate [structure]
 
   sell:
     description: Sell items to the server.
@@ -964,6 +967,8 @@ permissions:
     default: op
   chorus.world.unlimited:
     description: Allows /unlimited.
+  chorus.world.locate:
+    description: Allows /locate.
     default: op
   chorus.items.itemdb:
     description: Allows /itemdb.

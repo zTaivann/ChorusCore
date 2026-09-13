@@ -1,6 +1,7 @@
 package dev.chorus.core.request.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.teleport.TeleportService;
 import org.bukkit.Location;
@@ -30,7 +31,7 @@ public final class BackCommand extends PlayerCommand {
             return;
         }
 
-        int steps = args.length == 0 ? 1 : parse(args[0]);
+        int steps = args.length == 0 ? 1 : Numbers.integer(args[0], -1);
         if (steps < 1 || steps > depth) {
             messages.send(player, "back.out-of-range", "depth", String.valueOf(depth));
             return;
@@ -61,13 +62,6 @@ public final class BackCommand extends PlayerCommand {
         });
     }
 
-    private static int parse(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

@@ -142,6 +142,17 @@ public final class Messages implements MessageApi {
     }
 
     /**
+     * What {@link #send} would have sent, in that reader's own language.
+     *
+     * <p>For the lines that need something hung on them, a tooltip or a click, before they
+     * go out. A muted line comes back empty, which sends as nothing.
+     */
+    public Component render(CommandSender target, String key, String... placeholders) {
+        Translations speaking = speaking(target);
+        return speaking.isMuted(key) ? Component.empty() : render(speaking, key, placeholders);
+    }
+
+    /**
      * One line to everybody online, and to the console.
      *
      * <p>Rendered once per language rather than once per player, since a broadcast on a full
@@ -205,15 +216,40 @@ public final class Messages implements MessageApi {
         return fillLines(template, placeholders);
     }
 
+    /**
+     * The same, with one value drawn rather than written out.
+     *
+     * <p>Only for text the server owner wrote themselves, such as the name they gave a kit.
+     * Showing it with its colours is the whole point there, and it is the one place where a
+     * value is allowed to carry formatting. Anything a player can type goes through the other
+     * methods, which put text in as text.
+     */
+    public List<Component> renderLines(String key, String slot, Component value,
+                                       String... placeholders) {
+        String template = standard.template(key);
+        if (template == null) {
+            return List.of(cached(standard, key));
+        }
+        String tag = SLOT_PREFIX + slot;
+        return fillLines(template.replace("%" + slot + "%", "<" + tag + ">"),
+                Placeholder.component(tag, value), placeholders);
+    }
+
     /** Package-private so the checks can exercise the split without standing up a server. */
     static List<Component> fillLines(String template, String... placeholders) {
+        return fillLines(template, TagResolver.empty(), placeholders);
+    }
+
+    private static List<Component> fillLines(String template, TagResolver extra,
+                                             String... placeholders) {
         String[] parts = template.split("<newline>", -1);
         List<Component> lines = new ArrayList<>(parts.length);
         for (String part : parts) {
-            lines.add(fill(part, placeholders));
+            lines.add(fill(part, extra, placeholders));
         }
         return lines;
     }
+
 
     public Component render(String key, String... placeholders) {
         return render(standard, key, placeholders);
@@ -236,9 +272,14 @@ public final class Messages implements MessageApi {
      * exercise the part that actually goes wrong without standing up a whole server.
      */
     static Component fill(String template, String... placeholders) {
+        return fill(template, TagResolver.empty(), placeholders);
+    }
+
+    private static Component fill(String template, TagResolver extra, String... placeholders) {
         // The tags are named after the placeholders that were actually passed, so a %word%
         // nobody filled in is left alone rather than turning into an empty gap.
         TagResolver.Builder resolvers = TagResolver.builder();
+        resolvers.resolver(extra);
         String filled = template;
         for (int i = 0; i + 1 < placeholders.length; i += 2) {
             String slot = SLOT_PREFIX + placeholders[i];

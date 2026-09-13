@@ -36,7 +36,7 @@ public final class HelpCommand extends ChorusCommand {
         int page = 1;
 
         for (String argument : args) {
-            int number = number(argument);
+            int number = Numbers.integer(argument, -1);
             if (number > 0) {
                 page = number;
             } else {
@@ -111,13 +111,6 @@ public final class HelpCommand extends ChorusCommand {
         return description == null || description.isEmpty() ? command : description;
     }
 
-    private static int number(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

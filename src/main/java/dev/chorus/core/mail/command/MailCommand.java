@@ -3,6 +3,7 @@ package dev.chorus.core.mail.command;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Durations;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.mail.Mail;
 import dev.chorus.core.mail.MailService;
 import dev.chorus.core.players.PlayerProfiles;
@@ -53,7 +54,7 @@ public final class MailCommand extends ChorusCommand {
 
     /** A number after {@code read} is a page; anything else is somebody's name. */
     private void read(CommandSender sender, String[] args) {
-        int page = args.length > 1 ? number(args[1]) : 1;
+        int page = args.length > 1 ? Numbers.integer(args[1], -1) : 1;
         if (args.length > 1 && page < 0) {
             readOthers(sender, args[1]);
             return;
@@ -193,7 +194,7 @@ public final class MailCommand extends ChorusCommand {
         }
 
         if (args.length > 1) {
-            long id = Math.max(1, number(args[1]));
+            long id = Math.max(1, Numbers.integer(args[1], -1));
             mail.clear(player.getUniqueId(), id).whenComplete((gone, failure) -> {
                 if (failure != null) {
                     messages.send(player, "error.storage");
@@ -225,13 +226,6 @@ public final class MailCommand extends ChorusCommand {
     }
 
     /** Negative for anything that is not a number, which is how a name is told apart. */
-    private static int number(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

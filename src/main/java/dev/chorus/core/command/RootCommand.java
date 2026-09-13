@@ -212,7 +212,7 @@ public final class RootCommand extends ChorusCommand {
             return;
         }
 
-        int days = days(args[1]);
+        int days = Numbers.integer(args[1], -1);
         if (days < MIN_PURGE_DAYS) {
             messages.send(sender, "core.purge-range", "min", String.valueOf(MIN_PURGE_DAYS));
             return;
@@ -262,13 +262,6 @@ public final class RootCommand extends ChorusCommand {
         }
     }
 
-    private static int days(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     /** The whole plugin, or one module by name. */
     private void reload(CommandSender sender, String module) {

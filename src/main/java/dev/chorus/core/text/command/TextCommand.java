@@ -2,6 +2,7 @@ package dev.chorus.core.text.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.text.ServerText;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -101,11 +102,7 @@ public final class TextCommand extends ChorusCommand {
 
     /** Zero when the word is not a page number, which is how a chapter name is told apart. */
     private static int number(String raw) {
-        try {
-            return Math.max(0, Integer.parseInt(raw));
-        } catch (NumberFormatException notANumber) {
-            return 0;
-        }
+        return Math.max(0, Numbers.integer(raw, 0));
     }
 
     @Override

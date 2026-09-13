@@ -161,7 +161,7 @@ public final class ChorusPlugin extends JavaPlugin {
             register(listener);
         }
 
-        confirmations = new Confirmations(messages, core.section("confirmations").getInt("seconds", 15));
+        confirmations = new Confirmations(messages, core.section("confirmations").getInt("seconds", 0));
         register(confirmations);
         support = new CommandSupport(messages, new ActionGuard(messages, cooldowns, economy()),
                 schedulers);
@@ -343,7 +343,7 @@ public final class ChorusPlugin extends JavaPlugin {
         ConfigFile core = configs.get("config.yml");
         messages.apply(core.section("language"));
         economySetup.reload(core.section("economy"));
-        confirmations.apply(core.section("confirmations").getInt("seconds", 15));
+        confirmations.apply(core.section("confirmations").getInt("seconds", 0));
         audit.apply(core.section("staff-log"));
         updates.apply(core.section("updates"));
         teleports.apply(TeleportSettings.read(configs.get(TELEPORT_CONFIG).section("teleport")));

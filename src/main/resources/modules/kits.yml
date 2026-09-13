@@ -41,7 +41,7 @@ kits:
     icon: ITEM_FRAME
     lore: BOOK
     items: CHEST
-    preview: ENDER_CHEST
+    preview: HOPPER
     cooldown: CLOCK
     max-claims: PAPER
     price: GOLD_INGOT
@@ -118,7 +118,7 @@ kits:
   #                     them, as does anything PlaceholderAPI knows.
   #   price             what taking it costs, through Vault.
   #   permission        who may take it. Leave it out and it defaults to
-  #                     chorus.kits.use.<name>. Set it to '' for everyone.
+  #                     chorus.kit.<name>. Set it to '' for everyone.
   #   placeholders      fills %placeholders% into the name and the lore of the
   #                     items themselves, at the moment the kit is handed over:
   #
@@ -167,7 +167,7 @@ kits:
   #   /kitedit vip cooldown 3600
   #   /kitedit vip maxclaims 5
   #   /kitedit vip price 500
-  #   /kitedit vip permission chorus.kits.use.vip
+  #   /kitedit vip permission chorus.kit.vip
   #   /kitedit vip onetime true
   #   /kitedit vip delete
   #

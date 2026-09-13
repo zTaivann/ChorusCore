@@ -2,6 +2,7 @@ package dev.chorus.core.shops.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.shops.WorthTable;
 import org.bukkit.Material;
@@ -80,12 +81,8 @@ public final class SetWorthCommand extends ChorusCommand {
     }
 
     private static double price(String raw) {
-        try {
-            double value = Double.parseDouble(raw.replace(',', '.'));
-            return Double.isFinite(value) && value >= 0 ? value : -1;
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        double value = Numbers.decimal(raw.replace(',', '.'), -1);
+        return value >= 0 ? value : -1;
     }
 
     @Override

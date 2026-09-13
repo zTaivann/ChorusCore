@@ -1,9 +1,10 @@
 package dev.chorus.core.utility.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.utility.UtilitySettings;
 import dev.chorus.core.utility.UtilityService;
+import dev.chorus.core.utility.UtilitySettings;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import org.bukkit.Location;
@@ -30,7 +31,7 @@ public final class NearCommand extends PlayerCommand {
 
         int radius = settings.defaultRadius();
         if (args.length > 0) {
-            radius = parse(args[0]);
+            radius = Numbers.integer(args[0], -1);
             if (radius <= 0 || radius > settings.maxRadius()) {
                 messages.send(player, "utility.near-radius",
                         "max", String.valueOf(settings.maxRadius()));
@@ -86,13 +87,6 @@ public final class NearCommand extends PlayerCommand {
         return found;
     }
 
-    private static int parse(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     private record Found(Player player, int blocks) {
     }

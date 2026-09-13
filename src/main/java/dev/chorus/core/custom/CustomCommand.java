@@ -13,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A command that exists only because the config says so.
@@ -24,6 +26,9 @@ import java.util.List;
 public final class CustomCommand extends Command {
 
     private static final String COOLDOWN_BYPASS = "chorus.bypass.cooldown";
+
+    /** Names part-way through their console lines, so one cannot call itself. */
+    private static final Set<String> running = ConcurrentHashMap.newKeySet();
 
     private final CustomDefinition definition;
     private final Messages messages;
@@ -63,8 +68,18 @@ public final class CustomCommand extends Command {
             definition.playerCommands().forEach(
                     command -> player.performCommand(command.replace("%player%", who)));
         }
-        definition.consoleCommands().forEach(command ->
-                server.dispatchCommand(server.getConsoleSender(), command.replace("%player%", who)));
+        if (!running.add(definition.name())) {
+            // A command listed among its own run-as-console lines would otherwise call
+            // itself until the stack ran out, taking the server with it.
+            messages.send(sender, "error.command-recursion");
+            return true;
+        }
+        try {
+            definition.consoleCommands().forEach(command -> server.dispatchCommand(
+                    server.getConsoleSender(), command.replace("%player%", who)));
+        } finally {
+            running.remove(definition.name());
+        }
         return true;
     }
 

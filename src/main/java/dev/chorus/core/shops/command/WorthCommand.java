@@ -1,6 +1,7 @@
 package dev.chorus.core.shops.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.shops.ShopService;
@@ -70,11 +71,7 @@ public final class WorthCommand extends PlayerCommand {
     }
 
     private static int amount(String raw) {
-        try {
-            return Math.max(1, Integer.parseInt(raw));
-        } catch (NumberFormatException notANumber) {
-            return 1;
-        }
+        return Math.max(1, Numbers.integer(raw, 1));
     }
 
     @Override

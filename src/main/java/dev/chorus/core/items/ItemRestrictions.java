@@ -2,6 +2,7 @@ package dev.chorus.core.items;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.permissions.Permissible;
 
 import java.util.EnumSet;
@@ -27,6 +28,10 @@ public record ItemRestrictions(Set<Material> blockedItems, boolean permissionPer
     private static final String BYPASS = "chorus.bypass.restrictions";
     private static final String ITEM = "chorus.items.give.item.";
     private static final String ENCHANTMENT = "chorus.items.enchant.";
+    private static final String UNSAFE = "chorus.items.enchant.unsafe";
+
+    /** As high as an enchantment goes here, whatever the permission. */
+    public static final int MAX_LEVEL = 255;
 
     /** Whether this sender may bring an item into the world with /give or /more. */
     public boolean mayHave(Permissible who, Material material) {
@@ -51,9 +56,17 @@ public record ItemRestrictions(Set<Material> blockedItems, boolean permissionPer
         return !permissionPerEnchantment || who.hasPermission(ENCHANTMENT + name);
     }
 
-    /** Whether a level beyond what the game allows is possible at all on this server. */
-    public boolean allowsUnsafeLevels() {
-        return unsafeEnchantments;
+    /**
+     * The highest level this sender may put on, which is the vanilla maximum unless both the
+     * server and their permissions allow going past it.
+     *
+     * <p>One place for it, so {@code /enchant} and the {@code enchant:} word behind
+     * {@code /give} cannot drift into allowing different things.
+     */
+    public int highestLevel(Permissible who, Enchantment enchantment) {
+        boolean beyond = unsafeEnchantments
+                && (who.hasPermission(BYPASS) || who.hasPermission(UNSAFE));
+        return beyond ? MAX_LEVEL : enchantment.getMaxLevel();
     }
 
     public static ItemRestrictions read(ConfigurationSection items, Consumer<String> onBadMaterial) {

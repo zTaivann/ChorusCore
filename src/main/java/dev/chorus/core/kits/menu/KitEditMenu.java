@@ -11,7 +11,6 @@ import dev.chorus.core.menu.ChatPrompts;
 import dev.chorus.core.menu.PaletteMenu;
 import dev.chorus.core.menu.Menu;
 import dev.chorus.core.menu.MenuItems;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -36,8 +35,6 @@ import java.util.concurrent.TimeUnit;
  * type, and taking that away to make a screen look complete would be a poor trade.
  */
 public final class KitEditMenu {
-
-    private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
     private static final int ROWS = 5;
     private static final int HEADER_SLOT = 4;
@@ -156,8 +153,7 @@ public final class KitEditMenu {
 
         menu.set(HEADER_SLOT, MenuItems.of(kit.icon(),
                         messages.render("menu.editor.header", "kit", KitEditor.titled(kit.name())),
-                        messages.renderLines("menu.editor.header-lore",
-                                "display", PLAIN.serialize(kit.display()))),
+                        messages.renderLines("menu.editor.header-lore", "display", kit.display())),
                 clicker -> ask(clicker, kit, "menu.editor.ask-display", "display"));
 
         lists(menu, kit);
@@ -487,6 +483,6 @@ public final class KitEditMenu {
     }
 
     private String word(boolean value) {
-        return messages.plain(value ? "kits.word-yes" : "kits.word-no");
+        return messages.plain(value ? "kits.word-true" : "kits.word-false");
     }
 }

@@ -109,8 +109,10 @@ confirmations:
   # Seconds to run a command again to confirm it, for the ones that cannot be
   # taken back: /clearinventory, /delhome, /delwarp, /sweep of a whole world
   # and a payment over the threshold in modules/economy.yml.
-  # 0 asks for no confirmation at all. chorus.bypass.confirm skips them.
-  seconds: 15
+  #
+  # 0, as it ships, asks for nothing and runs them straight away. Raise it to
+  # put a second step in front of them. chorus.bypass.confirm always skips it.
+  seconds: 0
 
 # ── Metrics ──────────────────────────────────────────────────────────────
 # Sends the server version, the storage type and how many modules are on to

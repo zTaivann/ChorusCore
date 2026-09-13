@@ -2,6 +2,7 @@ package dev.chorus.core.world.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -85,11 +86,8 @@ public final class WeatherCommand extends ChorusCommand {
     }
 
     private static int minutes(String raw) {
-        try {
-            return Math.min(MAX_MINUTES, Integer.parseInt(raw));
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        int value = Numbers.integer(raw, -1);
+        return value < 0 ? -1 : Math.min(MAX_MINUTES, value);
     }
 
     @Override

@@ -173,7 +173,7 @@ public final class WarpListCommand extends ChorusCommand {
                     "description", detail.description()));
         }
         lore.add(messages.render("menu.warps.lore-world", "world", warp.worldName()));
-        lore.add(messages.render("menu.warps.lore-position",
+        lore.add(messages.render("menu.warps.lore-location",
                 "x", round(warp.x()), "y", round(warp.y()), "z", round(warp.z())));
         if (detail.uses() > 0) {
             lore.add(messages.render("menu.warps.lore-uses", "uses", String.valueOf(detail.uses())));

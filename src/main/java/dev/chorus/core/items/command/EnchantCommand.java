@@ -1,6 +1,7 @@
 package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.items.Enchantments;
 import dev.chorus.core.items.ItemRestrictions;
 import dev.chorus.core.items.ItemService;
@@ -16,9 +17,6 @@ import java.util.List;
 
 /** {@code /enchant <enchantment> [level]}, with {@code 0} to take one off again. */
 public final class EnchantCommand extends HeldItemCommand {
-
-    private static final String UNSAFE_PERMISSION = "chorus.items.enchant.unsafe";
-    private static final int MAX_UNSAFE_LEVEL = 255;
 
     private final ItemService items;
 
@@ -52,10 +50,8 @@ public final class EnchantCommand extends HeldItemCommand {
             return;
         }
 
-        int level = args.length > 1 ? parse(args[1]) : enchantment.getMaxLevel();
-        int ceiling = restrictions.allowsUnsafeLevels() && player.hasPermission(UNSAFE_PERMISSION)
-                ? MAX_UNSAFE_LEVEL
-                : enchantment.getMaxLevel();
+        int level = args.length > 1 ? Numbers.integer(args[1], -1) : enchantment.getMaxLevel();
+        int ceiling = restrictions.highestLevel(player, enchantment);
         if (level < 0 || level > ceiling) {
             messages.send(player, "items.enchant-range", "max", String.valueOf(ceiling));
             return;
@@ -83,13 +79,6 @@ public final class EnchantCommand extends HeldItemCommand {
         return enchantment.getKey().getKey();
     }
 
-    private static int parse(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
@@ -107,9 +96,15 @@ public final class EnchantCommand extends HeldItemCommand {
         if (enchantment == null) {
             return List.of();
         }
+        // Every vanilla level, and the ceiling on top when this sender may go past it. Two
+        // hundred and fifty-five entries would be a wall of numbers rather than a suggestion.
+        int ceiling = items.settings().restrictions().highestLevel(sender, enchantment);
         List<String> levels = new ArrayList<>();
         for (int level = 1; level <= enchantment.getMaxLevel(); level++) {
             levels.add(String.valueOf(level));
+        }
+        if (ceiling > enchantment.getMaxLevel()) {
+            levels.add(String.valueOf(ceiling));
         }
         return startingWith(args[1], levels);
     }

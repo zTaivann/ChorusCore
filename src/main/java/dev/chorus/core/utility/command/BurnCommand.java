@@ -2,6 +2,7 @@ package dev.chorus.core.utility.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -30,7 +31,7 @@ public final class BurnCommand extends ChorusCommand {
             return;
         }
 
-        int seconds = parse(args[1]);
+        int seconds = Numbers.integer(args[1], -1);
         if (seconds < 1 || seconds > MAX_SECONDS) {
             messages.send(sender, "utility.burn-range", "max", String.valueOf(MAX_SECONDS));
             return;
@@ -48,13 +49,6 @@ public final class BurnCommand extends ChorusCommand {
         }
     }
 
-    private static int parse(String raw) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

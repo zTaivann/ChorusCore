@@ -200,7 +200,7 @@ public final class KitEditCommand extends PlayerCommand {
     }
 
     private String word(boolean value) {
-        return messages.plain(value ? "kits.word-yes" : "kits.word-no");
+        return messages.plain(value ? "kits.word-true" : "kits.word-false");
     }
 
     private void create(Player player, String name, boolean exists) {
