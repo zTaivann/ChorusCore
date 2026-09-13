@@ -2,6 +2,8 @@ package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.items.Enchantments;
+import dev.chorus.core.items.ItemRestrictions;
+import dev.chorus.core.items.ItemService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
@@ -18,8 +20,11 @@ public final class EnchantCommand extends HeldItemCommand {
     private static final String UNSAFE_PERMISSION = "chorus.items.enchant.unsafe";
     private static final int MAX_UNSAFE_LEVEL = 255;
 
-    public EnchantCommand(CommandSupport support) {
+    private final ItemService items;
+
+    public EnchantCommand(CommandSupport support, ItemService items) {
         super(support, "enchant", "chorus.items.enchant");
+        this.items = items;
     }
 
     @Override
@@ -40,8 +45,15 @@ public final class EnchantCommand extends HeldItemCommand {
             return;
         }
 
+        String name = key(enchantment);
+        ItemRestrictions restrictions = items.settings().restrictions();
+        if (!restrictions.mayEnchant(player, name)) {
+            messages.send(player, "items.enchant-blocked", "enchantment", name);
+            return;
+        }
+
         int level = args.length > 1 ? parse(args[1]) : enchantment.getMaxLevel();
-        int ceiling = player.hasPermission(UNSAFE_PERMISSION)
+        int ceiling = restrictions.allowsUnsafeLevels() && player.hasPermission(UNSAFE_PERMISSION)
                 ? MAX_UNSAFE_LEVEL
                 : enchantment.getMaxLevel();
         if (level < 0 || level > ceiling) {
@@ -52,7 +64,6 @@ public final class EnchantCommand extends HeldItemCommand {
             return;
         }
 
-        String name = key(enchantment);
         if (level == 0) {
             item.removeEnchantment(enchantment);
             settle(player);
@@ -84,7 +95,10 @@ public final class EnchantCommand extends HeldItemCommand {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
                                       @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
-            return startingWith(args[0], Enchantments.known());
+            ItemRestrictions restrictions = items.settings().restrictions();
+            return startingWith(args[0], Enchantments.known().stream()
+                    .filter(name -> restrictions.mayEnchant(sender, name))
+                    .toList());
         }
         if (args.length != 2) {
             return List.of();

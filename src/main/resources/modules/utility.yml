@@ -31,6 +31,13 @@
 #                     economy plugin the price is ignored.
 #                     chorus.bypass.price never pays.
 #
+#   worlds            the worlds the command works in. An empty list is everywhere.
+#                     A name on its own is the only place it works; a name with !
+#                     in front is the one place it does not:
+#                       worlds: [ world, world_nether ]   only those two
+#                       worlds: [ '!event' ]              everywhere but there
+#                     chorus.bypass.worlds ignores it.
+#
 #   sound.key         a Minecraft sound name, for example entity.enderman.teleport.
 #                     Empty for silence. A name the client does not know simply
 #                     plays nothing, so a typo can never break anything.
@@ -65,7 +72,7 @@ utility:
   # all still apply:
   #
   #   [Heal] [Feed] [Repair] [Disposal] [Workbench] [Enchant] [Gamemode] [Kit]
-  #   [Balance] [Spawn] [Free]
+  #   [Balance] [Spawn] [Mail] [Time] [Weather] [Spawnmob] [Free]
   #
   # The middle lines are the arguments and the last line may be a price:
   #
@@ -117,6 +124,18 @@ utility:
     default-radius: 100
     max-radius: 500
 
+  fireball:
+    # What a launched explosive does where it lands. 0 breaks nothing, which is
+    # what turns /fireball into a toy rather than a way to make a crater.
+    # Up to 4, which is roughly a charged creeper.
+    blast: 0.0
+    # Whether it sets fire to what it hits.
+    incendiary: false
+
+  motd:
+    # Send motd.txt to players as they join. /motd shows it again at any time.
+    show-on-join: true
+
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 
@@ -126,6 +145,7 @@ commands:
     warmup-seconds: 0
     cooldown-seconds: 0
     price: 0.0
+    worlds: [ ]
     sound:
       key: ui.button.click
       volume: 0.5
@@ -365,3 +385,60 @@ commands:
       key: block.note_block.harp
       volume: 0.5
       pitch: 0.8
+
+  ext:
+    enabled: true
+    sound:
+      key: block.fire.extinguish
+      volume: 0.6
+      pitch: 1.0
+    particle:
+      name: CLOUD
+      count: 20
+      spread: 0.4
+      height: 1.6
+      speed: 0.02
+
+  smite:
+    enabled: true
+    cooldown-seconds: 3
+    sound:
+      key: entity.lightning_bolt.thunder
+      volume: 0.4
+      pitch: 1.0
+
+  fireball:
+    enabled: true
+    cooldown-seconds: 1
+    sound:
+      key: entity.blaze.shoot
+      volume: 0.6
+      pitch: 1.2
+
+  powertool:
+    enabled: true
+    sound:
+      key: block.note_block.pling
+      volume: 0.5
+      pitch: 1.6
+
+  powertooltoggle:
+    enabled: true
+    sound:
+      key: ui.button.click
+      volume: 0.5
+      pitch: 1.0
+
+  motd:
+    enabled: true
+    sound:
+      key: ''
+      volume: 0.0
+      pitch: 1.0
+
+  info:
+    enabled: true
+    sound:
+      key: ''
+      volume: 0.0
+      pitch: 1.0

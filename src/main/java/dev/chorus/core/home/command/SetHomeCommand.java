@@ -65,7 +65,7 @@ public final class SetHomeCommand extends PlayerCommand {
         CommandRules against = new CommandRules(rules().enabled(), rules().warmupSeconds(),
                 rules().cooldownSeconds(),
                 homes.settings().priceFor(rules().price(), homes.count(playerId), replacing),
-                rules().feedback());
+                rules().worlds(), rules().feedback());
         if (replacing && !confirmations.confirmed(player, "sethome:" + key,
                 "home.overwrite-confirm", "home", key)) {
             return;

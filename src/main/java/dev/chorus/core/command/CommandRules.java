@@ -16,10 +16,10 @@ import java.util.logging.Logger;
  * every command in the file.
  */
 public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSeconds, double price,
-                           CommandFeedback feedback) {
+                           WorldRule worlds, CommandFeedback feedback) {
 
     public static final CommandRules FREE =
-            new CommandRules(true, 0, 0, 0, CommandFeedback.NONE);
+            new CommandRules(true, 0, 0, 0, WorldRule.EVERYWHERE, CommandFeedback.NONE);
 
     private static final String DEFAULTS = "defaults";
 
@@ -46,6 +46,7 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
                 Math.max(0, block.getInt("warmup-seconds", base.warmupSeconds())),
                 Math.max(0, block.getInt("cooldown-seconds", base.cooldownSeconds())),
                 Math.max(0, block.getDouble("price", base.price())),
+                WorldRule.read(block, base.worlds()),
                 CommandFeedback.read(block, base.feedback(), name -> logger.warning(
                         "This server has no particle called '" + name + "', configured for /" + command)));
     }

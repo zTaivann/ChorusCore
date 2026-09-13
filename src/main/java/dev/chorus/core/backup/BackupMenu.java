@@ -6,6 +6,7 @@ import dev.chorus.core.menu.ListMenu;
 import dev.chorus.core.menu.Menu;
 import dev.chorus.core.menu.MenuItems;
 import dev.chorus.core.menu.MenuSettings;
+import dev.chorus.core.platform.Schedulers;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -55,11 +56,14 @@ public final class BackupMenu {
     private final Messages messages;
     private final InventoryBackups backups;
     private final MenuSettings settings;
+    private final Schedulers schedulers;
 
-    public BackupMenu(Messages messages, InventoryBackups backups, MenuSettings settings) {
+    public BackupMenu(Messages messages, InventoryBackups backups, MenuSettings settings,
+                      Schedulers schedulers) {
         this.messages = messages;
         this.backups = backups;
         this.settings = settings;
+        this.schedulers = schedulers;
     }
 
     /** Everything saved for one player, newest first. */
@@ -232,16 +236,18 @@ public final class BackupMenu {
             return;
         }
 
-        int handed = backups.deliver(subject, snapshot, true);
-        if (handed < 0) {
-            messages.send(viewer, "items.restore-unreadable");
-            return;
-        }
-        messages.send(viewer, "items.handed-over",
-                "player", subject.getName(), "count", String.valueOf(handed));
-        if (!viewer.equals(subject)) {
-            messages.send(subject, "items.hand-received", "count", String.valueOf(handed));
-        }
+        schedulers.entity(subject, () -> {
+            int handed = backups.deliver(subject, snapshot, true);
+            if (handed < 0) {
+                messages.send(viewer, "items.restore-unreadable");
+                return;
+            }
+            messages.send(viewer, "items.handed-over",
+                    "player", subject.getName(), "count", String.valueOf(handed));
+            if (!viewer.equals(subject)) {
+                messages.send(subject, "items.hand-received", "count", String.valueOf(handed));
+            }
+        });
     }
 
     private void restore(Player viewer, Player subject, InventorySnapshot snapshot,
@@ -252,18 +258,20 @@ public final class BackupMenu {
             return;
         }
 
-        Set<InventoryBackups.Part> done =
-                backups.restore(subject, snapshot, parts, viewer.getName());
-        if (done.isEmpty()) {
-            messages.send(viewer, "items.restore-unreadable");
-            return;
-        }
+        schedulers.entity(subject, () -> {
+            Set<InventoryBackups.Part> done =
+                    backups.restore(subject, snapshot, parts, viewer.getName());
+            if (done.isEmpty()) {
+                messages.send(viewer, "items.restore-unreadable");
+                return;
+            }
 
-        messages.send(viewer, "items.restored",
-                "player", subject.getName(), "ago", ago(snapshot));
-        if (!viewer.equals(subject)) {
-            messages.send(subject, "items.restore-received");
-        }
+            messages.send(viewer, "items.restored",
+                    "player", subject.getName(), "ago", ago(snapshot));
+            if (!viewer.equals(subject)) {
+                messages.send(subject, "items.restore-received");
+            }
+        });
     }
 
     private void back(Player viewer, Player subject) {

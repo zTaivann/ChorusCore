@@ -64,9 +64,11 @@ public final class SpawnMobCommand extends ChorusCommand {
         }
 
         Location target = at.getLocation();
-        for (int spawned = 0; spawned < wanted; spawned++) {
-            target.getWorld().spawnEntity(target, type);
-        }
+        atPlace(target, () -> {
+            for (int spawned = 0; spawned < wanted; spawned++) {
+                target.getWorld().spawnEntity(target, type);
+            }
+        });
 
         settle(sender);
         messages.send(sender, "world.spawnmob-done",

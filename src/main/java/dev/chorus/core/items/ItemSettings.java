@@ -8,7 +8,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public record ItemSettings(Map<Material, Material> condenseRecipes, int maxLoreLines) {
+public record ItemSettings(Map<Material, Material> condenseRecipes, int maxLoreLines,
+                           ItemRestrictions restrictions) {
 
     public static ItemSettings read(ConfigurationSection items, Consumer<String> onBadMaterial) {
         ConfigurationSection recipes = items.getConfigurationSection("condense");
@@ -22,7 +23,9 @@ public record ItemSettings(Map<Material, Material> condenseRecipes, int maxLoreL
                 }
             }
         }
-        return new ItemSettings(Map.copyOf(condense), Math.max(1, items.getInt("max-lore-lines", 10)));
+        return new ItemSettings(Map.copyOf(condense),
+                Math.max(1, items.getInt("max-lore-lines", 10)),
+                ItemRestrictions.read(items, onBadMaterial));
     }
 
     private static Material material(String name, Consumer<String> onBadMaterial) {

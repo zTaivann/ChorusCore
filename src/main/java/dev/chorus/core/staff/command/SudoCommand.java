@@ -60,7 +60,7 @@ public final class SudoCommand extends ChorusCommand {
         audit.record(sender, "sudo", target.getName(), command);
 
         messages.send(sender, "staff.sudo-ran", "player", target.getName(), "command", command);
-        target.performCommand(command);
+        onPlayer(target, () -> target.performCommand(command));
     }
 
     @Override

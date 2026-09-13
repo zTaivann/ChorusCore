@@ -3,6 +3,7 @@ package dev.chorus.core.world.command;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Confirmations;
+import dev.chorus.core.world.EntitySweep;
 import dev.chorus.core.world.SweepTarget;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -58,40 +59,66 @@ public final class SweepCommand extends ChorusCommand {
             return;
         }
 
-        List<Entity> found = radius == 0
-                ? world.getEntities().stream().filter(matches).toList()
-                : nearby(sender, radius, matches);
-        if (found.isEmpty()) {
-            messages.send(sender, "world.sweep-none", "target", wanted);
+        if (radius > 0) {
+            around((Player) sender, radius, matches, wanted);
             return;
         }
-
-        // Only the whole-world version is worth a second thought; a radius is already a
-        // decision about where.
-        if (radius == 0 && !confirmations.confirmed(sender, "sweep:" + world.getName() + ':' + wanted,
-                "world.sweep-confirm",
-                "count", String.valueOf(found.size()), "target", wanted, "world", world.getName())) {
-            return;
-        }
-        if (!ready(sender)) {
-            return;
-        }
-
-        found.forEach(Entity::remove);
-        settle(sender);
-        messages.send(sender, "world.sweep-done",
-                "count", String.valueOf(found.size()), "target", wanted);
+        wholeWorld(sender, world, matches, wanted);
     }
 
-    private static List<Entity> nearby(CommandSender sender, int radius, Predicate<Entity> matches) {
-        Location centre = ((Player) sender).getLocation();
-        List<Entity> found = new ArrayList<>();
-        for (Entity entity : centre.getWorld().getNearbyEntities(centre, radius, radius, radius)) {
-            if (matches.test(entity)) {
-                found.add(entity);
+    /**
+     * Counts first, asks, then clears.
+     *
+     * <p>Two passes rather than one because the count has to be in the question, and a whole
+     * world cannot be read in one go on a server that ticks its regions in parallel. The
+     * number can move a little between the two, which is what a confirmation is for.
+     */
+    private void wholeWorld(CommandSender sender, World world, Predicate<Entity> matches,
+                            String wanted) {
+        EntitySweep.run(schedulers, List.of(world), matches, false, count -> {
+            if (count == 0) {
+                messages.send(sender, "world.sweep-none", "target", wanted);
+                return;
             }
-        }
-        return found;
+            if (!confirmations.confirmed(sender, "sweep:" + world.getName() + ':' + wanted,
+                    "world.sweep-confirm", "count", String.valueOf(count),
+                    "target", wanted, "world", world.getName())) {
+                return;
+            }
+            if (!ready(sender)) {
+                return;
+            }
+            EntitySweep.run(schedulers, List.of(world), matches, true, removed -> {
+                settle(sender);
+                messages.send(sender, "world.sweep-done",
+                        "count", String.valueOf(removed), "target", wanted);
+            });
+        });
+    }
+
+    /** A radius is already a decision about where, so it is not asked about twice. */
+    private void around(Player player, int radius, Predicate<Entity> matches, String wanted) {
+        onPlayer(player, () -> {
+            Location centre = player.getLocation();
+            List<Entity> found = new ArrayList<>();
+            for (Entity entity : centre.getWorld().getNearbyEntities(centre, radius, radius, radius)) {
+                if (matches.test(entity)) {
+                    found.add(entity);
+                }
+            }
+            if (found.isEmpty()) {
+                messages.send(player, "world.sweep-none", "target", wanted);
+                return;
+            }
+            if (!ready(player)) {
+                return;
+            }
+
+            found.forEach(Entity::remove);
+            settle(player);
+            messages.send(player, "world.sweep-done",
+                    "count", String.valueOf(found.size()), "target", wanted);
+        });
     }
 
     /** A group first, then the name of one kind of mob. */

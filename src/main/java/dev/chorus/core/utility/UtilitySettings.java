@@ -9,8 +9,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public record UtilitySettings(Heal heal, Feed feed, Fix fix, Disposal disposal,
-                              Speed speed, Mirror invsee, Top top, Near near) {
+public record UtilitySettings(Heal heal, Feed feed, Fix fix, Disposal disposal, Speed speed,
+                              Mirror invsee, Top top, Near near, Fireball fireball, Motd motd) {
 
     public record Heal(boolean extinguish, boolean clearEffects, boolean restoreFood) {
     }
@@ -36,6 +36,13 @@ public record UtilitySettings(Heal heal, Feed feed, Fix fix, Disposal disposal,
     public record Near(int defaultRadius, int maxRadius) {
     }
 
+    /** What a launched explosive does where it lands. {@code blast} of 0 breaks nothing. */
+    public record Fireball(float blast, boolean incendiary) {
+    }
+
+    public record Motd(boolean showOnJoin) {
+    }
+
     /** {@code onBadMaterial} receives any name in the config that is not a material. */
     public static UtilitySettings read(ConfigurationSection utility, Consumer<String> onBadMaterial) {
         ConfigurationSection heal = child(utility, "heal");
@@ -46,6 +53,8 @@ public record UtilitySettings(Heal heal, Feed feed, Fix fix, Disposal disposal,
         ConfigurationSection invsee = child(utility, "invsee");
         ConfigurationSection top = child(utility, "top");
         ConfigurationSection near = child(utility, "near");
+        ConfigurationSection fireball = child(utility, "fireball");
+        ConfigurationSection motd = child(utility, "motd");
 
         Set<Material> blacklist = EnumSet.noneOf(Material.class);
         for (String name : fix.getStringList("blacklist")) {
@@ -73,7 +82,11 @@ public record UtilitySettings(Heal heal, Feed feed, Fix fix, Disposal disposal,
                 new Top(top.getBoolean("allow-in-nether", false)),
                 new Near(
                         Math.min(maxRadius, Math.max(1, near.getInt("default-radius", 100))),
-                        maxRadius));
+                        maxRadius),
+                new Fireball(
+                        (float) Math.min(4, Math.max(0, fireball.getDouble("blast", 0))),
+                        fireball.getBoolean("incendiary", false)),
+                new Motd(motd.getBoolean("show-on-join", true)));
     }
 
     private static Material material(String name, Consumer<String> onBadMaterial) {

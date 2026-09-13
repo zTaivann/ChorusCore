@@ -37,7 +37,7 @@ public final class TempFlyService implements Listener {
     /** Replaces any grant already running, so a second call extends rather than stacks. */
     public void grant(Player player, int seconds) {
         cancel(player.getUniqueId());
-        player.setAllowFlight(true);
+        schedulers.entity(player, () -> player.setAllowFlight(true));
 
         ChorusTask warning = seconds > WARNING_SECONDS
                 ? schedulers.entityLater(player,
@@ -60,7 +60,7 @@ public final class TempFlyService implements Listener {
         if (!cancel(player.getUniqueId())) {
             return false;
         }
-        revoke(player);
+        schedulers.entity(player, () -> revoke(player));
         return true;
     }
 

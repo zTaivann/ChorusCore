@@ -80,13 +80,13 @@ public final class ItemsModule implements ChorusModule {
                 new ClearInventoryCommand(support, plugin.backups(), plugin.confirmations())));
         commands.add(plugin.register(new ItemNameCommand(support, items)));
         commands.add(plugin.register(new LoreCommand(support, items)));
-        commands.add(plugin.register(new MoreCommand(support)));
+        commands.add(plugin.register(new MoreCommand(support, items)));
         commands.add(plugin.register(new SkullCommand(support)));
         commands.add(plugin.register(new UnbreakableCommand(support)));
         commands.add(plugin.register(new GlowCommand(support)));
-        commands.add(plugin.register(new EnchantCommand(support)));
+        commands.add(plugin.register(new EnchantCommand(support, items)));
         commands.add(plugin.register(new StackCommand(support)));
-        commands.add(plugin.register(new GiveCommand(support)));
+        commands.add(plugin.register(new GiveCommand(support, items)));
         commands.add(plugin.register(new ExperienceCommand(support)));
         commands.add(plugin.register(new ItemDbCommand(support)));
         commands.add(plugin.register(new RecipeCommand(support)));
@@ -100,7 +100,8 @@ public final class ItemsModule implements ChorusModule {
                 new EditSignCommand(support, clipboard, plugin.reserved()::isReserved)));
         commands.add(plugin.register(new RestoreCommand(support, plugin.backups(),
                 new BackupMenu(plugin.messages(), plugin.backups(),
-                        MenuSettings.read(config.section("backups.menu"), Material.PAPER, this::warn)),
+                        MenuSettings.read(config.section("backups.menu"), Material.PAPER, this::warn),
+                        plugin.schedulers()),
                 plugin.profiles())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }

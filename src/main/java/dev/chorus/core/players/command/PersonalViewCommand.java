@@ -47,7 +47,11 @@ abstract class PersonalViewCommand extends ChorusCommand {
             return;
         }
 
-        apply(sender, target, args[0].toLowerCase(Locale.ROOT));
+        String value = args[0].toLowerCase(Locale.ROOT);
+        // The sky and the weather belong to the player, so the change is made on the thread
+        // that owns them rather than the one the command arrived on.
+        Player subject = target;
+        onPlayer(subject, () -> apply(sender, subject, value));
     }
 
     /** The message shown when no value was given. */

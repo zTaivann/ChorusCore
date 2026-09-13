@@ -1,6 +1,7 @@
 package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.items.ItemService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -8,12 +9,16 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Locale;
 
 /** Fills the held stack, or sets it to a size given as an argument. */
 public final class MoreCommand extends HeldItemCommand {
 
-    public MoreCommand(CommandSupport support) {
+    private final ItemService items;
+
+    public MoreCommand(CommandSupport support, ItemService items) {
         super(support, "more", "chorus.items.more");
+        this.items = items;
     }
 
     @Override
@@ -31,6 +36,13 @@ public final class MoreCommand extends HeldItemCommand {
         }
         if (item.getAmount() == wanted) {
             messages.send(player, "items.more-already", "amount", String.valueOf(wanted));
+            return;
+        }
+        // Otherwise one of a blocked item is all it takes to have a stack of them.
+        if (wanted > item.getAmount()
+                && !items.settings().restrictions().mayHave(player, item.getType())) {
+            messages.send(player, "items.give-blocked",
+                    "item", item.getType().name().toLowerCase(Locale.ROOT));
             return;
         }
         if (!ready(player)) {

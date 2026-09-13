@@ -28,6 +28,13 @@
 #                     economy plugin the price is ignored.
 #                     chorus.bypass.price never pays.
 #
+#   worlds            the worlds the command works in. An empty list is everywhere.
+#                     A name on its own is the only place it works; a name with !
+#                     in front is the one place it does not:
+#                       worlds: [ world, world_nether ]   only those two
+#                       worlds: [ '!event' ]              everywhere but there
+#                     chorus.bypass.worlds ignores it.
+#
 #   sound.key         a Minecraft sound name, for example entity.enderman.teleport.
 #                     Empty for silence. A name the client does not know simply
 #                     plays nothing, so a typo can never break anything.
@@ -93,6 +100,7 @@ commands:
     warmup-seconds: 0
     cooldown-seconds: 0
     price: 0.0
+    worlds: [ ]
     sound:
       key: ui.button.click
       volume: 0.5

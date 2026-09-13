@@ -3,6 +3,7 @@ package dev.chorus.core.teleport;
 import dev.chorus.core.api.TeleportApi;
 import dev.chorus.core.api.event.ChorusTeleportEvent;
 import dev.chorus.core.command.CommandRules;
+import dev.chorus.core.command.WorldRule;
 import dev.chorus.core.feedback.CommandFeedback;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.platform.ChorusTask;
@@ -109,7 +110,8 @@ public final class TeleportService implements TeleportApi, Listener {
     @Override
     public void teleport(Player player, Location destination, int warmupSeconds) {
         teleport(player, destination,
-                new CommandRules(true, Math.max(0, warmupSeconds), 0, 0, CommandFeedback.NONE), "api");
+                new CommandRules(true, Math.max(0, warmupSeconds), 0, 0,
+                        WorldRule.EVERYWHERE, CommandFeedback.NONE), "api");
     }
 
     /** Where the player was standing before their last teleport, or before they died. */

@@ -6,7 +6,6 @@ import dev.chorus.core.platform.Schedulers;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -94,24 +93,14 @@ public final class AutoSweep {
 
     private void sweep() {
         pending = null;
-        int removed = 0;
-
-        for (World world : worldsToClear()) {
-            List<Entity> found = new ArrayList<>();
-            for (Entity entity : world.getEntities()) {
-                if (target.covers(entity)) {
-                    found.add(entity);
-                }
+        SweepTarget clearing = target;
+        EntitySweep.run(schedulers, worldsToClear(), clearing::covers, true, removed -> {
+            if (removed > 0) {
+                messages.broadcast(server, "world.auto-sweep-done",
+                        "count", String.valueOf(removed),
+                        "target", clearing.label());
             }
-            found.forEach(Entity::remove);
-            removed += found.size();
-        }
-
-        if (removed > 0) {
-            messages.broadcast(server, "world.auto-sweep-done",
-                    "count", String.valueOf(removed),
-                    "target", target.label());
-        }
+        });
     }
 
     /** An empty list in the config means every world. */

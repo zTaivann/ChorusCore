@@ -1,0 +1,16 @@
+# The message of the day. Sent as players join, and again on /motd.
+#
+# Lines are written the way messages.yml is: MiniMessage tags such as <gray> and
+# <gradient:#a06bff:#e0c3fc>, or old codes such as &7. Both work, together.
+#
+# %player% %world% %online% %max% are filled in for whoever is reading.
+#
+# A line like "#rules" opens a chapter, and a second word on it is the permission
+# needed to read that chapter. A "#" followed by a space, like these, is a note to
+# you and is never shown to anybody.
+
+<gradient:#a06bff:#e0c3fc><bold>Welcome</bold></gradient>
+<gray>Good to see you, <white>%player%</white>.
+<dark_gray>▪ <gray>There are <white>%online%</white> of <white>%max%</white> players here right now.
+<dark_gray>▪ <gray>The rules are in <white>/info rules</white>.
+<dark_gray>▪ <gray>Save where you are standing with <white>/sethome</white>.

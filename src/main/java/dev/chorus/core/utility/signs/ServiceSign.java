@@ -27,6 +27,10 @@ public enum ServiceSign {
     KIT("[kit]", "kit"),
     BALANCE("[balance]", "balance"),
     SPAWN("[spawn]", "spawn"),
+    MAIL("[mail]", "mail"),
+    TIME("[time]", "time"),
+    WEATHER("[weather]", "weather"),
+    SPAWNMOB("[spawnmob]", "spawnmob"),
 
     /** Hands over an amount of an item. The amount is line two, the item line three. */
     FREE("[free]", "");

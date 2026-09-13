@@ -39,7 +39,7 @@ public final class BurnCommand extends ChorusCommand {
             return;
         }
 
-        target.setFireTicks(seconds * TICKS_PER_SECOND);
+        onPlayer(target, () -> target.setFireTicks(seconds * TICKS_PER_SECOND));
         settle(sender);
         messages.send(sender, "utility.burn",
                 "player", target.getName(), "seconds", String.valueOf(seconds));

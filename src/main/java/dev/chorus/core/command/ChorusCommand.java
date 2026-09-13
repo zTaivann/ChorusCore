@@ -1,11 +1,14 @@
 package dev.chorus.core.command;
 
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.Schedulers;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,8 +27,11 @@ import java.util.Locale;
  */
 public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
 
+    private static final String WORLD_BYPASS = "chorus.bypass.worlds";
+
     protected final Messages messages;
     protected final ActionGuard guard;
+    protected final Schedulers schedulers;
 
     private final String name;
     private final String permission;
@@ -35,8 +41,25 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     protected ChorusCommand(CommandSupport support, String name, @Nullable String permission) {
         this.messages = support.messages();
         this.guard = support.guard();
+        this.schedulers = support.schedulers();
         this.name = name;
         this.permission = permission;
+    }
+
+    /**
+     * Runs work that touches another player on the thread that is allowed to touch them.
+     *
+     * <p>On an ordinary server that is the one server thread and this changes nothing. On
+     * Folia the player belongs to whichever region they are standing in, which is not the
+     * region the command arrived from when they are somewhere else.
+     */
+    protected final void onPlayer(Entity who, Runnable action) {
+        schedulers.entity(who, action);
+    }
+
+    /** The same, for work that touches blocks or spawns something at a place. */
+    protected final void atPlace(Location where, Runnable action) {
+        schedulers.region(where, action);
     }
 
     /** Matches the entry in plugin.yml, in aliases.yml and in the module's config file. */
@@ -97,6 +120,11 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
         }
         if (!rules.enabled()) {
             messages.send(sender, "error.command-disabled");
+            return true;
+        }
+        if (sender instanceof Player player && !player.hasPermission(WORLD_BYPASS)
+                && !rules.worlds().allows(player.getWorld().getName())) {
+            messages.send(sender, "error.command-world");
             return true;
         }
         run(sender, args);

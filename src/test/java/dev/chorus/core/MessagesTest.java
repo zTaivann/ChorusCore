@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -50,6 +51,9 @@ class MessagesTest {
      */
     private static final Pattern MESSAGE_KEY = Pattern.compile(
             "(?<!section[(])[\"]((?:" + ROOTS + ")(?:[.][a-z-]+)+)[\"]");
+
+    /** A %name% in a template, which names a value the code passes in. */
+    private static final Pattern PLACEHOLDER = Pattern.compile("%([a-z_]+)%");
 
     @Test
     void everyTemplateParses() {
@@ -124,6 +128,82 @@ class MessagesTest {
 
         assertTrue(drawn.contains("&a"), "the example colour code should still be readable");
         assertTrue(drawn.contains("<green>"), "the example tag should still be readable");
+    }
+
+    /**
+     * A translation may be incomplete, but it may not invent keys.
+     *
+     * <p>A key with a typo in it would simply never be sent, and the English line would go
+     * out instead with nobody the wiser, which is exactly the kind of thing nobody notices
+     * until a player asks why one message is in the wrong language.
+     */
+    @Test
+    void everyTranslatedKeyExists() {
+        YamlConfiguration base = allLines();
+
+        for (String file : translations()) {
+            YamlConfiguration translated = Resources.read(file);
+            List<String> unknown = translated.getKeys(true).stream()
+                    .filter(translated::isString)
+                    .filter(key -> !key.equals("prefix"))
+                    .filter(key -> !base.isString(key))
+                    .toList();
+
+            assertEquals(List.of(), unknown, file + " holds keys nothing sends");
+        }
+    }
+
+    @Test
+    void everyTranslatedTemplateParses() {
+        for (String file : translations()) {
+            YamlConfiguration translated = Resources.read(file);
+            List<String> broken = translated.getKeys(true).stream()
+                    .filter(translated::isString)
+                    .filter(key -> !parses(translated.getString(key, "")))
+                    .toList();
+
+            assertEquals(List.of(), broken, file + " holds invalid MiniMessage");
+        }
+    }
+
+    /**
+     * The values a line is given are named, so a translated line that renames one leaves a
+     * gap where the number should be. Catching it here costs nothing; catching it in chat
+     * costs somebody a bug report.
+     */
+    @Test
+    void noTranslationRenamesAPlaceholder() {
+        YamlConfiguration base = allLines();
+        List<String> wrong = new ArrayList<>();
+
+        for (String file : translations()) {
+            YamlConfiguration translated = Resources.read(file);
+            for (String key : translated.getKeys(true)) {
+                if (!translated.isString(key) || !base.isString(key)) {
+                    continue;
+                }
+                Set<String> extra = new TreeSet<>(slotsIn(translated.getString(key, "")));
+                extra.removeAll(slotsIn(base.getString(key, "")));
+                extra.forEach(slot -> wrong.add(file + " " + key + " uses %" + slot + "%"));
+            }
+        }
+        assertEquals(List.of(), wrong, "these placeholders are in no English line");
+    }
+
+    /** Every other language that ships in the jar. */
+    private static List<String> translations() {
+        String[] found = Resources.FOLDER.toFile()
+                .list((folder, name) -> name.startsWith("messages_") && name.endsWith(".yml"));
+        return found == null ? List.of() : List.of(found);
+    }
+
+    private static Set<String> slotsIn(String template) {
+        Set<String> slots = new TreeSet<>();
+        Matcher matcher = PLACEHOLDER.matcher(template);
+        while (matcher.find()) {
+            slots.add(matcher.group(1));
+        }
+        return slots;
     }
 
     /**

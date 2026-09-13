@@ -1,5 +1,6 @@
 package dev.chorus.core.shops.chest;
 
+import dev.chorus.core.platform.Schedulers;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -38,13 +39,21 @@ public final class ChestShopDisplays {
 
     private final Plugin plugin;
     private final ChestShops shops;
-    private final Map<String, UUID> shown = new HashMap<>();
+    private final Schedulers schedulers;
+
+    /** Where each one is as well as which one it is, since removing it needs both. */
+    private final Map<String, Shown> shown = new HashMap<>();
 
     private volatile boolean enabled = true;
 
-    public ChestShopDisplays(Plugin plugin, ChestShops shops) {
+    public ChestShopDisplays(Plugin plugin, ChestShops shops, Schedulers schedulers) {
         this.plugin = plugin;
         this.shops = shops;
+        this.schedulers = schedulers;
+    }
+
+    /** An item that is out there, and the place whose thread is allowed to touch it. */
+    private record Shown(UUID id, Location where) {
     }
 
     public void apply(boolean displayEnabled) {
@@ -76,6 +85,15 @@ public final class ChestShopDisplays {
         }
 
         hide(shop.key());
+        // Spawning belongs to whoever owns those blocks, which on Folia is not the thread
+        // that started the plugin or moved the shop.
+        schedulers.region(where, () -> spawn(shop.key(), where, template));
+    }
+
+    private void spawn(String key, Location where, ItemStack template) {
+        if (!enabled || !where.getChunk().isLoaded()) {
+            return;
+        }
         sweepStrays(where);
 
         ItemStack showing = template.clone();
@@ -92,20 +110,25 @@ public final class ChestShopDisplays {
         item.setSilent(true);
         // Never written to the world file, which is what stops a crash leaving one behind.
         item.setPersistent(false);
-        item.setMetadata(MARKER, new FixedMetadataValue(plugin, shop.key()));
+        item.setMetadata(MARKER, new FixedMetadataValue(plugin, key));
 
-        shown.put(shop.key(), item.getUniqueId());
+        shown.put(key, new Shown(item.getUniqueId(), where));
     }
 
     public void hide(String shopKey) {
-        UUID id = shown.remove(shopKey);
-        if (id == null) {
+        remove(shown.remove(shopKey));
+    }
+
+    private void remove(@Nullable Shown display) {
+        if (display == null) {
             return;
         }
-        Entity entity = plugin.getServer().getEntity(id);
-        if (entity != null) {
-            entity.remove();
-        }
+        schedulers.region(display.where(), () -> {
+            Entity entity = plugin.getServer().getEntity(display.id());
+            if (entity != null) {
+                entity.remove();
+            }
+        });
     }
 
     /** Every shop in a chunk that has just come back. */
@@ -136,13 +159,20 @@ public final class ChestShopDisplays {
         }
     }
 
+    /** Takes them all away, for when the setting is switched off while the server is up. */
     public void clear() {
-        for (UUID id : List.copyOf(shown.values())) {
-            Entity entity = plugin.getServer().getEntity(id);
-            if (entity != null) {
-                entity.remove();
-            }
-        }
+        List.copyOf(shown.values()).forEach(this::remove);
+        shown.clear();
+    }
+
+    /**
+     * Forgets them without removing them, for shutdown.
+     *
+     * <p>They are never written to the world file, so a server that is stopping leaves none
+     * behind whatever happens here — and reaching into every region on the way down would
+     * only be a pile of errors in the log for no gain.
+     */
+    public void forgetAll() {
         shown.clear();
     }
 
@@ -158,6 +188,11 @@ public final class ChestShopDisplays {
                 entity.remove();
             }
         }
+    }
+
+    /** Every shop standing in a chunk, for whoever has to walk them all. */
+    public List<ChestShop> in(Chunk chunk) {
+        return shopsIn(chunk);
     }
 
     private List<ChestShop> shopsIn(Chunk chunk) {

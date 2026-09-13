@@ -53,6 +53,7 @@ import dev.chorus.core.storage.Storage;
 import dev.chorus.core.storage.StorageOptions;
 import dev.chorus.core.teleport.TeleportService;
 import dev.chorus.core.teleport.TeleportSettings;
+import dev.chorus.core.update.UpdateCheck;
 import dev.chorus.core.utility.UtilityModule;
 import dev.chorus.core.warp.WarpModule;
 import dev.chorus.core.world.WorldModule;
@@ -117,6 +118,7 @@ public final class ChorusPlugin extends JavaPlugin {
     private ChatPrompts prompts;
     private CommandSupport support;
     private ChorusServices services;
+    private UpdateCheck updates;
     private Metrics metrics;
 
     @Override
@@ -125,7 +127,16 @@ public final class ChorusPlugin extends JavaPlugin {
         configs = new ConfigFiles(this);
         ConfigFile core = configs.get("config.yml");
 
-        schedulers = new Schedulers(this);
+        try {
+            schedulers = new Schedulers(this);
+        } catch (RuntimeException noSchedulers) {
+            // Nothing else can be started without somewhere to run it, and on Folia there
+            // is no second best: its Bukkit scheduler throws on every call.
+            getLogger().log(Level.SEVERE, noSchedulers.getMessage(), noSchedulers.getCause());
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         mainThread = task -> {
             if (isEnabled()) {
                 schedulers.global(task);
@@ -133,6 +144,7 @@ public final class ChorusPlugin extends JavaPlugin {
         };
         worker = Executors.newFixedThreadPool(2, storageThreadFactory());
         messages = Messages.load(this, configs.get("messages.yml"), configs.get("menus.yml"));
+        messages.apply(core.section("language"));
 
         try {
             storage = SqlStorage.open(this, StorageOptions.read(core.data()));
@@ -151,7 +163,8 @@ public final class ChorusPlugin extends JavaPlugin {
 
         confirmations = new Confirmations(messages, core.section("confirmations").getInt("seconds", 15));
         register(confirmations);
-        support = new CommandSupport(messages, new ActionGuard(messages, cooldowns, economy()));
+        support = new CommandSupport(messages, new ActionGuard(messages, cooldowns, economy()),
+                schedulers);
 
         SqlPlayerFlagRepository flagStore = new SqlPlayerFlagRepository(storage);
         if (!open(flagStore::createTables, "player settings")) {
@@ -190,6 +203,10 @@ public final class ChorusPlugin extends JavaPlugin {
         prompts = new ChatPrompts(this, messages, mainThread, schedulers);
         register(prompts);
         prompts.start();
+        updates = new UpdateCheck(this, messages, schedulers, worker);
+        updates.apply(core.section("updates"));
+        register(updates);
+
         register(new RootCommand(this, support, confirmations));
         register(new HelpCommand(this, support));
 
@@ -228,6 +245,7 @@ public final class ChorusPlugin extends JavaPlugin {
         schedulers.globalTimer(() -> cooldowns.sweep(System.currentTimeMillis()),
                 COOLDOWN_SWEEP_TICKS, COOLDOWN_SWEEP_TICKS);
 
+        updates.start();
         startMetrics(core);
         announce(core, System.currentTimeMillis() - started);
     }
@@ -253,6 +271,11 @@ public final class ChorusPlugin extends JavaPlugin {
             console.connected("Placeholders", "PlaceholderAPI");
         } else {
             console.absent("Placeholders", "PlaceholderAPI not installed");
+        }
+        if (messages.languages().isEmpty()) {
+            console.absent("Languages", "English only");
+        } else {
+            console.connected("Languages", "English, " + String.join(", ", messages.languages()));
         }
         console.connected("Scheduling", schedulers.describe());
         console.connected("Modules", modules.size() + " of " + (modules.size() + modulesOff.size()));
@@ -280,6 +303,9 @@ public final class ChorusPlugin extends JavaPlugin {
             }
         }
 
+        if (updates != null) {
+            updates.shutdown();
+        }
         if (metrics != null) {
             metrics.shutdown();
         }
@@ -315,9 +341,11 @@ public final class ChorusPlugin extends JavaPlugin {
         configs.reloadAll();
         messages.reload();
         ConfigFile core = configs.get("config.yml");
+        messages.apply(core.section("language"));
         economySetup.reload(core.section("economy"));
         confirmations.apply(core.section("confirmations").getInt("seconds", 15));
         audit.apply(core.section("staff-log"));
+        updates.apply(core.section("updates"));
         teleports.apply(TeleportSettings.read(configs.get(TELEPORT_CONFIG).section("teleport")));
         modules.forEach(ChorusModule::reload);
     }
@@ -411,6 +439,10 @@ public final class ChorusPlugin extends JavaPlugin {
 
     public ChatPrompts prompts() {
         return prompts;
+    }
+
+    public UpdateCheck updates() {
+        return updates;
     }
 
     /** Runs tasks where the server allows them, dropping them once the plugin is gone. */

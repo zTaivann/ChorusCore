@@ -538,6 +538,16 @@ public final class ChestShopListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onChunkLoad(ChunkLoadEvent event) {
         displays.showIn(event.getChunk());
+
+        // Rewriting the signs here is what makes an imported shop look like one of ours, and
+        // what puts a sign back that another plugin or a rollback left saying the wrong
+        // thing. A chunk holds a handful of shops at most.
+        for (ChestShop shop : displays.in(event.getChunk())) {
+            Location where = shop.location();
+            if (where != null) {
+                ChestShopSign.refresh(shop, where.getBlock(), messages, economy);
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

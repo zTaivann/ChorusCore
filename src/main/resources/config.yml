@@ -90,6 +90,20 @@ economy:
     singular: coin
     plural: coins
 
+# ── Language ─────────────────────────────────────────────────────────────
+# Other languages live beside messages.yml as messages_es.yml, messages_fr.yml
+# and so on. A translation only writes down the lines it translates; anything
+# it leaves out comes from messages.yml, so one is never out of date, only
+# incomplete. Dropping a file in and running /chorus reload is all it takes.
+language:
+  # The language everybody gets, by the code in the file name. Empty is English,
+  # which is messages.yml itself.
+  default: ''
+
+  # true sends each player the translation that matches their own Minecraft
+  # language instead, falling back to the one above when there is none for it.
+  per-player: false
+
 # ── Confirmations ────────────────────────────────────────────────────────
 confirmations:
   # Seconds to run a command again to confirm it, for the ones that cannot be
@@ -116,3 +130,33 @@ staff-log:
 
   # How many entries one /stafflog prints. Maximum 50.
   page-size: 10
+
+# ── Updates ──────────────────────────────────────────────────────────────
+# A plain request for a version number, once at startup and once a day after
+# that. Nothing is downloaded and nothing is installed: it says a newer one
+# exists and that is all.
+#
+# Nothing about this server is sent. Not the address, not the player count,
+# not even the version being run. Everything about it also fails quietly, so
+# a site that is down or a server with no way out never puts a line in the
+# console.
+updates:
+  check: true
+
+  # Where to ask.
+  #   modrinth  a project on modrinth.com
+  #   hangar    a project on hangar.papermc.io
+  #   spigot    a resource on spigotmc.org, by its number
+  #   plain     a page of your own that answers with nothing but a version
+  source: modrinth
+
+  # The project on that site. For spigot this is the number in the resource
+  # URL. Leave it empty to switch the check off without setting check: false.
+  project: choruscore
+
+  # Only read when source is plain.
+  url: ''
+
+  # Tells anybody holding chorus.updates as they join. The console is told
+  # either way.
+  notify-staff: true

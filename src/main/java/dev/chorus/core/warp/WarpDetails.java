@@ -35,7 +35,7 @@ public record WarpDetails(String warp, @Nullable String icon, @Nullable String p
         return new CommandRules(base.enabled(), base.warmupSeconds(),
                 cooldownSeconds == INHERIT_COOLDOWN ? base.cooldownSeconds() : cooldownSeconds,
                 price == INHERIT_PRICE ? base.price() : price,
-                base.feedback());
+                base.worlds(), base.feedback());
     }
 
     public WarpDetails withIcon(@Nullable String value) {

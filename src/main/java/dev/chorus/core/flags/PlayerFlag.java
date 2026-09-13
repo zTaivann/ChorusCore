@@ -21,7 +21,10 @@ public enum PlayerFlag {
     PAYMENTS_BLOCKED("payments-blocked"),
 
     /** Accepts every teleport request without being asked. */
-    TELEPORTS_AUTOMATIC("teleports-automatic");
+    TELEPORTS_AUTOMATIC("teleports-automatic"),
+
+    /** Leaves every powertool in place but stops any of them running. */
+    POWERTOOLS_OFF("powertools-off");
 
     private final String stored;
 

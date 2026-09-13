@@ -2,16 +2,19 @@
 
 A modular core for Paper servers: homes, warps, spawn, teleport requests, an economy of its
 own, mail, private messages, sign shops, staff tools, item tools, kits, world controls and the
-usual utilities. A hundred and thirty-one commands across fourteen modules, every one of them
-switchable, priced and themed from its own config file, plus as many commands of your own as
-you care to write.
+usual utilities. A hundred and thirty-eight commands across fourteen modules, every one of them
+switchable, priced, restricted to the worlds you choose and themed from its own config file,
+plus as many commands of your own as you care to write.
 
-**Coming from EssentialsX?** `/chorus import essentials` brings your homes, balances, warps,
-mail, nicknames and sell prices across without touching a file in the old plugin.
+**Already running something else?** `/chorus import essentials` brings your homes, balances,
+warps, mail, nicknames and sell prices across, and `/chorus import quickshop` brings every
+player shop. Neither writes a byte into the old plugin's folder, and both can be run once to
+report what they would do before they do it.
 
 
 Compiled against the Paper 1.18.2 API and emitting Java 17 bytecode, so a single jar runs on
-anything from **1.18.2 to 26.2**, on Paper and on Folia.
+anything from **1.18.2 to 26.2**, on Paper and on Folia. Every message can be translated, and
+a player can be sent the language their own client is set to.
 
 Addons can build on it: it registers a public API as a Bukkit service and, when
 PlaceholderAPI is installed, exposes its numbers as placeholders.
@@ -44,9 +47,10 @@ The console says what it found:
   ✔ Storage        sqlite
   ✔ Economy        built in, 412 accounts
   ▪ Placeholders   PlaceholderAPI not installed
+  ▪ Languages      English only
   ✔ Scheduling     one server thread
   ✔ Modules        14 of 14
-  ✔ Commands       131 registered
+  ✔ Commands       138 registered
 
   Ready in 214ms
 
@@ -57,19 +61,43 @@ The console says what it found:
 A tick is something it connected to. `startup-banner: false` in `config.yml` replaces the
 whole thing with one line.
 
-On Folia the Scheduling line reads `Folia regions` instead. Nothing is scheduled on a thread
-that is not allowed to touch what the job is about to touch: work on a player goes to that
-player, work on blocks goes to the region they are in, and everything else to the server as a
-whole.
+### Folia
+
+The same jar, no separate build. On Folia the Scheduling line reads `Folia regions` instead.
+
+Folia has no single server thread. The world is split into regions that tick in parallel, a
+player belongs to whichever region they are standing in, and reaching them from anywhere else
+is a crash rather than a race. Every job therefore goes to the thread that is allowed to touch
+what it is about to touch:
+
+| The job | Where it runs |
+| --- | --- |
+| Anything done to a player — `/heal`, `/gamemode`, `/give`, `/sudo`, `/tempfly` | That player's own thread, wherever they are standing |
+| Anything done at a place — `/smite`, `/spawnmob`, a shop's floating item | The region that owns those blocks |
+| `/sweep` and the auto-sweep | Chunk by chunk, each on its own region, with the totals added up as the answers come back |
+| Teleports | Paper's own async teleport, which moves the player between regions properly |
+| Pruning, timers, the update check, anything belonging to no one place | The global region |
+
+Because the sweep is spread over regions rather than run in one pass, it also uses as many
+threads as the server has regions: on an ordinary server that changes nothing, and on a busy
+Folia server it is the difference between a hitch and none.
+
+Cooldowns are held in a concurrent map for the same reason — two players in two regions
+running a priced command reach it at the same moment.
 
 ## Configuration
 
 ```
 plugins/ChorusCore/
-├── config.yml            storage, economy, confirmations, metrics, staff log
+├── config.yml            storage, economy, language, confirmations, metrics,
+│                         staff log, updates
 ├── aliases.yml           extra names for every command
 ├── messages.yml          every line the plugin sends to chat
+├── messages_es.yml       Spanish, and a model for any other language: one file
+│                         per language, holding only the lines it translates
 ├── menus.yml             every word that appears on a screen
+├── motd.txt              what players read as they join, and on /motd
+├── info.txt              the chapters behind /info
 └── modules/
     ├── homes.yml             /home /sethome /delhome /homes /renamehome
     │                         /homeicon
@@ -99,7 +127,8 @@ plugins/ChorusCore/
     │                         /ecsee /craft /anvil /smithingtable /grindstone
     │                         /stonecutter /loom /cartography /enchanting
     │                         /enderchest /jump /bottom /break /depth /compass
-    │                         /rest, and the service signs
+    │                         /rest /ext /smite /fireball /powertool
+    │                         /powertooltoggle /motd /info, and the service signs
     └── custom-commands.yml   the /discord and /rules of your server
 ```
 
@@ -118,6 +147,7 @@ commands:
     warmup-seconds: 3
     cooldown-seconds: 30
     price: 50.0
+    worlds: [ '!event' ]
     sound:
       key: entity.enderman.teleport
       volume: 0.7
@@ -136,12 +166,27 @@ commands:
 | `warmup-seconds` | Stand still this long before the teleport happens. Moving or taking damage cancels it and nothing is charged. Only applies to commands that teleport. |
 | `cooldown-seconds` | Wait this long before the same player may repeat the command. Starts only once it actually succeeded. |
 | `price` | What it costs through Vault. Ignored when there is no economy. Charged only on success. |
+| `worlds` | Where the command works. Empty is everywhere. |
 | `sound` | A Minecraft sound name with volume (0-10) and pitch (0.5-2). Empty for silence. A name the client does not know just plays nothing. |
 | `particle` | A Bukkit particle name, how many, and how far they spread. Empty for none. |
 
 Each file opens its `commands` section with a `defaults` block, so a command only writes down
 what it does differently. Warmup, cooldown and price default to `0`, which is off, and
 cooldowns survive a disconnect.
+
+**`worlds` does both jobs with one list.** A name on its own is the only place the command
+works; a name with `!` in front is the one place it does not:
+
+```yaml
+worlds: [ ]                       everywhere, which is the default
+worlds: [ world, world_nether ]   only those two
+worlds: [ '!event' ]              everywhere except the event world
+```
+
+No `/home` in the arena, no `/tpa` in the event world, no `/back` out of the nether — without
+a second plugin and without taking the command away from everybody. Names are compared
+without case. A refusal wins over an allowance for the same world.
+`chorus.bypass.worlds` ignores the whole thing.
 
 Mojang renamed a fair number of particles over the years, so both the old and the new
 spelling are accepted and the right one is picked for whichever version you run.
@@ -217,6 +262,55 @@ Item names and lore are not quietly italicised the way the game does it by defau
 of lore that names no colour is drawn grey rather than the purple the game falls back to.
 Neither is written into your file: what you type is stored exactly as you typed it, the styling
 happens when the line is drawn, and an editor screen shows you the plain text back.
+
+### Languages
+
+**Spanish ships with the plugin.** `messages_es.yml` is written out on first start; set
+`language.default: es` and the whole server speaks Spanish.
+
+Another language is a file called `messages_<code>.yml` next to `messages.yml`. The code is
+whatever you want to call it, and it is the same code you put in the config:
+
+```yaml
+language:
+  default: es        # everybody gets messages_es.yml
+  per-player: false
+```
+
+```yaml
+# messages_es.yml
+prefix: '<gradient:#a06bff:#e0c3fc><bold>Chorus</bold></gradient> <dark_gray>|</dark_gray> '
+
+home:
+  created: '%prefix%<gray>Casa <white>%home%</white> guardada.'
+  deleted: '%prefix%<gray>Casa <white>%home%</white> borrada.'
+```
+
+**A translation only writes down what it translates.** Every line it leaves out comes from
+`messages.yml`, so a file with forty lines in it is a server that speaks forty lines of
+Spanish and English for the rest — never a server with forty holes in it. That is also what
+lets a translation survive an update that adds twenty new messages: the new ones are English
+until somebody gets round to them, and nothing breaks in the meantime.
+
+A translation may also leave out `prefix`, and then it borrows the English one. A line it
+writes as `''` is silenced in that language only.
+
+**`per-player: true` sends each player the file that matches their own Minecraft language**
+instead, falling back to `default` when there is no file for it. The console always reads
+`default`. A broadcast is rendered once per language rather than once per player, so a full
+server costs as many parses as it has languages.
+
+Adding a language is dropping the file in and running `/chorus reload`. The startup banner
+says which ones were found.
+
+The keys are the same in every file. Copy `messages.yml`, translate the lines you care about,
+delete the rest. Lines that are pure decoration — separators, a header that is nothing but a
+`%placeholder%` — are worth leaving out; there is nothing in them to translate.
+
+A translation that ships in the jar is checked at build time: every key it uses has to be a
+real one, every line has to be valid MiniMessage, and **every `%placeholder%` in it has to
+exist in the English line it replaces**. A renamed placeholder would otherwise leave a gap
+where the number should be, and nobody would find out until a player asked.
 
 ### Aliases
 
@@ -373,6 +467,13 @@ when they left. Somebody still online is simply where they are, so it answers fo
 | `/getpos [player]` | `chorus.utility.getpos` | op |
 | `/suicide` | `chorus.utility.suicide` | everyone |
 | `/burn <player> <seconds>` | `chorus.utility.burn` | op |
+| `/ext [player]` | `chorus.utility.ext` | op |
+| `/smite [player]` | `chorus.utility.smite` | op |
+| `/fireball [kind] [speed]` | `chorus.utility.fireball` | op |
+| `/powertool <command>` | `chorus.utility.powertool` | op |
+| `/powertooltoggle` | `chorus.utility.powertool` | op |
+| `/motd [chapter] [page]` | `chorus.utility.motd` | everyone |
+| `/info [chapter] [page]` | `chorus.utility.info` | everyone |
 
 Portable screens, all `chorus.utility.<command>`, op by default:
 
@@ -390,6 +491,53 @@ with `chorus.utility.invsee.exempt` cannot be looked at.
 
 Whatever is left in the `/trash` window when it closes is gone for good.
 
+`/smite` with no name strikes whatever you are looking at. `/fireball` throws `fireball`,
+`small`, `dragon`, `skull`, `arrow`, `snowball`, `egg` or `pearl`; what an explosive one does
+where it lands is `utility.fireball` in the config and not the player's to decide, so it
+starts as a firework rather than a way to make a crater.
+
+#### Powertools
+
+`/powertool <command>` ties a command to the item in your hand. Every item of that kind then
+runs it, for anybody holding `chorus.utility.powertool`:
+
+```
+/powertool heal %player%     a stick that heals whoever you right-click
+/powertool add smite         and smites them too
+/powertool list              what this item runs
+/powertool clear             untie this item
+/powertool clear all         untie everything
+```
+
+The command runs **as you**, so a powertool can never do something you could not have typed,
+and the permission is checked on the click rather than when it was tied — a demoted staff
+member's wand stops working at once. `%player%` means whoever you right-click, and a command
+that needs one says so instead of running on nobody.
+
+One item holds up to five commands. They are kept between sessions.
+`/powertooltoggle` stops all of them without forgetting any, for when you want to build with
+a tool that has a command on it.
+
+#### The message of the day
+
+`motd.txt` and `info.txt` in the plugin folder are read by `/motd` and `/info`. Lines are
+written the way `messages.yml` is — `<gray>`, `<gradient:#a06bff:#e0c3fc>` or plain `&7` —
+and `%player%`, `%world%`, `%online%` and `%max%` are filled in for whoever is reading.
+
+A line like `#rules` opens a chapter, reached with `/info rules`. A second word on that line
+is the permission needed to read it:
+
+```
+#staff chorus.admin
+```
+
+A `#` followed by a space is a note to whoever is editing the file and is never shown, which
+is what lets the file explain itself at the top. Everything above the first chapter is what a
+bare `/info` shows, along with a list of the chapters that reader is allowed to open.
+
+Nine lines fill a page and the rest go on `/info rules 2`. `utility.motd.show-on-join: false`
+stops the motd being sent as players arrive; `/motd` still works.
+
 #### Service signs
 
 Signs that do what a command does. Write one of these on the first line, put the arguments on
@@ -403,7 +551,7 @@ starter          creative         64               all
 ```
 
 `[Heal]` `[Feed]` `[Repair]` `[Disposal]` `[Workbench]` `[Enchant]` `[Gamemode]` `[Kit]`
-`[Balance]` `[Spawn]` `[Free]`
+`[Balance]` `[Spawn]` `[Mail]` `[Time]` `[Weather]` `[Spawnmob]` `[Free]`
 
 Everything but `[Free]` runs the command as the player who clicked it, so **that command's
 permission, cooldown and price all still apply** — a `[Kit]` sign cannot hand out a kit
@@ -638,6 +786,27 @@ fit drops at their feet. It takes the item apart in the same breath:
 Colour codes in `name:` and `lore:` need `chorus.items.format`; without it the text is used
 exactly as typed. A word that means nothing is reported and skipped rather than refusing the
 whole item.
+
+#### What may be handed out
+
+`items.restrictions` in `items.yml` decides what `/give`, `/more` and `/enchant` will do.
+Every one of them is off as it ships, so a server that never opens the section behaves
+exactly as it did before.
+
+| Setting | What it does |
+| --- | --- |
+| `blocked-items` | Items nobody may bring into the world, whatever else they hold. |
+| `permission-per-item` | Every item also needs `chorus.items.give.item.<name>`. |
+| `blocked-enchantments` | Enchantments nobody may put on, by their Minecraft id. |
+| `permission-per-enchantment` | Every enchantment also needs `chorus.items.enchant.<id>`. |
+| `unsafe-enchantments` | `false` caps `/enchant` at the level the game allows, even for `chorus.items.enchant.unsafe`. |
+
+`chorus.bypass.restrictions` is above all of them. A blocked item never appears in the tab
+completion either, so nobody is offered something they will be refused. `/more` is covered
+because one of a blocked item is otherwise all it takes to have a stack of them.
+
+Kits are deliberately not checked: what a kit holds is decided by whoever wrote the kit, not
+by whoever claims it.
 
 `/exp` works in points, or in levels when the amount ends in `L`: `/exp give Notch 5L`.
 `/itemdb` says what the thing in your hand is called, which is the answer to "what do I type
@@ -968,6 +1137,9 @@ says or does is picked up by `/chorus reload`.
 | `/chorus reload [module]` | `chorus.admin` | op |
 | `/chorus status` | `chorus.admin` | op |
 | `/chorus debug` | `chorus.admin` | op |
+| `/chorus purge <days> [run]` | `chorus.admin` | op |
+| `/chorus import essentials [run]` | `chorus.admin` | op |
+| `/chorus import quickshop [run]` | `chorus.admin` | op |
 
 `/commands` lists only what the player actually holds the permission for and that is switched
 on, grouped by module, so it is never a catalogue of things that will refuse them.
@@ -977,6 +1149,47 @@ on, grouped by module, so it is never a catalogue of things that will refuse the
 touching the rest of the server. `/chorus debug` prints the server version, the Java version,
 the scheduling model, memory, the storage and economy in use, which modules are on and off
 and what else is installed — one block to paste into a bug report.
+
+#### Forgetting old players
+
+```
+/chorus purge 180          count what would go, delete nothing
+/chorus purge 180 run      do it
+```
+
+A core plugin keeps a row for every player who ever joined, and after a few years most of
+them belong to somebody who logged in once. Nothing else removes them. `/chorus purge`
+deletes the homes, money, mail, ignores, kit cooldowns, inventory backups, powertools, notes
+and payment history of everybody not seen in that many days.
+
+- **It can be asked what it would do.** Without `run` it counts and deletes nothing, which is
+  the version worth doing first.
+- **Anybody who owns a chest shop is left alone in full**, and counted separately. Deleting
+  their row would leave a chest and a sign standing in the world with nothing behind them.
+- **Anybody online is left alone**, whatever their date says.
+- **The whole run is one transaction.** A failure halfway leaves the database exactly as it
+  was rather than with half a player deleted.
+- **Thirty days is the floor.** A smaller number is refused rather than run.
+- **The staff log is not touched.** It is a record of what staff did, not data belonging to
+  the player it was done to.
+
+#### Updates
+
+`updates` in `config.yml` asks once at startup and once a day whether a newer ChorusCore is
+out. It is a plain request for a version number: nothing is downloaded, nothing is installed,
+and **nothing about this server is sent** — not the address, not the player count, not even
+the version being run.
+
+| Setting | What it does |
+| --- | --- |
+| `check` | `false` never asks anybody anything. |
+| `source` | `modrinth`, `hangar`, `spigot`, or `plain` for a page of your own that answers with nothing but a version number. |
+| `project` | The project on that site. For `spigot` it is the number in the resource URL. |
+| `notify-staff` | Tells anybody holding `chorus.updates` as they join. The console is told either way. |
+
+Everything about it fails quietly. A site that is down, a project that has been renamed or a
+server with no way out to the internet all end the same way: no answer, no message and no
+line in the console. `/chorus status` says what the last check found.
 
 #### Coming from EssentialsX
 
@@ -1016,6 +1229,51 @@ the way.
 
 Restart the server once the real run finishes: the balances and the warps are read into memory
 when the plugin starts, so that is when the imported ones appear.
+
+#### Coming from QuickShop
+
+```
+/chorus import quickshop          read everything, write nothing
+/chorus import quickshop run      do it
+```
+
+Brings every player shop across: where it is, who owns it, what it sells, at what price,
+which way round the trade goes, and whether it is unlimited.
+
+A server with four thousand player shops cannot change chest shop plugins at all without
+this, so it follows the same three rules as the EssentialsX import:
+
+1. **The QuickShop database is opened for reading only.** Nothing in that folder is written.
+   Putting the old plugin back is always possible.
+2. **A block Chorus already has a shop on is left alone**, and counted. Add `overwrite` after
+   `run` for the other behaviour.
+3. **It can be run without doing anything.** Without `run` it reads every row and reports
+   exactly what a real run would write.
+
+```
+» CHORUSCORE « Would bring across 3,914 shops from H2. Nothing was written.
+▪ Read 3,940 ▪ Already here 12 ▪ Unreadable 14
+```
+
+**Where the shops are found.** QuickShop's own `config.yml` says whether it keeps them in
+MySQL or in a file beside itself, and this reads that rather than guessing. MySQL, MariaDB
+and the older SQLite files work out of the box. H2 — what recent QuickShop-Hikari uses by
+default — needs a driver this plugin does not ship: if your server has none, the import says
+so by name instead of failing with something unreadable, and pointing QuickShop at MySQL
+first is the way through.
+
+**A row that cannot be read is counted and skipped, never guessed at.** An owner that is not
+a readable id, or an item the running version no longer understands, would otherwise become a
+shop selling the wrong thing for somebody else — which is worse than a shop that did not come
+across.
+
+**The signs rewrite themselves.** An imported shop still has QuickShop's sign on it until the
+chunk is loaded again, at which point Chorus writes its own four lines. That happens for every
+shop, not just imported ones, so a sign another plugin or a rollback left saying the wrong
+thing heals itself too.
+
+Restart the server once the real run finishes — the shops are read into memory at startup —
+and only then take QuickShop out.
 
 #### Confirmations
 
@@ -1065,6 +1323,12 @@ nothing.
 | `chorus.shops.chest.unlimited` | Allows a shop that never runs out or pays out. |
 | `chorus.signs.use.<kind>` | Uses a service sign. `chorus.signs.create.<kind>` makes one. |
 | `chorus.items.format` | Colour codes in /itemname, /lore and /give. |
+| `chorus.bypass.restrictions` | Ignores the item and enchantment restrictions. |
+| `chorus.bypass.worlds` | Uses a command in a world its rules leave it out of. |
+| `chorus.items.give.item.<name>` | Required per item when `permission-per-item` is on. |
+| `chorus.items.enchant.<id>` | Required per enchantment when `permission-per-enchantment` is on. |
+| `chorus.utility.powertool` | Ties commands to items, and makes tied items work. |
+| `chorus.updates` | Told on joining when a newer ChorusCore is out. |
 
 LuckPerms examples:
 
@@ -1148,7 +1412,8 @@ The tables are `chorus_homes`, `chorus_locations` (warps and spawn points, under
 categories), `chorus_warp_details`, `chorus_kit_uses`, `chorus_player_flags`,
 `chorus_players` (names, nicknames, addresses and where each player logged out),
 `chorus_balances`, `chorus_payments`, `chorus_mail`, `chorus_inventory_backups`,
-`chorus_pending_restores`, `chorus_chest_shops`, `chorus_notes` and `chorus_staff_log`.
+`chorus_pending_restores`, `chorus_chest_shops`, `chorus_powertools`, `chorus_ignores`,
+`chorus_notes` and `chorus_staff_log`.
 
 `chorus_schema_version` records how far each of them has been brought up to date.
 `CREATE TABLE IF NOT EXISTS` cannot add a column to a table that already exists, so each one

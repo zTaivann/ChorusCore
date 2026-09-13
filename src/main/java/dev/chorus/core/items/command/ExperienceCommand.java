@@ -67,30 +67,32 @@ public final class ExperienceCommand extends ChorusCommand {
             return;
         }
 
-        switch (action) {
-            case "give" -> {
-                if (levels) {
-                    target.giveExpLevels(amount);
-                } else {
-                    target.giveExp(amount);
+        onPlayer(target, () -> {
+            switch (action) {
+                case "give" -> {
+                    if (levels) {
+                        target.giveExpLevels(amount);
+                    } else {
+                        target.giveExp(amount);
+                    }
+                }
+                case "take" -> {
+                    if (levels) {
+                        target.giveExpLevels(-amount);
+                    } else {
+                        setTotal(target, Math.max(0, total(target) - amount));
+                    }
+                }
+                default -> {
+                    if (levels) {
+                        setTotal(target, 0);
+                        target.giveExpLevels(amount);
+                    } else {
+                        setTotal(target, amount);
+                    }
                 }
             }
-            case "take" -> {
-                if (levels) {
-                    target.giveExpLevels(-amount);
-                } else {
-                    setTotal(target, Math.max(0, total(target) - amount));
-                }
-            }
-            default -> {
-                if (levels) {
-                    setTotal(target, 0);
-                    target.giveExpLevels(amount);
-                } else {
-                    setTotal(target, amount);
-                }
-            }
-        }
+        });
 
         settle(sender);
         String written = amount + (levels ? " levels" : " points");

@@ -1,0 +1,34 @@
+# Everything a player might want to look up, in chapters: /info rules, /info
+# commands, and so on. /info on its own shows what is below and lists the rest.
+#
+# Same rules as motd.txt. A line like "#rules" opens a chapter and a second word
+# on it is the permission needed to read that chapter, as on "#staff" below. A
+# "#" followed by a space is a note to you and is never shown.
+#
+# Nine lines fill a page and the rest go on the next one, reached with
+# /info <chapter> 2.
+
+<gradient:#a06bff:#e0c3fc><bold>Server information</bold></gradient>
+<gray>Everything worth knowing, a chapter at a time.
+
+#rules
+<gradient:#a06bff:#e0c3fc><bold>Rules</bold></gradient>
+<dark_gray>1 <gray>Be decent to the people you are playing with.
+<dark_gray>2 <gray>Build your own things. Do not touch anybody else's.
+<dark_gray>3 <gray>No clients or mods that play the game for you.
+<dark_gray>4 <gray>Keep the chat readable and in one language.
+<dark_gray>5 <gray>Report a problem instead of taking it into your own hands.
+
+#commands
+<gradient:#a06bff:#e0c3fc><bold>Getting around</bold></gradient>
+<dark_gray>▪ <white>/sethome <gray>saves where you are, <white>/home <gray>takes you back.
+<dark_gray>▪ <white>/warp <gray>lists the places anybody can reach.
+<dark_gray>▪ <white>/tpa NAME <gray>asks somebody if you may come over.
+<dark_gray>▪ <white>/back <gray>returns you to where you last teleported from.
+<dark_gray>▪ <white>/commands <gray>opens everything you are allowed to use.
+
+#staff chorus.admin
+<gradient:#a06bff:#e0c3fc><bold>For staff</bold></gradient>
+<gray>Only people holding <white>chorus.admin</white> can read this chapter.
+<dark_gray>▪ <white>/chorus status <gray>says what the plugin found when it started.
+<dark_gray>▪ <white>/stafflog <gray>is every action worth looking up later.

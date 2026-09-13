@@ -3,6 +3,9 @@ package dev.chorus.core.command;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.importer.EssentialsImport;
 import dev.chorus.core.importer.ImportReport;
+import dev.chorus.core.importer.QuickShopImport;
+import dev.chorus.core.importer.ShopImportReport;
+import dev.chorus.core.players.PlayerPurge;
 import dev.chorus.core.storage.Queries;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,14 +14,22 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public final class RootCommand extends ChorusCommand {
 
     private static final String PLACEHOLDER_PLUGIN = "PlaceholderAPI";
-    private static final List<String> ACTIONS = List.of("reload", "status", "debug", "import");
+    private static final List<String> ACTIONS =
+            List.of("reload", "status", "debug", "import", "purge");
+
+    /** A floor under the purge, so a slip of the finger cannot empty the database. */
+    private static final int MIN_PURGE_DAYS = 30;
+    private static final long MILLIS_PER_DAY = 24L * 60 * 60 * 1000;
 
     private final ChorusPlugin plugin;
     private final Confirmations confirmations;
@@ -37,6 +48,7 @@ public final class RootCommand extends ChorusCommand {
             case "status" -> status(sender);
             case "debug" -> debug(sender);
             case "import" -> importFrom(sender, args);
+            case "purge" -> purge(sender, args);
             default -> messages.send(sender, "core.usage",
                     "version", plugin.getDescription().getVersion());
         }
@@ -50,11 +62,77 @@ public final class RootCommand extends ChorusCommand {
      * folder, so putting the old plugin back is always possible.
      */
     private void importFrom(CommandSender sender, String[] args) {
-        if (args.length < 2 || !args[1].equalsIgnoreCase("essentials")) {
-            messages.send(sender, "core.import-usage");
+        String what = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
+        switch (what) {
+            case "essentials" -> fromEssentials(sender, args);
+            case "quickshop" -> fromQuickShop(sender, args);
+            default -> messages.send(sender, "core.import-usage");
+        }
+    }
+
+    /**
+     * {@code /chorus import quickshop [run] [overwrite]}.
+     *
+     * <p>The QuickShop database is opened for reading only, so the old plugin can go back at
+     * any time. A block Chorus already has a shop on is left alone unless overwriting is
+     * asked for.
+     */
+    private void fromQuickShop(CommandSender sender, String[] args) {
+        boolean live = args.length > 2 && args[2].equalsIgnoreCase("run");
+        boolean overwrite = args.length > 3 && args[3].equalsIgnoreCase("overwrite");
+
+        Path folder = QuickShopImport.folderIn(plugin.getDataFolder().toPath().getParent());
+        if (folder == null) {
+            messages.send(sender, "core.import-shops-not-found");
+            return;
+        }
+        if (live && !confirmations.confirmed(sender, "import:quickshop",
+                overwrite ? "core.import-shops-confirm-overwrite" : "core.import-shops-confirm")) {
             return;
         }
 
+        messages.send(sender, live ? "core.import-started" : "core.import-checking",
+                "folder", folder.getFileName().toString());
+
+        QuickShopImport importer = new QuickShopImport(plugin.storage(), folder);
+        Queries.run(() -> importer.run(!live, overwrite), plugin.worker(), plugin.mainThread())
+                .whenComplete((report, failure) -> {
+                    if (failure != null) {
+                        plugin.getLogger().log(Level.SEVERE, "The shop import failed", failure);
+                        messages.send(sender, "core.import-failed");
+                        return;
+                    }
+                    reportShops(sender, report, live);
+                });
+    }
+
+    private void reportShops(CommandSender sender, ShopImportReport report, boolean live) {
+        if (!report.foundAnything()) {
+            messages.send(sender, "core.import-shops-empty");
+            for (String problem : report.problems()) {
+                messages.send(sender, "core.import-problem", "problem", problem);
+            }
+            return;
+        }
+
+        messages.send(sender, live ? "core.import-shops-done" : "core.import-shops-would",
+                "shops", String.valueOf(report.imported()), "source", report.source());
+        messages.send(sender, "core.import-shops-counts",
+                "read", String.valueOf(report.read()),
+                "skipped", String.valueOf(report.skipped()),
+                "broken", String.valueOf(report.unreadable()));
+
+        for (String problem : report.problems()) {
+            messages.send(sender, "core.import-problem", "problem", problem);
+        }
+        if (report.hiddenProblems() > 0) {
+            messages.send(sender, "core.import-problems-more",
+                    "count", String.valueOf(report.hiddenProblems()));
+        }
+        messages.send(sender, live ? "core.import-shops-restart" : "core.import-shops-next");
+    }
+
+    private void fromEssentials(CommandSender sender, String[] args) {
         boolean live = args.length > 2 && args[2].equalsIgnoreCase("run");
         boolean overwrite = args.length > 3 && args[3].equalsIgnoreCase("overwrite");
 
@@ -122,6 +200,76 @@ public final class RootCommand extends ChorusCommand {
         messages.send(sender, live ? "core.import-restart" : "core.import-next");
     }
 
+    /**
+     * {@code /chorus purge <days> [run]}: forgets players nobody has seen in a long time.
+     *
+     * <p>Without {@code run} it counts what would go and deletes nothing. The real run asks
+     * to be confirmed, and leaves alone anybody who owns a chest shop.
+     */
+    private void purge(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            messages.send(sender, "core.purge-usage", "min", String.valueOf(MIN_PURGE_DAYS));
+            return;
+        }
+
+        int days = days(args[1]);
+        if (days < MIN_PURGE_DAYS) {
+            messages.send(sender, "core.purge-range", "min", String.valueOf(MIN_PURGE_DAYS));
+            return;
+        }
+
+        boolean live = args.length > 2 && args[2].equalsIgnoreCase("run");
+        if (live && !confirmations.confirmed(sender, "purge:" + days,
+                "core.purge-confirm", "days", String.valueOf(days))) {
+            return;
+        }
+
+        // Gathered here rather than in the query: who is online is a question for the server
+        // thread, and the purge itself runs on a worker.
+        Set<UUID> online = new HashSet<>();
+        plugin.getServer().getOnlinePlayers().forEach(player -> online.add(player.getUniqueId()));
+        long before = System.currentTimeMillis() - days * MILLIS_PER_DAY;
+
+        messages.send(sender, live ? "core.purge-started" : "core.purge-checking",
+                "days", String.valueOf(days));
+
+        PlayerPurge purge = new PlayerPurge(plugin.storage());
+        Queries.run(() -> purge.run(before, online, live), plugin.worker(), plugin.mainThread())
+                .whenComplete((report, failure) -> {
+                    if (failure != null) {
+                        plugin.getLogger().log(Level.SEVERE, "The purge failed", failure);
+                        messages.send(sender, "core.purge-failed");
+                        return;
+                    }
+                    report(sender, report, live);
+                });
+    }
+
+    private void report(CommandSender sender, PlayerPurge.Report report, boolean live) {
+        if (!report.foundAnything()) {
+            messages.send(sender, "core.purge-empty");
+            return;
+        }
+
+        messages.send(sender, live ? "core.purge-done" : "core.purge-would",
+                "players", String.valueOf(report.players()),
+                "rows", String.valueOf(report.rows()));
+        if (report.shopKeep() > 0) {
+            messages.send(sender, "core.purge-shops", "count", String.valueOf(report.shopKeep()));
+        }
+        if (!live) {
+            messages.send(sender, "core.purge-next");
+        }
+    }
+
+    private static int days(String raw) {
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException notANumber) {
+            return -1;
+        }
+    }
+
     /** The whole plugin, or one module by name. */
     private void reload(CommandSender sender, String module) {
         if (module == null) {
@@ -152,6 +300,15 @@ public final class RootCommand extends ChorusCommand {
                         : "not installed");
         messages.send(sender, "core.status-modules",
                 "modules", String.join(", ", plugin.enabledModules()));
+        messages.send(sender, "core.status-updates", "updates", updateStatus());
+    }
+
+    private String updateStatus() {
+        if (!plugin.updates().enabled()) {
+            return messages.plain("core.update-off");
+        }
+        String newer = plugin.updates().newerVersion();
+        return newer.isEmpty() ? messages.plain("core.update-current") : newer;
     }
 
     /** Everything worth pasting into a bug report, in one block. */
@@ -205,9 +362,13 @@ public final class RootCommand extends ChorusCommand {
             return startingWith(args[1], plugin.enabledModules());
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("import")) {
-            return startingWith(args[1], List.of("essentials"));
+            return startingWith(args[1], List.of("essentials", "quickshop"));
         }
-        if (args.length == 3 && args[0].equalsIgnoreCase("import")) {
+        if (args.length == 2 && args[0].equalsIgnoreCase("purge")) {
+            return startingWith(args[1], List.of("30", "90", "180", "365"));
+        }
+        if (args.length == 3
+                && (args[0].equalsIgnoreCase("import") || args[0].equalsIgnoreCase("purge"))) {
             return startingWith(args[2], List.of("run"));
         }
         return List.of();

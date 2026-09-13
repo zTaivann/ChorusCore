@@ -126,3 +126,42 @@ tasks.register<JavaCompile>("apicheck") {
     options.release = null
     options.compilerArgs = listOf("-Xlint:all")
 }
+
+
+/**
+ * The Folia bridge reaches its schedulers by reflection, so no compiler ever sees those
+ * signatures: a wrong name or one argument too many is invisible until a server starts, and
+ * on Folia it does not even fail near the mistake. This resolves every one of them against
+ * the newest Paper API and fails if any has moved.
+ *
+ * It needs its own JDK because those class files are written for 25, which a 21 cannot read,
+ * and it hangs off `apicheck` because that is the other check that reads the new API. `build`
+ * stays on a JDK 21 and leaves this one out.
+ */
+val foliacheck = tasks.register<Test>("foliacheck") {
+    group = "verification"
+    description = "Resolves the Folia scheduler signatures against the newest Paper API."
+
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform()
+    filter { includeTestsMatching("*FoliaCallTest") }
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+
+    inputs.files(modernApi)
+    doFirst {
+        systemProperty("chorus.modern.api", modernApi.asPath)
+    }
+    testLogging { events("passed", "failed") }
+}
+
+tasks.test {
+    // Left to foliacheck, which has a JDK that can read the class files it needs.
+    filter { excludeTestsMatching("*FoliaCallTest") }
+}
+
+tasks.named("apicheck") {
+    finalizedBy(foliacheck)
+}

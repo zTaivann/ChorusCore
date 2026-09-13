@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 /**
  * Runs work on the thread that is allowed to touch what it is about to touch.
@@ -135,51 +136,45 @@ public final class Schedulers {
         private final Method entityRate;
         private final Method cancel;
 
-        private Folia(Plugin plugin, Class<?> task, Class<?> globalType, Class<?> regionType,
-                      Class<?> entityType, Object global, Object regional)
-                throws ReflectiveOperationException {
+        private Folia(Plugin plugin, ClassLoader api) throws ReflectiveOperationException {
             this.plugin = plugin;
-            this.global = global;
-            this.regional = regional;
 
-            this.globalRun = globalType.getMethod("run", Plugin.class, Consumer.class);
-            this.globalDelayed = globalType.getMethod("runDelayed", Plugin.class, Consumer.class,
-                    long.class);
-            this.globalRate = globalType.getMethod("runAtFixedRate", Plugin.class, Consumer.class,
-                    long.class, long.class);
-            this.globalCancel = globalType.getMethod("cancelTasks", Plugin.class);
-            this.regionRun = regionType.getMethod("run", Plugin.class, Location.class, Consumer.class);
-            this.entityScheduler = Entity.class.getMethod("getScheduler");
-            this.entityRun = entityType.getMethod("run", Plugin.class, Consumer.class,
-                    Runnable.class, long.class);
-            this.entityDelayed = entityType.getMethod("runDelayed", Plugin.class, Consumer.class,
-                    Runnable.class, long.class);
-            this.entityRate = entityType.getMethod("runAtFixedRate", Plugin.class, Consumer.class,
-                    Runnable.class, long.class, long.class);
-            this.cancel = task.getMethod("cancel");
+            this.globalRun = FoliaCall.GLOBAL_RUN.on(api);
+            this.globalDelayed = FoliaCall.GLOBAL_DELAYED.on(api);
+            this.globalRate = FoliaCall.GLOBAL_RATE.on(api);
+            this.globalCancel = FoliaCall.GLOBAL_CANCEL.on(api);
+            this.regionRun = FoliaCall.REGION_RUN.on(api);
+            this.entityScheduler = FoliaCall.ENTITY_SCHEDULER.on(api);
+            this.entityRun = FoliaCall.ENTITY_RUN.on(api);
+            this.entityDelayed = FoliaCall.ENTITY_DELAYED.on(api);
+            this.entityRate = FoliaCall.ENTITY_RATE.on(api);
+            this.cancel = FoliaCall.TASK_CANCEL.on(api);
+
+            // Through the interface rather than through whatever class the server happens
+            // to be, which is not ours to reach into.
+            this.global = FoliaCall.SERVER_GLOBAL.on(api).invoke(plugin.getServer());
+            this.regional = FoliaCall.SERVER_REGION.on(api).invoke(plugin.getServer());
         }
 
+        /** Null on an ordinary server. On Folia it either works or it throws. */
         static @Nullable Folia detect(Plugin plugin) {
+            ClassLoader api = Schedulers.class.getClassLoader();
             try {
-                Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+                Class.forName(FoliaCall.Api.FOLIA_MARKER, false, api);
             } catch (ClassNotFoundException ordinary) {
                 return null;
             }
+
             try {
-                String base = "io.papermc.paper.threadedregions.scheduler.";
-                Class<?> task = Class.forName(base + "ScheduledTask");
-                Class<?> globalType = Class.forName(base + "GlobalRegionScheduler");
-                Class<?> regionType = Class.forName(base + "RegionScheduler");
-                Class<?> entityType = Class.forName(base + "EntityScheduler");
-                Object global = plugin.getServer().getClass()
-                        .getMethod("getGlobalRegionScheduler").invoke(plugin.getServer());
-                Object regional = plugin.getServer().getClass()
-                        .getMethod("getRegionScheduler").invoke(plugin.getServer());
-                return new Folia(plugin, task, globalType, regionType, entityType, global, regional);
+                return new Folia(plugin, api);
             } catch (ReflectiveOperationException | RuntimeException unexpected) {
-                plugin.getLogger().warning("This looks like Folia but its schedulers could not be "
-                        + "reached, so everything will run on the server thread instead");
-                return null;
+                // Never a fall back to the Bukkit scheduler. On Folia every one of its
+                // methods throws, so carrying on would turn one wrong signature into a crash
+                // somewhere else entirely, with nothing pointing back to here.
+                throw new IllegalStateException(
+                        "This is Folia, but its schedulers could not be reached. The plugin "
+                                + "cannot run safely without them; please report this.",
+                        unexpected);
             }
         }
 
@@ -205,7 +200,7 @@ public final class Schedulers {
                 return ChorusTask.NONE;
             }
             Object scheduled = delay <= 0
-                    ? call(entityRun, scheduler, plugin, consume(job), null, 1L)
+                    ? call(entityRun, scheduler, plugin, consume(job), null)
                     : call(entityDelayed, scheduler, plugin, consume(job), null, delay);
             return handle(scheduled);
         }
@@ -239,7 +234,13 @@ public final class Schedulers {
             try {
                 return method.invoke(target, arguments);
             } catch (IllegalAccessException | InvocationTargetException failed) {
-                plugin.getLogger().warning("Folia refused " + method.getName() + ": " + failed.getMessage());
+                // The cause, not the wrapper: an InvocationTargetException says nothing at
+                // all on its own, which is the difference between a report somebody can act
+                // on and a line that sends them looking in the wrong place.
+                Throwable cause = failed instanceof InvocationTargetException wrapped
+                        && wrapped.getCause() != null ? wrapped.getCause() : failed;
+                plugin.getLogger().log(Level.WARNING,
+                        "Folia refused " + method.getName(), cause);
                 return null;
             }
         }

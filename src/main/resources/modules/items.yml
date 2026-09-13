@@ -29,6 +29,13 @@
 #                     economy plugin the price is ignored.
 #                     chorus.bypass.price never pays.
 #
+#   worlds            the worlds the command works in. An empty list is everywhere.
+#                     A name on its own is the only place it works; a name with !
+#                     in front is the one place it does not:
+#                       worlds: [ world, world_nether ]   only those two
+#                       worlds: [ '!event' ]              everywhere but there
+#                     chorus.bypass.worlds ignores it.
+#
 #   sound.key         a Minecraft sound name, for example entity.enderman.teleport.
 #                     Empty for silence. A name the client does not know simply
 #                     plays nothing, so a typo can never break anything.
@@ -81,6 +88,33 @@ items:
     SLIME_BALL: SLIME_BLOCK
     BONE_MEAL: BONE_BLOCK
 
+  # ── What may be handed out ──────────────────────────────────────────────
+  #
+  # Every rule here is off as it ships, so a server that never opens this
+  # section behaves exactly as it did before. chorus.bypass.restrictions is
+  # above all of them.
+  #
+  # These cover /give, /more and /enchant. Kits are not checked: what a kit
+  # holds is decided by whoever wrote the kit, not by whoever claims it.
+  restrictions:
+    # Items nobody may bring into the world with /give or /more.
+    blocked-items: [ ]
+
+    # true makes every item need chorus.items.give.item.<name> as well as
+    # chorus.items.give, for example chorus.items.give.item.diamond_sword.
+    permission-per-item: false
+
+    # Enchantments nobody may put on with /enchant, by their Minecraft id:
+    # mending, silk_touch, sharpness.
+    blocked-enchantments: [ ]
+
+    # true makes every enchantment need chorus.items.enchant.<id> as well.
+    permission-per-enchantment: false
+
+    # false stops /enchant going past the level the game allows, even for
+    # somebody holding chorus.items.enchant.unsafe.
+    unsafe-enchantments: true
+
 # ── Inventory backups ────────────────────────────────────────────────────
 #
 # A copy of everything a player was carrying, taken before they lose it: the
@@ -128,6 +162,7 @@ commands:
     warmup-seconds: 0
     cooldown-seconds: 0
     price: 0.0
+    worlds: [ ]
     sound:
       key: ui.button.click
       volume: 0.5

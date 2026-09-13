@@ -172,17 +172,21 @@ public final class RestoreCommand extends ChorusCommand {
             return;
         }
 
-        if (backups.restore(target, snapshot,
-                EnumSet.allOf(InventoryBackups.Part.class), sender.getName()).isEmpty()) {
-            messages.send(sender, "items.restore-unreadable");
-            return;
-        }
+        // Putting an inventory back is done to the player, so it happens on the thread that
+        // owns them rather than the one the command arrived on.
+        onPlayer(target, () -> {
+            if (backups.restore(target, snapshot,
+                    EnumSet.allOf(InventoryBackups.Part.class), sender.getName()).isEmpty()) {
+                messages.send(sender, "items.restore-unreadable");
+                return;
+            }
 
-        settle(sender);
-        messages.send(sender, "items.restored", "player", name, "ago", ago);
-        if (!sender.equals(target)) {
-            messages.send(target, "items.restore-received");
-        }
+            settle(sender);
+            messages.send(sender, "items.restored", "player", name, "ago", ago);
+            if (!sender.equals(target)) {
+                messages.send(target, "items.restore-received");
+            }
+        });
     }
 
     private void list(CommandSender sender, String name, List<InventorySnapshot> found) {

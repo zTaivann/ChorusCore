@@ -28,7 +28,8 @@ class CommandConfigTest {
     private static final Set<String> UNPRICED = Set.of("chorus", "commands");
 
     private static final Set<String> OPTIONS =
-            Set.of("enabled", "warmup-seconds", "cooldown-seconds", "price", "sound", "particle");
+            Set.of("enabled", "warmup-seconds", "cooldown-seconds", "price", "worlds",
+                    "sound", "particle");
 
     private static Set<String> declaredCommands() {
         return new TreeSet<>(Resources.section(Resources.read("plugin.yml"), "commands").getKeys(false));
@@ -86,7 +87,7 @@ class CommandConfigTest {
             ConfigurationSection defaults =
                     Resources.section(module, "commands").getConfigurationSection("defaults");
             assertNotNull(defaults, path + " has no defaults block");
-            for (String option : List.of("enabled", "warmup-seconds", "cooldown-seconds", "price",
+            for (String option : List.of("enabled", "warmup-seconds", "cooldown-seconds", "price", "worlds",
                     "sound.key", "sound.volume", "sound.pitch", "particle.name", "particle.count",
                     "particle.spread", "particle.height", "particle.speed")) {
                 assertTrue(defaults.contains(option), path + " defaults are missing " + option);

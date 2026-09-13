@@ -3,6 +3,8 @@ package dev.chorus.core.items.command;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.items.ItemAttributes;
+import dev.chorus.core.items.ItemRestrictions;
+import dev.chorus.core.items.ItemService;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -27,8 +29,11 @@ public final class GiveCommand extends ChorusCommand {
     private static final String FORMAT = "chorus.items.format";
     private static final int MAX_AMOUNT = 2304;
 
-    public GiveCommand(CommandSupport support) {
+    private final ItemService items;
+
+    public GiveCommand(CommandSupport support, ItemService items) {
         super(support, "give", "chorus.items.give");
+        this.items = items;
     }
 
     @Override
@@ -83,6 +88,11 @@ public final class GiveCommand extends ChorusCommand {
             messages.send(sender, "items.give-usage");
             return;
         }
+        if (!items.settings().restrictions().mayHave(sender, material)) {
+            messages.send(sender, "items.give-blocked",
+                    "item", material.name().toLowerCase(Locale.ROOT));
+            return;
+        }
         if (!ready(sender)) {
             return;
         }
@@ -94,7 +104,7 @@ public final class GiveCommand extends ChorusCommand {
                     word -> messages.send(sender, "items.give-ignored", "word", word));
         }
 
-        hand(target, stack, amount);
+        onPlayer(target, () -> hand(target, stack, amount));
         settle(sender);
 
         String item = material.name().toLowerCase(Locale.ROOT);
@@ -153,9 +163,11 @@ public final class GiveCommand extends ChorusCommand {
         }
         String typed = args[args.length - 1].toLowerCase(Locale.ROOT);
         if (typed.length() >= 2) {
+            ItemRestrictions restrictions = items.settings().restrictions();
             for (Material material : Material.values()) {
                 if (material.isItem() && !material.isAir()
-                        && material.name().toLowerCase(Locale.ROOT).startsWith(typed)) {
+                        && material.name().toLowerCase(Locale.ROOT).startsWith(typed)
+                        && restrictions.mayHave(sender, material)) {
                     options.add(material.name().toLowerCase(Locale.ROOT));
                 }
             }

@@ -77,7 +77,9 @@ public final class GameModeCommand extends ChorusCommand {
             return;
         }
 
-        target.setGameMode(mode);
+        Player subject = target;
+        GameMode wanted = mode;
+        onPlayer(subject, () -> subject.setGameMode(wanted));
         settle(sender);
         if (target.equals(sender)) {
             messages.send(sender, "staff.gamemode-set", "mode", modeName);

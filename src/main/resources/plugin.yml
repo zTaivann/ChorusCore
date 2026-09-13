@@ -4,7 +4,7 @@ main: dev.chorus.core.ChorusPlugin
 api-version: '1.18'
 description: Modular core for Paper servers.
 authors: [ zTaivann ]
-folia-supported: false
+folia-supported: true
 softdepend: [ Vault, PlaceholderAPI ]
 
 libraries:
@@ -206,6 +206,27 @@ commands:
   rest:
     description: Count a player as having slept.
     usage: /rest [player]
+  ext:
+    description: Put out a player who is on fire.
+    usage: /ext [player]
+  smite:
+    description: Call down lightning on a player or on what you are looking at.
+    usage: /smite [player]
+  fireball:
+    description: Throw something from where you are looking.
+    usage: /fireball [kind] [speed]
+  powertool:
+    description: Tie a command to the item in your hand.
+    usage: /powertool [add|list|clear] [command]
+  powertooltoggle:
+    description: Stop your powertools without forgetting them.
+    usage: /powertooltoggle
+  motd:
+    description: Read the message of the day.
+    usage: /motd [chapter] [page]
+  info:
+    description: Read the server information pages.
+    usage: /info [chapter] [page]
   near:
     description: List the players around you.
     usage: /near [radius]
@@ -1055,3 +1076,57 @@ permissions:
   chorus.signs.use.free:
     description: Allows using a [Free] sign.
     default: true
+  chorus.utility.ext:
+    description: Allows /ext.
+    default: op
+  chorus.utility.ext.others:
+    description: Allows /ext <player>.
+    default: op
+  chorus.utility.smite:
+    description: Allows /smite.
+    default: op
+  chorus.utility.fireball:
+    description: Allows /fireball.
+    default: op
+  chorus.utility.powertool:
+    description: Allows /powertool and /powertooltoggle, and makes bound items work.
+    default: op
+  chorus.utility.motd:
+    description: Allows /motd.
+    default: true
+  chorus.utility.info:
+    description: Allows /info.
+    default: true
+  chorus.updates:
+    description: Told on joining when a newer ChorusCore is out.
+    default: op
+  chorus.bypass.restrictions:
+    description: Ignores the item and enchantment restrictions.
+    default: op
+  chorus.signs.create.mail:
+    description: Allows making a [Mail] sign.
+    default: op
+  chorus.signs.use.mail:
+    description: Allows using a [Mail] sign.
+    default: true
+  chorus.signs.create.time:
+    description: Allows making a [Time] sign.
+    default: op
+  chorus.signs.use.time:
+    description: Allows using a [Time] sign.
+    default: op
+  chorus.signs.create.weather:
+    description: Allows making a [Weather] sign.
+    default: op
+  chorus.signs.use.weather:
+    description: Allows using a [Weather] sign.
+    default: op
+  chorus.signs.create.spawnmob:
+    description: Allows making a [Spawnmob] sign.
+    default: op
+  chorus.signs.use.spawnmob:
+    description: Allows using a [Spawnmob] sign.
+    default: op
+  chorus.bypass.worlds:
+    description: Uses a command in a world its rules leave it out of.
+    default: op

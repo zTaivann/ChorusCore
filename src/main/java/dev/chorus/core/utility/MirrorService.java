@@ -161,11 +161,16 @@ public final class MirrorService implements Listener {
         }
     }
 
+    /**
+     * The timer belongs to no one place, so each player is read on the thread that owns
+     * them rather than on the one the timer ticks on.
+     */
     private void refreshAll() {
         open.values().forEach(mirror -> {
             Player target = plugin.getServer().getPlayer(mirror.targetId());
             if (target != null) {
-                mirror.refresh(target, infoName(target), infoLore(target));
+                schedulers.entity(target,
+                        () -> mirror.refresh(target, infoName(target), infoLore(target)));
             }
         });
     }

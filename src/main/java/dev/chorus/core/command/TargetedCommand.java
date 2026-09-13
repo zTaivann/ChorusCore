@@ -11,6 +11,10 @@ import java.util.List;
  * A command that acts on the sender, or on someone else when a name is given.
  *
  * <p>Aiming at another player needs the same permission with {@code .others} on the end.
+ *
+ * <p>{@link #execute} always runs on the thread that owns the target, which on Folia is not
+ * the thread the command arrived on when they are standing in another region. Every command
+ * of this shape therefore gets that right without having to remember to.
  */
 public abstract class TargetedCommand extends ChorusCommand {
 
@@ -25,7 +29,7 @@ public abstract class TargetedCommand extends ChorusCommand {
     protected final void run(CommandSender sender, String[] args) {
         if (args.length == 0) {
             if (sender instanceof Player self) {
-                execute(sender, self);
+                onPlayer(self, () -> execute(sender, self));
             } else {
                 messages.send(sender, "error.players-only");
             }
@@ -42,7 +46,7 @@ public abstract class TargetedCommand extends ChorusCommand {
             messages.send(sender, "error.player-not-found", "player", args[0]);
             return;
         }
-        execute(sender, target);
+        onPlayer(target, () -> execute(sender, target));
     }
 
     protected abstract void execute(CommandSender sender, Player target);

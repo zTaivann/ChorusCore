@@ -82,7 +82,7 @@ public final class ShopsModule implements ChorusModule {
             throw new IllegalStateException("The chest shops could not be read", exception);
         }
 
-        displays = new ChestShopDisplays(plugin, chestShops);
+        displays = new ChestShopDisplays(plugin, chestShops, plugin.schedulers());
         displays.apply(config.section("shops").getBoolean("chest.display", true));
 
         chestSigns = new ChestShopListener(chestShops, displays, plugin.messages(),
@@ -107,7 +107,7 @@ public final class ShopsModule implements ChorusModule {
     @Override
     public void disable() {
         if (displays != null) {
-            displays.clear();
+            displays.forgetAll();
         }
         if (chestShops != null) {
             chestShops.clear();
