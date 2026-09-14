@@ -2,6 +2,7 @@ package dev.chorus.core.staff.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.teleport.Coordinates;
 import dev.chorus.core.teleport.TeleportService;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -45,10 +46,8 @@ public final class TpPosCommand extends ChorusCommand {
             }
         }
 
-        Double x = parse(args[0]);
-        Double y = parse(args[1]);
-        Double z = parse(args[2]);
-        if (x == null || y == null || z == null) {
+        Location destination = Coordinates.read(args, 0, world, traveller.getLocation());
+        if (destination == null) {
             messages.send(sender, "staff.tppos-numbers");
             return;
         }
@@ -56,15 +55,12 @@ public final class TpPosCommand extends ChorusCommand {
             return;
         }
 
-        Location standing = traveller.getLocation();
-        // Keep the direction they were already facing rather than snapping them north.
-        Location destination = new Location(world, x, y, z, standing.getYaw(), standing.getPitch());
-
         settle(sender);
-        // Reported on arrival rather than on the command: a teleport can still be refused
-        // for having nowhere to land, and saying it worked first and then that it did not
-        // is worse than saying nothing until it has.
-        teleports.teleport(traveller, destination, rules(), name(), () ->
+        // Exactly where they asked. These are numbers somebody typed a second ago, not a
+        // home saved last year, so there is nothing here that has gone stale and nothing to
+        // second-guess: moving them to the nearest floor would be answering a different
+        // question. Staff who wanted the ground can read the coordinates off /getpos.
+        teleports.teleport(traveller, destination, rules(), name(), TeleportService.Landing.EXACT, () ->
                 messages.send(sender, "staff.tppos-done",
                         "player", traveller.getName(),
                         "x", String.valueOf(destination.getBlockX()),
@@ -79,14 +75,6 @@ public final class TpPosCommand extends ChorusCommand {
         }
         messages.send(sender, "error.players-only");
         return null;
-    }
-
-    private static @Nullable Double parse(String raw) {
-        try {
-            return Double.parseDouble(raw.replace(',', '.'));
-        } catch (NumberFormatException notANumber) {
-            return null;
-        }
     }
 
     @Override

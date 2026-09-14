@@ -416,15 +416,15 @@ chat:
   rtoggle-recipient: '%prefix%<gray>/reply ahora le responde a quien le escribiste último.'
 
 staff:
-  tp-usage: '%prefix%<gray>Uso: <white>/tp [jugador] [destino]</white>'
+  tp-usage: '%prefix%<gray>Uso: <white>/tp [jugador] [destino]</white><dark_gray>, <gray>o coordenadas: <white>/tp [x] [y] [z]</white><newline>%prefix%<dark_gray>▪ <gray>Escribe <white>~</white> para donde estás, <white>~10</white> para diez bloques desde ahí.'
   tp-self: '%prefix%<red>Eso no movería a nadie.'
   tp-done: '%prefix%<gray>Mandaste a <white>%player%</white> con <white>%target%</white>.'
   tp-moved: '%prefix%<gray>Te movieron con <white>%target%</white>.'
   tphere-usage: '%prefix%<gray>Uso: <white>/tphere [jugador]</white>'
   tphere-done: '%prefix%<gray>Trajiste a <white>%player%</white> contigo.'
-  tppos-usage: '%prefix%<gray>Uso: <white>/tppos [x] [y] [z] [mundo] [jugador]</white>'
+  tppos-usage: '%prefix%<gray>Uso: <white>/tppos [x] [y] [z] [mundo] [jugador]</white><newline>%prefix%<dark_gray>▪ <gray>Escribe <white>~</white> para donde estás, <white>~10</white> para diez bloques desde ahí.'
   tppos-world: '%prefix%<red>No existe ningún mundo llamado <white>%world%</white>.'
-  tppos-numbers: '%prefix%<red>Las coordenadas tienen que ser números.'
+  tppos-numbers: '%prefix%<red>Las coordenadas tienen que ser números, o <white>~</white>.'
   tppos-done: '%prefix%<gray>Mandaste a <white>%player%</white> a <white>%x%, %y%, %z%</white> en <white>%world%</white>.'
   tpall-nobody: '%prefix%<red>No hay nadie más conectado.'
   tpall-done: '%prefix%<gray>Trajiste a <white>%count%</white> jugadores contigo.'

@@ -2,11 +2,14 @@ package dev.chorus.core.staff.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.teleport.Coordinates;
 import dev.chorus.core.teleport.TeleportService;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -22,6 +25,16 @@ public final class TeleportToCommand extends ChorusCommand {
 
     @Override
     protected void run(CommandSender sender, String[] args) {
+        // Three numbers are coordinates, which is what the vanilla command does with them
+        // and what anybody typing /tp 100 64 -200 is expecting.
+        if (Coordinates.areNumbers(args, 0)) {
+            toCoordinates(sender, args, 0, self(sender));
+            return;
+        }
+        if (args.length == 4 && Coordinates.areNumbers(args, 1)) {
+            toCoordinates(sender, args, 1, online(sender, args[0]));
+            return;
+        }
         if (args.length == 0 || args.length > 2) {
             messages.send(sender, "staff.tp-usage");
             return;
@@ -59,6 +72,40 @@ public final class TeleportToCommand extends ChorusCommand {
                 messages.send(traveller, "staff.tp-moved", "target", destination.getName());
             }
         });
+    }
+
+    /** {@code /tp <x> <y> <z>}, and {@code /tp <player> <x> <y> <z>} for somebody else. */
+    private void toCoordinates(CommandSender sender, String[] args, int from,
+                               @Nullable Player traveller) {
+        if (traveller == null) {
+            return;
+        }
+        Location destination =
+                Coordinates.read(args, from, traveller.getWorld(), traveller.getLocation());
+        if (destination == null) {
+            messages.send(sender, "staff.tppos-numbers");
+            return;
+        }
+        if (!ready(sender)) {
+            return;
+        }
+
+        settle(sender);
+        teleports.teleport(traveller, destination, rules(), name(),
+                TeleportService.Landing.EXACT, () -> messages.send(sender, "staff.tppos-done",
+                        "player", traveller.getName(),
+                        "x", String.valueOf(destination.getBlockX()),
+                        "y", String.valueOf(destination.getBlockY()),
+                        "z", String.valueOf(destination.getBlockZ()),
+                        "world", destination.getWorld().getName()));
+    }
+
+    private @Nullable Player self(CommandSender sender) {
+        if (sender instanceof Player player) {
+            return player;
+        }
+        messages.send(sender, "error.players-only");
+        return null;
     }
 
     @Override

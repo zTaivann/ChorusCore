@@ -45,20 +45,24 @@ public final class SafeLanding {
     /**
      * The given spot if it will do, otherwise the closest one above or below it within
      * {@code radius} blocks, otherwise null.
+     *
+     * @param needsFloor false for a player who can fly, who only needs the room and not the
+     *                   ground under it. Asking a flying player for a floor turns a warp over
+     *                   a canyon into a refusal for no reason.
      */
-    public static @Nullable Location nearest(Location wanted, int radius) {
-        if (standable(wanted)) {
+    public static @Nullable Location nearest(Location wanted, int radius, boolean needsFloor) {
+        if (standable(wanted, needsFloor)) {
             return wanted;
         }
 
         // Upwards first: being buried is the common case, and the surface is up.
         for (int offset = 1; offset <= radius; offset++) {
             Location above = shifted(wanted, offset);
-            if (above != null && standable(above)) {
+            if (above != null && standable(above, needsFloor)) {
                 return above;
             }
             Location below = shifted(wanted, -offset);
-            if (below != null && standable(below)) {
+            if (below != null && standable(below, needsFloor)) {
                 return below;
             }
         }
@@ -81,14 +85,14 @@ public final class SafeLanding {
     }
 
     /** Room for the player, something holding them up, and nothing that hurts. */
-    private static boolean standable(Location at) {
+    private static boolean standable(Location at, boolean needsFloor) {
         World world = at.getWorld();
         if (at.getY() - 1 < world.getMinHeight() || at.getY() + HEIGHT >= world.getMaxHeight()) {
             return false;
         }
 
         BoundingBox body = bodyAt(at);
-        return clear(world, body) && supported(world, at);
+        return clear(world, body) && (!needsFloor || supported(world, at));
     }
 
     private static BoundingBox bodyAt(Location at) {

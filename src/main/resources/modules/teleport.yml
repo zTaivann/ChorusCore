@@ -81,6 +81,16 @@ teleport:
   # Refuse to drop a player inside a wall, over a void or into lava, looking for
   # somewhere to stand within this many blocks above or below instead. Turn it
   # off if your warps are deliberately in mid-air. Maximum radius 16.
+  #
+  # How much of it applies depends on what the player could survive anyway:
+  #   creative and spectator   nothing is checked. There is no fall to take and no
+  #                            wall to suffocate in
+  #   flying in survival       the room is checked, the ground is not
+  #   everybody else           both
+  #
+  # Coordinates somebody types by hand are never moved either. /tp and /tppos go
+  # exactly where they were told; this is for places that were saved once and may
+  # not be what they were.
   safe-landing: true
   safe-landing-radius: 5
 

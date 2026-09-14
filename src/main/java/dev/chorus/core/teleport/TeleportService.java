@@ -8,6 +8,7 @@ import dev.chorus.core.feedback.CommandFeedback;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.platform.ChorusTask;
 import dev.chorus.core.platform.Schedulers;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -67,6 +68,22 @@ public final class TeleportService implements TeleportApi, Listener {
         trimHistories();
     }
 
+    /** Whether a destination may be nudged to somewhere the player can stand. */
+    public enum Landing {
+
+        /**
+         * Look for a floor nearby. For a place that was saved once and may not be what it
+         * was: a home, a warp, a spawn, a death point.
+         */
+        SAFE,
+
+        /**
+         * Exactly where asked, whatever is there. For coordinates somebody typed a second
+         * ago, where moving them would be answering a question they did not ask.
+         */
+        EXACT
+    }
+
     public void teleport(Player player, Location destination, CommandRules rules, String cause) {
         teleport(player, destination, rules, cause, () -> {
         });
@@ -74,6 +91,11 @@ public final class TeleportService implements TeleportApi, Listener {
 
     public void teleport(Player player, Location destination, CommandRules rules, String cause,
                          Runnable arrived) {
+        teleport(player, destination, rules, cause, Landing.SAFE, arrived);
+    }
+
+    public void teleport(Player player, Location destination, CommandRules rules, String cause,
+                         Landing landing, Runnable arrived) {
         // Addons get their say before anything is charged or any wait begins.
         ChorusTeleportEvent event = new ChorusTeleportEvent(player, destination, cause);
         plugin.getServer().getPluginManager().callEvent(event);
@@ -86,7 +108,7 @@ public final class TeleportService implements TeleportApi, Listener {
 
         int warmup = player.hasPermission(INSTANT_PERMISSION) ? 0 : rules.warmupSeconds();
         if (warmup == 0) {
-            move(player, target, rules, arrived);
+            move(player, target, rules, landing, arrived);
             return;
         }
 
@@ -96,7 +118,7 @@ public final class TeleportService implements TeleportApi, Listener {
             if (finished != null) {
                 finished.cancelCountdown();
             }
-            move(player, target, rules, arrived);
+            move(player, target, rules, landing, arrived);
         }, warmup * TICKS_PER_SECOND);
 
         pending.put(player.getUniqueId(),
@@ -213,17 +235,30 @@ public final class TeleportService implements TeleportApi, Listener {
      * the one they are standing in. The chunk is fetched asynchronously: reading blocks in an
      * unloaded chunk from the server thread would stall every player to answer one.
      */
-    private void move(Player player, Location destination, CommandRules rules, Runnable arrived) {
-        if (!settings.safeLanding()) {
+    private void move(Player player, Location destination, CommandRules rules, Landing landing,
+                      Runnable arrived) {
+        // Creative and spectator are checked for nothing. There is no fall to take and no
+        // wall to suffocate in, so every reason for the check is already gone — and a world
+        // spawn buried in netherrack refusing to let an admin through is nobody's idea of a
+        // safety feature.
+        GameMode mode = player.getGameMode();
+        boolean unstoppable = mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR;
+
+        if (landing == Landing.EXACT || unstoppable || !settings.safeLanding()) {
             commit(player, destination, rules, arrived);
             return;
         }
+
+        // On /fly in survival there is still a wall to suffocate in, but no fall to take, so
+        // the room is checked and the ground is not.
+        boolean needsFloor = !player.getAllowFlight();
 
         destination.getWorld().getChunkAtAsync(destination).thenAcceptAsync(loaded -> {
             if (!player.isOnline()) {
                 return;
             }
-            Location safe = SafeLanding.nearest(destination, settings.safeLandingRadius());
+            Location safe = SafeLanding.nearest(
+                    destination, settings.safeLandingRadius(), needsFloor);
             if (safe == null) {
                 messages.send(player, "teleport.unsafe");
                 return;

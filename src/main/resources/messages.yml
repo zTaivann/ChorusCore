@@ -447,15 +447,15 @@ chat:
   rtoggle-recipient: '%prefix%<gray>/reply now answers whoever you last wrote to.'
 
 staff:
-  tp-usage: '%prefix%<gray>Usage: <white>/tp [player] [target]</white>'
+  tp-usage: '%prefix%<gray>Usage: <white>/tp [player] [target]</white><dark_gray>, <gray>or coordinates: <white>/tp [x] [y] [z]</white><newline>%prefix%<dark_gray>▪ <gray>Write <white>~</white> for where you are, <white>~10</white> for ten blocks from it.'
   tp-self: '%prefix%<red>That would not move anybody.'
   tp-done: '%prefix%<gray>Sent <white>%player%</white> to <white>%target%</white>.'
   tp-moved: '%prefix%<gray>You were moved to <white>%target%</white>.'
   tphere-usage: '%prefix%<gray>Usage: <white>/tphere [player]</white>'
   tphere-done: '%prefix%<gray>Brought <white>%player%</white> to you.'
-  tppos-usage: '%prefix%<gray>Usage: <white>/tppos [x] [y] [z] [world] [player]</white>'
+  tppos-usage: '%prefix%<gray>Usage: <white>/tppos [x] [y] [z] [world] [player]</white><newline>%prefix%<dark_gray>▪ <gray>Write <white>~</white> for where you are, <white>~10</white> for ten blocks from it.'
   tppos-world: '%prefix%<red>There is no world called <white>%world%</white>.'
-  tppos-numbers: '%prefix%<red>The coordinates have to be numbers.'
+  tppos-numbers: '%prefix%<red>The coordinates have to be numbers, or <white>~</white>.'
   tppos-done: '%prefix%<gray>Sent <white>%player%</white> to <white>%x%, %y%, %z%</white> in <white>%world%</white>.'
   tpall-nobody: '%prefix%<red>There is nobody else online.'
   tpall-done: '%prefix%<gray>Brought <white>%count%</white> players to you.'

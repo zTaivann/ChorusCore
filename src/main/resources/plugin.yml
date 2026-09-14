@@ -250,8 +250,8 @@ commands:
     usage: /ecsee [player]
 
   tp:
-    description: Teleport to a player, or move one to another.
-    usage: /tp [player] [target]
+    description: Teleport to a player or to coordinates.
+    usage: /tp [player] [target|x y z]
   tphere:
     description: Bring a player to you.
     usage: /tphere [player]
