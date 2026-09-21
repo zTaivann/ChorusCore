@@ -16,13 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /potion <effect> [level] [seconds]}: writes effects onto the potion in your hand.
- *
- * <p>Works on any of the three kinds — drinkable, splash and lingering — since they all carry
- * the same meta. Levels beyond what the game brews need the unsafe permission, the same way
- * {@code /enchant} works.
- */
+/** {@code /potion <effect> [level] [seconds]}: writes effects onto the potion in your hand. */
 public final class PotionCommand extends HeldItemCommand {
 
     private static final String UNSAFE_PERMISSION = "chorus.items.potion.unsafe";
@@ -128,12 +122,7 @@ public final class PotionCommand extends HeldItemCommand {
                 || material == Material.TIPPED_ARROW;
     }
 
-    /**
-     * The effects the server actually has.
-     *
-     * <p>Looked up by name rather than against a list written here, because Mojang has
-     * renamed several of these and a jar that runs on every version cannot hold one list.
-     */
+    /** The effects the server actually has. */
     private static @Nullable PotionEffectType effect(String raw) {
         String wanted = raw.toUpperCase(Locale.ROOT).replace(' ', '_');
         for (PotionEffectType type : PotionEffectType.values()) {

@@ -53,6 +53,12 @@
 #   particle.height   how tall the burst is, in blocks.
 #   particle.speed    how fast they drift. Keep it small.
 #
+#   messages          lines this command says instead of the ones in the messages
+#                     folder, by the same keys. A blank one silences that line:
+#
+#                       messages:
+#                         error.no-permission: '<red>Buy VIP to use this.'
+#
 # Teleport commands show their particles twice: once where the player left from
 # and once where they arrive.
 
@@ -71,7 +77,7 @@ chat:
 # is told how much is waiting the next time they log in.
 mail:
   # Letters older than this are dropped when the server starts. 0 keeps them
-  # for ever, which on a busy server means a table that only ever grows.
+  # for ever.
   keep-days: 60
 
   # The most letters one player may have waiting. A sender is told when the

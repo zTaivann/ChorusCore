@@ -14,27 +14,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Deletes everything belonging to players who have not been seen for a long time.
- *
- * <p>A core plugin keeps a row for every player who ever joined, and on a server that has
- * been up for years most of those rows belong to somebody who logged in once. Nothing else
- * removes them.
- *
- * <p>Three rules keep it safe to run on a live server:
- *
- * <ul>
- *   <li>It can be asked what it would do without doing it, which is the version worth
- *       running first.</li>
- *   <li>Anybody who owns a chest shop is left alone in full. Deleting their row would leave
- *       a chest and a sign standing in the world with nothing behind them.</li>
- *   <li>The whole run is one transaction, so a failure halfway leaves the database exactly
- *       as it was rather than with half a player deleted.</li>
- * </ul>
- *
- * <p>The staff log is deliberately not touched. It is a record of what staff did, not data
- * belonging to the player it was done to.
- */
+/** Deletes everything belonging to players who have not been seen for a long time. */
 public final class PlayerPurge {
 
     /** How many players go into one statement. Long enough to be quick, short of any limit. */
@@ -44,12 +24,7 @@ public final class PlayerPurge {
             "SELECT player FROM chorus_players WHERE last_seen > 0 AND last_seen < ?";
     private static final String SHOP_OWNERS = "SELECT DISTINCT owner FROM chorus_chest_shops";
 
-    /**
-     * A table and the columns in it that hold a player.
-     *
-     * <p>chorus_players is last: if the run fails after some of the others, the profile is
-     * still there and the same player is found again next time.
-     */
+    /** A table and the columns in it that hold a player. */
     private record Target(String table, List<String> columns) {
     }
 
@@ -154,12 +129,7 @@ public final class PlayerPurge {
         return rows;
     }
 
-    /**
-     * Runs one statement over every player in chunks.
-     *
-     * <p>The table and column names come from the list above and never from anything typed,
-     * so the only thing that reaches the database as a value is the player id, bound.
-     */
+    /** Runs one statement over every player in chunks. */
     private int apply(Connection connection, String head, Target target, List<String> players)
             throws SQLException {
         int total = 0;
@@ -230,12 +200,7 @@ public final class PlayerPurge {
         }
     }
 
-    /**
-     * The tables that are actually there.
-     *
-     * <p>A module that has never been switched on has never made its table, and asking the
-     * database about one that does not exist is an error rather than an empty answer.
-     */
+    /** The tables that are actually there. */
     private static Set<String> existingTables(Connection connection) throws SQLException {
         Set<String> found = new HashSet<>();
         DatabaseMetaData metadata = connection.getMetaData();

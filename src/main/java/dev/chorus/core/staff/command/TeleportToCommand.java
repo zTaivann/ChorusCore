@@ -25,8 +25,7 @@ public final class TeleportToCommand extends ChorusCommand {
 
     @Override
     protected void run(CommandSender sender, String[] args) {
-        // Three numbers are coordinates, which is what the vanilla command does with them
-        // and what anybody typing /tp 100 64 -200 is expecting.
+        // Three numbers are coordinates, as they are for the vanilla command.
         if (Coordinates.areNumbers(args, 0)) {
             toCoordinates(sender, args, 0, self(sender));
             return;

@@ -13,12 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /powertool <command>}: ties a command to the item in your hand.
- *
- * <p>{@code %player%} in the command becomes whoever you right-click, which is what makes a
- * stick that teleports you to somebody worth having.
- */
+/** {@code /powertool <command>}: ties a command to the item in your hand. */
 public final class PowertoolCommand extends PlayerCommand {
 
     private static final List<String> ACTIONS = List.of("add", "list", "clear");

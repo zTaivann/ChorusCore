@@ -31,8 +31,7 @@ public final class StackCommand extends PlayerCommand {
 
             for (int target = 0; target < source && loose.getAmount() > 0; target++) {
                 ItemStack pile = slots[target];
-                // isSimilar covers the name, the lore, the enchantments and the damage, so a
-                // renamed sword never disappears into an ordinary one.
+                // isSimilar covers the name, lore, enchantments and damage.
                 if (pile == null || !pile.isSimilar(loose)) {
                     continue;
                 }

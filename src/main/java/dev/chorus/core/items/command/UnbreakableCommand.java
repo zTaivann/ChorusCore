@@ -23,8 +23,6 @@ public final class UnbreakableCommand extends HeldItemCommand {
             messages.send(player, "items.not-editable");
             return;
         }
-        // Something with no durability to lose cannot be made unbreakable, and saying so is
-        // friendlier than setting a flag the game will ignore.
         if (item.getType().getMaxDurability() <= 0) {
             messages.send(player, "items.unbreakable-not-a-tool");
             return;

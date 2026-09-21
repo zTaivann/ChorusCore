@@ -45,8 +45,6 @@ public final class StaffLogCommand extends ChorusCommand {
         long now = System.currentTimeMillis();
         messages.send(sender, "staff.log-header", "count", String.valueOf(entries.size()));
         for (AuditEntry entry : entries) {
-            // Three shapes rather than one with blanks in it: an entry with nobody on the
-            // other end reads badly when the template still has an arrow in it.
             String ago = Durations.format(Math.max(0, now - entry.at()));
             if (entry.subject() == null) {
                 messages.send(sender, "staff.log-entry-plain",

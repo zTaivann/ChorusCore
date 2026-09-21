@@ -14,12 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /setworth [item] <price>}: writes a price into shops.yml from in game.
- *
- * <p>A price of zero takes the item off the list, which is how something stops being
- * sellable without editing the file by hand.
- */
+/** {@code /setworth [item] <price>}: writes a price into shops.yml from in game. */
 public final class SetWorthCommand extends ChorusCommand {
 
     private final WorthTable worth;

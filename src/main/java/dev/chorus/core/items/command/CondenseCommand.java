@@ -10,12 +10,7 @@ import org.bukkit.inventory.PlayerInventory;
 
 import java.util.Map;
 
-/**
- * Packs loose materials into their block form.
- *
- * <p>Only untouched stacks are taken: anything with a name, enchantment or damage on it is
- * left alone, so nobody ever loses a renamed item to a mistyped command.
- */
+/** Packs loose materials into their block form. */
 public final class CondenseCommand extends PlayerCommand {
 
     private final ItemService items;

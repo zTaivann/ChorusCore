@@ -12,14 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Writes kit changes back into kits.yml.
- *
- * <p>Every change saves the file and then asks the module to read it again, so what a kit
- * does in game and what the file says are never two different things. Kits are edited a
- * handful of times in a server's life, so paying for a reload each time is nothing next to
- * the confusion of the two drifting apart.
- */
+/** Writes kit changes back into kits.yml. */
 public final class KitEditor {
 
     private static final String ROOT = "kits.definitions.";
@@ -76,23 +69,13 @@ public final class KitEditor {
         return commit() ? new Result(true, written.size(), simplified) : Result.failed();
     }
 
-    /**
-     * The icon as a whole item, written in the same form the contents take.
-     *
-     * <p>A kit shown as a named, enchanted sword reads better than one shown as a plain
-     * one, and there was no reason for the icon to understand less than the items do.
-     */
+    /** The icon as a whole item, written in the same form the contents take. */
     public boolean setIcon(String name, ItemStack item) {
         config.data().set(ROOT + name + ".icon", KitWriter.describe(item));
         return commit();
     }
 
-    /**
-     * The three lists a kit keeps beyond its items, by the name the file gives them.
-     *
-     * <p>All three hold one line each of {@code type: value}, so one set of operations
-     * serves them and the screen that edits them does not have to care which it is on.
-     */
+    /** The three lists a kit keeps beyond its items, by the name the file gives them. */
     public enum RuleList {
 
         CLAIM_ACTIONS("claim-actions"),
@@ -123,18 +106,9 @@ public final class KitEditor {
         }
     }
 
-    /**
-     * What a list holds, unparsed.
-     *
-     * <p>Read from the file rather than from the loaded kit on purpose. A line this plugin
-     * does not understand is dropped on load, and editing a list by position in a version of
-     * it that has already lost a line is how a typo somewhere above quietly deletes the line
-     * below. Here the positions are the file's own.
-     */
+    /** What a list holds, unparsed. */
     public List<Rule> rules(String name, RuleList list) {
-        // Asked for without a default, so this is the file's own answer. The copy bundled in
-        // the jar backs this config, and reading through it would hand back the lines that
-        // ship with the example kits as though the server had written them.
+        // Asked for without a default, so the copy in the jar cannot answer for the file.
         return read(config.data().get(ROOT + name + "." + list.path(), null));
     }
 
@@ -186,17 +160,7 @@ public final class KitEditor {
         return write(name, list, rules);
     }
 
-    /**
-     * Back into the file in the plainest shape that still says everything.
-     *
-     * <p>A requirement with nothing to say when it refuses is written as the bare line it
-     * was, not as a block with an empty half. Somebody opening the file afterwards should
-     * not be able to tell which lines were typed and which were clicked.
-     *
-     * <p>An emptied list is written as an empty list rather than taken out. Taking it out
-     * would leave the bundled copy of the file showing through, and the last line somebody
-     * removed from one of the example kits would be back by the next reload.
-     */
+    /** Back into the file in the plainest shape that still says everything. */
     private boolean write(String name, RuleList list, List<Rule> rules) {
         config.data().set(ROOT + name + "." + list.path(), describe(rules));
         return commit();
@@ -254,13 +218,7 @@ public final class KitEditor {
         return true;
     }
 
-    /**
-     * The name with a capital on the front, for a heading.
-     *
-     * <p>A kit is keyed by its lower-case name and always will be, because that is what
-     * somebody types. A screen headed "starter" reads like a mistake, though, so the two
-     * part company at the point where the name is drawn rather than used.
-     */
+    /** The name with a capital on the front, for a heading. */
     public static String titled(String name) {
         return name.isEmpty()
                 ? name

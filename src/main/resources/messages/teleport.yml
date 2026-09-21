@@ -1,0 +1,64 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   T E L E P O R T                                                      │
+# │   /tpa  /tpahere  /tpaccept  /tpdeny  /back  /tptoggle                 │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Part of the messages folder. See core.yml.
+# A 'prefix' set here is what %prefix% means in this file.
+
+request:
+  usage: '%prefix%<gray>Usage: <white>/%command% [player]</white>'
+  self: '%prefix%<red>You cannot send a request to yourself.'
+  duplicate: '%prefix%<red>You already have a request waiting for <white>%player%</white>.'
+  sent: '%prefix%<gray>Request sent to <white>%player%</white>. It expires in %seconds% seconds.'
+  received: '%prefix%<white>%player%</white><gray> wants to teleport to you.'
+  received-here: '%prefix%<white>%player%</white><gray> wants you to teleport to them.'
+  button-accept: '<green><bold>[ ACCEPT ]</bold></green>'
+  button-deny: '<red><bold>[ DENY ]</bold></red>'
+  button-separator: '<gray> or </gray>'
+  button-accept-hover: '<gray>Let <white>%player%</white> through'
+  button-deny-hover: '<gray>Turn <white>%player%</white> down'
+  accepted: '%prefix%<gray>You accepted the request from <white>%player%</white>.'
+  accepted-by: '%prefix%<white>%player%</white><gray> accepted your request.'
+  denied: '%prefix%<gray>You rejected the request from <white>%player%</white>.'
+  denied-by: '%prefix%<white>%player%</white><gray> rejected your request.'
+  cancelled: '%prefix%<gray>Your request to <white>%player%</white> was cancelled.'
+  cancelled-by: '%prefix%<white>%player%</white><gray> cancelled their request.'
+  expired: '%prefix%<gray>Your request to <white>%player%</white> expired.'
+  none: '%prefix%<red>You have no pending requests.'
+  none-sent: '%prefix%<red>You have not sent any requests.'
+  none-from: '%prefix%<red>You have no pending request from <white>%player%</white>.'
+  none-to: '%prefix%<red>You have no pending request to <white>%player%</white>.'
+  toggle-off: '%prefix%<gray>Teleport requests are now <red>blocked</red>.'
+  toggle-on: '%prefix%<gray>Teleport requests are <green>accepted</green> again.'
+  blocked: '%prefix%<red>%player% is not accepting teleport requests.'
+
+  auto-on: '%prefix%<green>Teleport requests will be accepted on their own.'
+  auto-off: '%prefix%<gray>Teleport requests will be asked about again.'
+  auto-accepted: '%prefix%<gray>%player% accepts every request. Teleporting now.'
+  auto-accepted-by: '%prefix%<gray>%player% is on their way, accepted automatically.'
+  offline-usage: '%prefix%<gray>Use <white>/tpoffline [player]</white>.'
+  offline-went: '%prefix%<gray>Taken to where <white>%player%</white> logged out <white>%ago%</white> ago.'
+  offline-here: '%prefix%<gray>%player% is online, so this is simply where they are.'
+  offline-nowhere: '%prefix%<gray>Nothing was written down for <white>%player%</white>.'
+
+  all-sent: '%prefix%<gray>Asked <white>%count%</white> players; <white>%came%</white> came straight away. They have <white>%seconds%s</white>.'
+  all-nobody: '%prefix%<gray>Nobody to ask.'
+
+
+back:
+  teleported: '%prefix%<gray>Returned to where you were.'
+  none: '%prefix%<red>There is nowhere to go back to.'
+  world-missing: '%prefix%<red>That world is not loaded any more.'
+  out-of-range: '%prefix%<red>You can only go <white>%depth%</white> steps back.'
+
+
+teleport:
+  warmup: '%prefix%<gray>Do not move for <white>%seconds%</white> seconds.'
+  cancelled-move: '%prefix%<red>Teleport cancelled: you moved.'
+  cancelled-damage: '%prefix%<red>Teleport cancelled: you took damage.'
+  failed: '%prefix%<red>The teleport could not be completed.'
+  warmup-countdown: '<gray>Teleporting in <white><bold>%seconds%</bold></white>'
+  unsafe: '%prefix%<red>There is nowhere safe to land there.'

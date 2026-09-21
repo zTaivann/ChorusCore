@@ -17,13 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * {@code /seen <player>}: when somebody was last here, and who else uses their connection.
- *
- * <p>The address and the accounts sharing it are only shown to whoever holds the extra
- * permission for them. That half is the useful half when somebody comes back on a second
- * account, and it is nobody else's business.
- */
+/** {@code /seen <player>}: when somebody was last here, and who else uses their connection. */
 public final class SeenCommand extends ChorusCommand {
 
     private static final String ADDRESS_PERMISSION = "chorus.players.seen.address";

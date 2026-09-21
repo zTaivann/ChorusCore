@@ -13,17 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-/**
- * The one thing no compiler can check for us.
- *
- * <p>The Folia bridge reaches its schedulers by reflection, because the classes are not in
- * the 1.18.2 API the jar is built against. That means a wrong method name or one argument too
- * many is invisible until a server starts — and on Folia the failure does not even land near
- * the mistake, since there is no working scheduler to fall back to.
- *
- * <p>So every signature is resolved here against the newest Paper API, which ships those
- * classes. A signature that no longer exists fails the build.
- */
+/** The one thing no compiler can check for us. */
 class FoliaCallTest {
 
     /** Handed over by the build, since this API cannot go on the test classpath. */

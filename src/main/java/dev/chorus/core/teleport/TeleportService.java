@@ -30,13 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
-/**
- * Delayed teleports shared by every module that moves a player around.
- *
- * <p>A pending teleport is dropped as soon as the player leaves the block they stood on or
- * takes damage, which is what keeps /home and /spawn from being a combat escape. The
- * service also remembers where each player came from, which is all /back needs.
- */
+/** Delayed teleports shared by every module that moves a player around. */
 public final class TeleportService implements TeleportApi, Listener {
 
     private static final String INSTANT_PERMISSION = "chorus.teleport.instant";
@@ -133,7 +127,7 @@ public final class TeleportService implements TeleportApi, Listener {
     public void teleport(Player player, Location destination, int warmupSeconds) {
         teleport(player, destination,
                 new CommandRules(true, Math.max(0, warmupSeconds), 0, 0,
-                        WorldRule.EVERYWHERE, CommandFeedback.NONE), "api");
+                        WorldRule.EVERYWHERE, CommandFeedback.NONE, Map.of()), "api");
     }
 
     /** Where the player was standing before their last teleport, or before they died. */
@@ -237,10 +231,7 @@ public final class TeleportService implements TeleportApi, Listener {
      */
     private void move(Player player, Location destination, CommandRules rules, Landing landing,
                       Runnable arrived) {
-        // Creative and spectator are checked for nothing. There is no fall to take and no
-        // wall to suffocate in, so every reason for the check is already gone — and a world
-        // spawn buried in netherrack refusing to let an admin through is nobody's idea of a
-        // safety feature.
+        // Creative and spectator: no fall to take and no wall to suffocate in.
         GameMode mode = player.getGameMode();
         boolean unstoppable = mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR;
 
@@ -249,8 +240,7 @@ public final class TeleportService implements TeleportApi, Listener {
             return;
         }
 
-        // On /fly in survival there is still a wall to suffocate in, but no fall to take, so
-        // the room is checked and the ground is not.
+        // Flying in survival: the room is checked, the ground is not.
         boolean needsFloor = !player.getAllowFlight();
 
         destination.getWorld().getChunkAtAsync(destination).thenAcceptAsync(loaded -> {
@@ -272,8 +262,7 @@ public final class TeleportService implements TeleportApi, Listener {
         if (settings.rememberPreviousLocation()) {
             remember(player.getUniqueId(), origin);
         }
-        // The puff they leave behind. The arrival effect rides along with the command's
-        // own feedback, which fires from the callback below once the move succeeded.
+        // The puff they leave behind. Arrival rides with the command's own feedback.
         rules.feedback().showAt(origin);
 
         player.teleportAsync(destination).thenAcceptAsync(moved -> {
@@ -286,13 +275,7 @@ public final class TeleportService implements TeleportApi, Listener {
         }, mainThread);
     }
 
-    /**
-     * A few seconds of not being hittable on arrival.
-     *
-     * <p>Landing in the middle of whatever is already there is what makes a warp into a PvP
-     * world a coin toss. The protection ends the moment they attack somebody, so it cannot
-     * be used to open a fight.
-     */
+    /** A few seconds of not being hittable on arrival. */
     private void protect(Player player) {
         int seconds = settings.invulnerableSeconds();
         if (seconds <= 0) {
@@ -356,8 +339,7 @@ public final class TeleportService implements TeleportApi, Listener {
         if (!settings.warmupCountdown()) {
             return null;
         }
-        // Counted from a deadline rather than a tally, so a lagging server shows the time
-        // that is actually left instead of drifting away from it.
+        // Counted from a deadline, so a lagging server does not drift.
         long deadline = System.currentTimeMillis() + warmup * 1000L;
         return schedulers.entityTimer(player, () -> {
             long remaining = (deadline - System.currentTimeMillis() + 999) / 1000;

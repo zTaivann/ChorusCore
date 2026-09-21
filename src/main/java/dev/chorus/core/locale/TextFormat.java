@@ -8,30 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-/**
- * Reads both ways of writing coloured text, so nobody has to learn a new one.
- *
- * <p>MiniMessage is what the plugin ships with, and {@code &}-codes are what a decade of
- * Minecraft servers are written in. Either works, and both work in the same line:
- *
- * <pre>
- *   &amp;c&amp;lRed Bold
- *   &lt;red&gt;&lt;bold&gt;Red Bold
- *   &amp;6Gold and &lt;gradient:#1f8f8c:#3fb8b4&gt;a gradient
- * </pre>
- *
- * <p>The old codes are turned into tags and then handed to MiniMessage, which is what lets
- * the two mix. A colour code emits a {@code <reset>} before its colour, because that is what
- * the game does: in vanilla, {@code &l&cText} is red and <em>not</em> bold, the colour having
- * cleared the bold. Emitting the colour alone would quietly change what an existing config
- * looks like.
- *
- * <p>A doubled marker writes the marker itself: {@code &&c} is the two characters {@code &c},
- * which is how a line talks about a colour code without becoming one.
- *
- * <p>Nothing here is applied to a value that came from a player. A name with {@code &c} in it
- * stays four characters of text, exactly as it does with MiniMessage tags.
- */
+/** Reads both ways of writing coloured text, so nobody has to learn a new one. */
 public final class TextFormat {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
@@ -67,12 +44,7 @@ public final class TextFormat {
         return false;
     }
 
-    /**
-     * The same text with every old-style code rewritten as a tag.
-     *
-     * <p>Returns the string untouched when there is nothing to rewrite, which is most lines
-     * and every line this plugin ships with.
-     */
+    /** The same text with every old-style code rewritten as a tag. */
     public static String toTags(String raw) {
         if (!hasLegacy(raw)) {
             return raw;
@@ -87,8 +59,7 @@ public final class TextFormat {
             }
 
             if (raw.charAt(at + 1) == current) {
-                // Doubled, which is how the marker itself is written: "&&c" is the two
-                // characters "&c" and not a red anything.
+                // Doubled: "&&c" is the two characters "&c".
                 out.append(current);
                 at++;
                 continue;
@@ -124,26 +95,12 @@ public final class TextFormat {
         return MINI_MESSAGE.deserialize(toTags(raw));
     }
 
-    /**
-     * The same for something written on an item.
-     *
-     * <p>Item names and lore are drawn in italics unless told otherwise, which nobody ever
-     * wants and which is not something the text asked for. Turning it off on the parent still
-     * lets {@code <i>} or {@code &o} inside the text win, because a style set on a child
-     * beats the one it inherits.
-     */
+    /** The same for something written on an item. */
     public static Component forItem(String raw) {
         return upright(parse(raw));
     }
 
-    /**
-     * A line of lore, which needs one thing more.
-     *
-     * <p>The game draws a line of lore in purple when nothing says otherwise. Almost nobody
-     * writing {@code lore: Welcome to the server} means purple, and nothing in the line said
-     * so, so the fallback is grey: the colour everything else on an item is written in.
-     * A line that does name a colour still gets it, for the same reason the italics work.
-     */
+    /** A line of lore, which needs one thing more. */
     public static Component forLore(String raw) {
         return asLore(parse(raw));
     }
@@ -161,15 +118,7 @@ public final class TextFormat {
         return upright.color() == null ? upright.color(NamedTextColor.GRAY) : upright;
     }
 
-    /**
-     * The reverse, for writing an item somebody built in game back into the config.
-     *
-     * <p>What {@link #forItem} and {@link #forLore} put on the outside comes back off here:
-     * the italic-off and the grey. Both belong to how the game draws an item rather than to
-     * what the line says, and writing them down would put a second pair on the next time the
-     * text came through, and a third the time after that, until the file was more instruction
-     * than text.
-     */
+    /** The reverse, for writing an item somebody built in game back into the config. */
     public static String toText(@Nullable Component text) {
         if (text == null) {
             return "";

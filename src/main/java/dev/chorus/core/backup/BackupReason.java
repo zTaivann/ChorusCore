@@ -5,9 +5,6 @@ import java.util.Locale;
 /**
  * Why a copy was taken, which decides both what it is called on screen and whether it is
  * taken at all.
- *
- * <p>The stored name is written down here rather than taken from the constant, so renaming
- * one in Java never makes the copies already saved unreadable.
  */
 public enum BackupReason {
 

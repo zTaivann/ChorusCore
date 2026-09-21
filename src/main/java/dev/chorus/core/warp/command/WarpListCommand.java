@@ -107,12 +107,7 @@ public final class WarpListCommand extends ChorusCommand {
         }
     }
 
-    /**
-     * The grid, or a screen of sections when the warps are grouped into any.
-     *
-     * <p>Twenty warps on one page is a wall of icons. A server that has already sorted them
-     * into Towns, Shops and Events has said how it wants them shown.
-     */
+    /** The grid, or a screen of sections when the warps are grouped into any. */
     private void openMenu(Player player, List<NamedLocation> visible) {
         Map<String, List<NamedLocation>> sections = group(visible);
         if (sections.size() < 2) {

@@ -23,8 +23,7 @@ public final class SuicideCommand extends PlayerCommand {
         settle(player);
         messages.send(player, "utility.suicide");
 
-        // Killing outright rather than dealing damage, so god mode is no protection: a
-        // player asking to die should die.
+        // Killed outright rather than damaged, so god mode is no protection.
         player.setHealth(0.0);
     }
 }

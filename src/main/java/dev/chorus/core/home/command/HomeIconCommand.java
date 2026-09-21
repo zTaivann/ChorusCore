@@ -18,12 +18,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * {@code /homeicon <home> [item]}: what one home looks like in the menu.
- *
- * <p>With no item the icon goes back to the one from the config, which is also what happens
- * to an icon naming a block this version of the game does not have.
- */
+/** {@code /homeicon <home> [item]}: what one home looks like in the menu. */
 public final class HomeIconCommand extends PlayerCommand {
 
     private final HomeService homes;

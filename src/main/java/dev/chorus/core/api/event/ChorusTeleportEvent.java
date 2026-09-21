@@ -7,13 +7,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Fired before any teleport this plugin performs, warmup included.
- *
- * <p>Cancelling it stops the teleport before the player is charged or a wait begins. The
- * cause is the command that asked for it, so an addon can refuse /home inside its own region
- * while still allowing /spawn.
- */
+/** Fired before any teleport this plugin performs, warmup included. */
 public final class ChorusTeleportEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();

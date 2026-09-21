@@ -67,21 +67,21 @@ class TranslationsTest {
     @Test
     void thePrefixIsPutIntoATranslatedLine() throws InvalidConfigurationException {
         Translations english = english("home.created: 'Home saved.'");
-        Translations spanish = new Translations(english);
+        Translations spanish = new Translations(english, Palette.EMPTY);
         spanish.read(yaml("home.created: '%prefix%Casa guardada.'"), "Chorus | ");
 
         assertEquals("Chorus | Casa guardada.", drawn(spanish, "home.created"));
     }
 
     private static Translations english(String lines) throws InvalidConfigurationException {
-        Translations english = new Translations(null);
+        Translations english = new Translations(null, Palette.EMPTY);
         english.read(yaml(lines), "");
         return english;
     }
 
     private static Translations translation(Translations fallback, String lines)
             throws InvalidConfigurationException {
-        Translations language = new Translations(fallback);
+        Translations language = new Translations(fallback, Palette.EMPTY);
         language.read(yaml(lines), "");
         return language;
     }

@@ -7,13 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-/**
- * Which block each button in the kit editor is made of.
- *
- * <p>Every one is configurable, and every one falls back to something that has existed since
- * long before the oldest version this jar runs on. A resource pack or a server with its own
- * look should not have to accept somebody else's taste in buttons.
- */
+/** Which block each button in the kit editor is made of. */
 public record KitMenuSettings(int itemRows, @Nullable Material filler, Material icon,
                               Material lore, Material items,
                               Material preview, Material cooldown, Material maxClaims,

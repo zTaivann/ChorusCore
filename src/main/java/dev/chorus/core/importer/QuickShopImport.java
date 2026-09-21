@@ -30,34 +30,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Reads a server's QuickShop-Hikari shops into Chorus.
- *
- * <p>Nobody moves four thousand player shops by hand, so a server that has them cannot change
- * chest shop plugins at all without this. The same three rules as the EssentialsX import make
- * it safe to try:
- *
- * <ol>
- *   <li><b>Nothing in the QuickShop folder is touched.</b> The connection is opened read
- *       only. Putting the old plugin back is always possible.</li>
- *   <li><b>A block Chorus already has a shop on is left exactly as it was</b>, and counted,
- *       unless overwriting is asked for.</li>
- *   <li><b>It can be run without doing anything.</b> The check pass reads every row and
- *       reports what a real run would write.</li>
- * </ol>
- *
- * <p>QuickShop has kept its shops in two shapes. The newer one spreads them over three
- * tables — where the shop is, which record it points at, and the record itself — and the
- * older one keeps everything in a single table. Both are simply tried, newest first, since a
- * server that upgraded years ago may still carry either and asking a driver which tables it
- * has is a question H2, MySQL and SQLite all answer differently.
- *
- * <p>The item has had two forms as well. Newer QuickShop writes the bytes Bukkit itself gives
- * for an item and encodes them in base64, which is the same form Chorus keeps its own
- * inventories in; older versions wrote a piece of YAML. Both are read, and a row whose item or
- * owner cannot be is counted and skipped: a shop that came across selling the wrong thing
- * would be worse than one that did not come across at all.
- */
+/** Reads a server's QuickShop-Hikari shops into Chorus. */
 public final class QuickShopImport {
 
     /** QuickShop writes 0 for a shop that sells to players and 1 for one that buys. */
@@ -137,9 +110,7 @@ public final class QuickShopImport {
                 return report;
             }
 
-            // Both shapes are tried rather than chosen, newest first. A server that upgraded
-            // years ago may still carry either, and the tables that are there do not always
-            // say which: the newer shape keeps a shops table of its own.
+            // Both shapes are tried, newest first. A server may still carry either.
             String modern = attempt(connection, modernQuery(prefix), "item", into);
             if (modern == null) {
                 return report;
@@ -272,9 +243,7 @@ public final class QuickShopImport {
             return null;
         }
 
-        // QuickShop has written this field as a bare id, as a prefixed one and as a small
-        // piece of JSON over the years. Rather than knowing which, the id is picked out of
-        // whatever is there: nothing else in that column can look like one.
+        // Written as a bare id, a prefixed one and as JSON over the versions.
         Matcher dashed = OWNER_ID.matcher(raw);
         if (dashed.find()) {
             return UUID.fromString(dashed.group());
@@ -290,12 +259,7 @@ public final class QuickShopImport {
         return null;
     }
 
-    /**
-     * QuickShop keeps the item as a piece of YAML with the item under the key "item".
-     *
-     * <p>{@code onProblem} is given why it could not be read, since "unreadable" on its own
-     * is the least useful thing an import can say about fifteen shops in a row.
-     */
+    /** QuickShop keeps the item as a piece of YAML with the item under the key "item". */
     private static @Nullable ItemStack itemOf(@Nullable String raw, Consumer<String> onProblem) {
         if (raw == null || raw.isBlank()) {
             onProblem.accept("there is nothing in the column");
@@ -317,13 +281,7 @@ public final class QuickShopImport {
         return item;
     }
 
-    /**
-     * The form QuickShop writes now: the bytes Bukkit itself gives for an item, in base64.
-     *
-     * <p>Which is the same form Chorus keeps its own inventories in, so nothing is lost in
-     * between: the enchantments, the lore and whatever another plugin wrote on it all come
-     * across exactly as they were.
-     */
+    /** The form QuickShop writes now: the bytes Bukkit itself gives for an item, in base64. */
     private static @Nullable ItemStack fromBytes(String raw) {
         try {
             return ItemStack.deserializeBytes(Base64.getDecoder().decode(raw.trim()));
@@ -352,12 +310,7 @@ public final class QuickShopImport {
         return flat.length() <= SNIPPET ? flat : flat.substring(0, SNIPPET) + "...";
     }
 
-    /**
-     * The names Chorus already knows, so the signs read as names rather than as ids.
-     *
-     * <p>Never a lookup with Mojang. An import of four thousand shops would be four thousand
-     * web requests, and a server that is offline would get none of them.
-     */
+    /** The names Chorus already knows, so the signs read as names rather than as ids. */
     private Map<UUID, String> knownNames() {
         Map<UUID, String> names = new HashMap<>();
         try (Connection connection = storage.connection();
@@ -372,24 +325,17 @@ public final class QuickShopImport {
                 }
             }
         } catch (SQLException noProfiles) {
-            // Names are a nicety on a sign, not a reason to stop an import.
         }
         return names;
     }
 
-    /**
-     * Every table the connection can see.
-     *
-     * <p>No catalog and no schema: H2, MySQL and SQLite each mean something different by
-     * those, and asking for all of them is the only question all three answer the same way.
-     */
+    /** Every table the connection can see. */
     private static Set<String> tablesIn(Connection connection) throws SQLException {
         Set<String> found = new HashSet<>();
         DatabaseMetaData metadata = connection.getMetaData();
         try (ResultSet rows = metadata.getTables(null, null, "%", new String[] {"TABLE"})) {
             while (rows.next()) {
-                // H2 counts its own information schema as tables, and a list of those is
-                // both useless to look through and enough to hide the real ones.
+                // H2 counts its own information schema as tables.
                 String schema = rows.getString("TABLE_SCHEM");
                 if (schema != null && schema.equalsIgnoreCase(SYSTEM_SCHEMA)) {
                     continue;
@@ -402,11 +348,6 @@ public final class QuickShopImport {
 
     /**
      * The prefix the tables actually carry.
-     *
-     * <p>Not always the one in the config: a database made before the setting was changed,
-     * or by a build that never applied it, keeps the names it was born with. The config is
-     * tried first so a server that really does have two sets keeps the one it named, then no
-     * prefix at all, and finally whatever sits in front of the table that has to exist.
      *
      * @return null when nothing in there looks like QuickShop.
      */

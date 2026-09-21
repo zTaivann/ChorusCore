@@ -1,0 +1,53 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   W O R L D                                                            │
+# │   /world  /time  /weather  /spawnmob  /sweep  /locate                  │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Solo las líneas que se traducen. El resto viene de messages/world.yml.
+
+world:
+  not-found: '%prefix%<red>No existe ningún mundo llamado <white>%world%</white>.'
+  already-there: '%prefix%<gray>Ya estás en <white>%world%</white>.'
+  went: '%prefix%<gray>Bienvenido a <white>%world%</white>.'
+  every-world: 'todos los mundos'
+  list-header: '<dark_gray>» <c:heading-server><bold>MUNDOS</bold></c> <dark_gray>« <gray>%count%'
+  list-entry: '<dark_gray>▪ <white>%world% <dark_gray>» <gray>%environment% <dark_gray>▪ <gray>%players% conectados'
+  time-usage: '%prefix%<gray>Usa <white>/time [day|noon|night|midnight|ticks] [mundo|all]</white>.'
+  time-set: '%prefix%<gray>La hora quedó en <white>%time%</white> en <white>%world%</white>.'
+  weather-usage: '%prefix%<gray>Usa <white>/weather [clear|rain|storm] [minutos] [mundo]</white>.'
+  weather-set: '%prefix%<gray>El clima quedó en <white>%weather%</white> en <white>%world%</white> por <white>%minutes%</white> minutos.'
+  spawnmob-usage: '%prefix%<gray>Usa <white>/spawnmob [mob] [cantidad] [jugador]</white>.'
+  spawnmob-unknown: '%prefix%<red>No existe ningún mob llamado <white>%mob%</white>.'
+  spawnmob-limit: '%prefix%<red>Como mucho <white>%limit%</white> a la vez.'
+  spawnmob-done: '%prefix%<gray>Aparecieron <white>%count% %mob%</white> en <white>%player%</white>.'
+  sweep-unknown: '%prefix%<red>No existe nada llamado <white>%target%</white> para limpiar.'
+  sweep-radius: '%prefix%<gray>El radio tiene que ser un número de bloques.'
+  sweep-none: '%prefix%<gray>Aquí no hay nada que cuente como <white>%target%</white>.'
+  sweep-confirm: '%prefix%<red>Esto borra <white>%count% %target%</white> de todo <white>%world%</white>.'
+  sweep-done: '%prefix%<green>Se borraron <white>%count% %target%</white>.'
+  tree-usage: '%prefix%<gray>Usa <white>/tree [tipo]</white> <dark_gray>» <gray>%kinds%'
+  tree-unknown: '%prefix%<red>No existe ningún árbol llamado <white>%kind%</white>.'
+  tree-nowhere: '%prefix%<gray>Mira al suelo donde debería crecer.'
+  tree-refused: '%prefix%<gray>Ahí no va a crecer nada.'
+  tree-grown: '%prefix%<green>Creció un <white>%kind%</white>.'
+  spawner-none: '%prefix%<gray>No estás mirando ningún generador.'
+  spawner-usage: '%prefix%<gray>Usa <white>/spawner [mob] [demora]</white>.'
+  spawner-now: '%prefix%<gray>Ese generador hace <white>%mob%</white> cada <white>%delay%</white> ticks.'
+  spawner-set: '%prefix%<green>Ese generador ahora hace <white>%mob%</white>.'
+  unlimited-on: '%prefix%<green>%item% no se te va a acabar mientras lo pongas.'
+  unlimited-off: '%prefix%<gray>%item% vuelve a contarse.'
+  unlimited-empty: '%prefix%<gray>No tienes nada ilimitado.'
+  unlimited-cleared: '%prefix%<gray>Todo vuelve a contarse.'
+  unlimited-not-a-block: '%prefix%<gray>Ten un bloque en la mano.'
+  locate-usage: '%prefix%<gray>Usa <white>/locate [structure|biome] [nombre]</white>, o solo el nombre.<newline>%prefix%<dark_gray>▪ <gray>Estructuras <dark_gray>» <white>%structures%<newline>%prefix%<dark_gray>▪ <gray>Biomas <dark_gray>» <white>%biomes%</white> <gray>en total, desde <white>/locate biome </white>y tab.'
+  locate-unknown: '%prefix%<red>No existe ninguna estructura ni bioma llamado <white>%kind%</white>.'
+  locate-none: '%prefix%<gray>No hay ningún <white>%kind%</white> al alcance desde aquí.'
+  locate-refused: '%prefix%<gray>El servidor no quiso hacer esa búsqueda desde donde estás.'
+  locate-found: '%prefix%<gray>El <white>%kind%</white> más cercano <dark_gray>» <white>%x%<dark_gray>, <white>%y%<dark_gray>, <white>%z%</white> <dark_gray>(<gray>a %distance% bloques<dark_gray>)'
+  locate-hover: '<gray>%world% <dark_gray>» <white>%x% %y% %z%'
+  locate-hover-teleport: '<gray>%world% <dark_gray>» <white>%x% %y% %z%<newline><c:good>➜ <gray>Clic para teletransportarte'
+  unlimited-list: '%prefix%<gray>Ilimitados <dark_gray>» <white>%count%</white> <dark_gray>(<gray>%items%<dark_gray>)'
+  auto-sweep-warning: '%prefix%<gray>Se va a limpiar <white>%target%</white> del suelo en <white>%seconds%</white> segundos. Recoge lo que quieras conservar.'
+  auto-sweep-done: '%prefix%<gray>Se limpiaron <white>%count% %target%</white>.'

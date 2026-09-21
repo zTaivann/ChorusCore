@@ -10,9 +10,6 @@ import java.util.function.Consumer;
 /**
  * How a list menu looks. The bottom row is always the navigation strip, so a menu of three
  * rows shows eighteen entries per page and nothing ever moves under the cursor.
- *
- * <p>The strip has its own filler so it reads as a separate band rather than blending into
- * the entries above it.
  */
 public record MenuSettings(boolean enabled, int rows, Material icon, @Nullable Material filler,
                            @Nullable Material navigationFiller, Material previousPage,

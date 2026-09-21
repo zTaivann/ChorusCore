@@ -9,16 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Who last spoke to whom, and who is watching.
- *
- * <p>The two directions are kept apart. They only differ when a conversation is interrupted:
- * you message Anna, then Ben messages you, and {@code /r} has to decide which of them it
- * means. {@code /rtoggle} lets each player say.
- *
- * <p>Commands and the quit listener all run on the server thread, so plain collections are
- * enough and cheaper than concurrent ones.
- */
+/** Who last spoke to whom, and who is watching. */
 public final class PrivateMessages {
 
     private final Map<UUID, UUID> sentTo = new HashMap<>();
@@ -73,7 +64,6 @@ public final class PrivateMessages {
         spies.remove(player);
         sentTo.remove(player);
         heardFrom.remove(player);
-        // Anybody still pointing at a player who is gone would otherwise keep a dead name.
         sentTo.values().removeIf(player::equals);
         heardFrom.values().removeIf(player::equals);
     }

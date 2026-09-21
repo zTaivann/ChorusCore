@@ -6,12 +6,7 @@ import org.bukkit.Statistic;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-/**
- * {@code /rest [player]}: counts the player as having slept.
- *
- * <p>Phantoms come for anybody who has been awake three days. This resets that counter
- * without a bed, which is the whole of what it does.
- */
+/** {@code /rest [player]}: counts the player as having slept. */
 public final class RestCommand extends TargetedCommand {
 
     public RestCommand(CommandSupport support) {

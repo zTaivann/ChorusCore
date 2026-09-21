@@ -17,17 +17,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Every chest shop on the server, kept in memory.
- *
- * <p>A right-click has to know in the same tick whether the block under the cursor is a shop,
- * so the table is read once at startup and written back whenever one changes. Shops are
- * counted in thousands rather than millions, and a shop is a dozen fields.
- *
- * <p>Everything here runs on the server thread. The writes are queued to a worker, but the
- * map is only ever touched from the thread that handles the click, which is what lets a trade
- * be a single uninterrupted decision.
- */
+/** Every chest shop on the server, kept in memory. */
 public final class ChestShops {
 
     private final ChestShopRepository repository;
@@ -76,12 +66,7 @@ public final class ChestShops {
         return owned;
     }
 
-    /**
-     * The shop at a block, whichever part of it was touched.
-     *
-     * <p>A sign resolves to what it is fixed to, and either half of a double chest resolves
-     * to the half the shop was made on.
-     */
+    /** The shop at a block, whichever part of it was touched. */
     public @Nullable ChestShop at(Block block) {
         ChestShop direct = byBlock.get(ChestShop.key(block));
         if (direct != null) {
@@ -127,8 +112,7 @@ public final class ChestShops {
         worker.execute(() -> {
             try {
                 ChestShop saved = repository.save(shop);
-                // The row it was given matters for nothing but the logs, so it is written
-                // back quietly rather than being waited on.
+                // The row matters for nothing but the logs, so it is not waited on.
                 byBlock.computeIfPresent(saved.key(),
                         (key, current) -> current.id() == 0 ? saved : current);
             } catch (SQLException exception) {
@@ -157,8 +141,7 @@ public final class ChestShops {
 
         long id = shop.id();
         if (id == 0) {
-            // Saved a moment ago and not yet given a row. Nothing to delete that would not
-            // delete the wrong thing.
+            // Saved a moment ago and not yet given a row.
             return;
         }
         worker.execute(() -> {

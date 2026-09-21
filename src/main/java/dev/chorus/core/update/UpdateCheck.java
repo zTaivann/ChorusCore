@@ -23,19 +23,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Asks once a day whether a newer ChorusCore has been released.
- *
- * <p>It is a plain GET for a version number. Nothing is downloaded, nothing is installed and
- * nothing about this server is sent — not the address, not the player count, not the version
- * being run. What the site learns is that somebody asked, which is what any download link
- * learns anyway.
- *
- * <p>Everything about it fails quietly. A site that is down, a project that has been renamed
- * or a server with no way out to the internet all end the same way: no answer, no message, no
- * line in the log above {@code FINE}. An update notice is worth having and worth nothing at
- * all next to a console full of stack traces.
- */
+/** Asks once a day whether a newer ChorusCore has been released. */
 public final class UpdateCheck implements Listener {
 
     private static final String PERMISSION = "chorus.updates";
@@ -169,8 +157,7 @@ public final class UpdateCheck implements Listener {
         return switch (source) {
             case MODRINTH -> first(MODRINTH, body);
             case HANGAR -> first(HANGAR, body);
-            // Both answer with the version on its own, so anything that is not one is an
-            // error page and is thrown away rather than reported as a release.
+            // Both answer with the version alone, so anything else is an error page.
             case SPIGOT, PLAIN -> clean(body);
         };
     }

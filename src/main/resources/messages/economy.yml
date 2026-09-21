@@ -1,0 +1,50 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   E C O N O M Y                                                        │
+# │   /balance  /pay  /baltop  /eco  /paylog                               │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Part of the messages folder. See core.yml.
+# A 'prefix' set here is what %prefix% means in this file.
+
+economy:
+  insufficient: '%prefix%<red>That costs <white>%price%</white> and you only have <white>%balance%</white>.'
+  charged: '%prefix%<gray>Charged <white>%price%</white>.'
+  unavailable: '%prefix%<red>This server has no economy set up.'
+  balance: '%prefix%<gray>You have <white>%balance%</white>.'
+  balance-other: '%prefix%<white>%player%</white><gray> has <white>%balance%</white>.'
+  pay-usage: '%prefix%<gray>Usage: <white>/pay [player] [amount]</white>'
+  pay-self: '%prefix%<red>You cannot pay yourself.'
+  invalid-amount: '%prefix%<red>That is not a valid amount of money.'
+  pay-minimum: '%prefix%<red>The smallest payment is <white>%amount%</white>.'
+  pay-maximum: '%prefix%<red>The largest payment is <white>%amount%</white>.'
+  transfer-failed: '%prefix%<red>The payment did not go through. Nothing was taken.'
+  pay-sent: '%prefix%<gray>Sent <white>%amount%</white> to <white>%player%</white>.'
+  pay-received: '%prefix%<gray>You received <white>%amount%</white> from <white>%player%</white>.'
+  eco-usage: '%prefix%<gray>Usage: <white>/eco [give|take|set|reset] [player] [amount]</white>'
+  eco-failed: '%prefix%<red>The economy plugin refused that change to %player%.'
+  eco-give-done: '%prefix%<gray>Gave <white>%amount%</white> to <white>%player%</white>. They now have <white>%balance%</white>.'
+  eco-give-received: '%prefix%<green>You were given <white>%amount%</white></green><gray>. You now have <white>%balance%</white>.'
+  eco-take-done: '%prefix%<gray>Took <white>%amount%</white> from <white>%player%</white>. They now have <white>%balance%</white>.'
+  eco-take-received: '%prefix%<red>%amount% was taken from you</red><gray>. You now have <white>%balance%</white>.'
+  eco-set-done: '%prefix%<gray>Set <white>%player%</white> to <white>%balance%</white>.'
+  eco-set-received: '%prefix%<gray>Your balance was set to <white>%balance%</white>.'
+  baltop-header: '<dark_gray>» <c:heading-money><bold>RICHEST</bold></c> <dark_gray>« <gray>%count% <dark_gray>▪ <gray>%page%<dark_gray>/<gray>%pages%'
+  baltop-entry: '<dark_gray>▪ <gray>%place%<dark_gray>. <white>%player% <dark_gray>» <gold>%amount%'
+  baltop-empty: '%prefix%<gray>There is nobody to rank yet.'
+  baltop-refreshed: '%prefix%<gray>The ranking was thrown away. The next <white>/baltop</white> is worked out again.'
+  baltop-refresh-external: '%prefix%<gray>Another plugin holds the balances, so there is no ranking here to refresh.'
+  paylog-header: '<dark_gray>» <c:heading-money><bold>PAYMENTS</bold></c> <dark_gray>« <gray>%count%'
+  paylog-entry: '<dark_gray>▪ <white>%payer% <dark_gray>-> <white>%payee% <dark_gray>» <gold>%amount% <dark_gray>(<gray>%ago% ago<dark_gray>)'
+  paylog-empty: '%prefix%<gray>There is nothing in the payment log.'
+  paylog-disabled: '%prefix%<red>The payment log is switched off on this server.'
+
+  toggle-on: '%prefix%<green>You are accepting payments again.'
+  toggle-off: '%prefix%<gray>Nobody can send you money now. <white>/paytoggle</white> puts it back.'
+  pay-refused: '%prefix%<red>%player% is not accepting payments.'
+  pay-confirm: '%prefix%<gray>About to send <white>%amount%</white> to <white>%player%</white>.'
+  baltop-total: '<dark_gray>▪ <gray>Everything on the server <dark_gray>» <white>%amount%'
+
+  eco-reset-done: '%prefix%<gray>The balance of <white>%player%</white> is back to <white>%balance%</white>.'
+  eco-reset-received: '%prefix%<gray>Your balance was reset to <white>%balance%</white>.'

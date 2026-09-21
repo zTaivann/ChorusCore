@@ -10,14 +10,6 @@ import java.util.List;
 /**
  * The ledger offered to the rest of the server through Vault, so a shop or job plugin can
  * spend the same money these commands do.
- *
- * <p>Banks are not implemented. Vault asks for them, almost nothing uses them, and an empty
- * answer is better than a broken one.
- *
- * <p>The name-taking half of the interface was deprecated years ago and is only still here
- * because Vault never removed it. Those calls are answered from the server's own cache: a
- * name nobody has seen is refused rather than sent to Mojang, since this runs wherever the
- * caller happened to be.
  */
 @SuppressWarnings("deprecation")
 public final class VaultBridge implements net.milkbowl.vault.economy.Economy {

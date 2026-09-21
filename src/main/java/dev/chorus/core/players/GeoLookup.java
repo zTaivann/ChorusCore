@@ -12,18 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
-/**
- * Which country an address is in, for {@code /whois}.
- *
- * <p><b>Off by default, and for a reason.</b> There is no country in the player's connection;
- * the only way to know is to ask somebody else, which means sending that player's address to
- * a service outside this server. A server owner should decide that deliberately, so the
- * config says so plainly and starts switched off.
- *
- * <p>Answers are cached for the life of the server. The same address does not move country
- * between two uses of {@code /whois}, and the point of a cache here is to send as little as
- * possible rather than to be fast.
- */
+/** Which country an address is in, for {@code /whois}. */
 public final class GeoLookup {
 
     private static final String DEFAULT_ENDPOINT = "https://ipapi.co/%address%/country_name/";
@@ -54,13 +43,7 @@ public final class GeoLookup {
         return enabled;
     }
 
-    /**
-     * The country for an address.
-     *
-     * <p>Completes with an empty string when it is switched off, when the address is not one
-     * that can be looked up, or when the service does not answer. Nothing here is worth an
-     * error message: a missing country is a missing line, not a fault.
-     */
+    /** The country for an address. */
     public CompletableFuture<String> countryOf(String address) {
         if (!enabled || address.isEmpty() || isLocal(address)) {
             return CompletableFuture.completedFuture("");

@@ -23,12 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 
-/**
- * What {@code /sweep} is being asked to clear out.
- *
- * <p>{@link #EVERYTHING} leaves out the things a server builds rather than spawns: armour
- * stands, paintings, item frames and villagers each have to be named before they go.
- */
+/** What {@code /sweep} is being asked to clear out. */
 public enum SweepTarget {
 
     DROPS("drops", entity -> entity instanceof Item),

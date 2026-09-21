@@ -1,0 +1,110 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   C O R E                                                              │
+# │   refusals, /chorus, and the words other lines borrow                  │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# One file per part of the plugin, all read together.
+#
+# Colours: MiniMessage tags such as <gold>, the old codes &6 and &l, and the
+# names from palette.yml written <c:accent>. Write && for an & that is not a
+# colour.  https://docs.papermc.io/adventure/minimessage/format
+#
+# %prefix% is the line below. Any file here may set its own instead.
+# Leave a line empty ('') and it is not sent.
+#
+# Other languages are folders beside this one: messages/es/, messages/fr/.
+
+prefix: '<c:brand><bold>Chorus</bold></c> <dark_gray>|</dark_gray> '
+
+error:
+  no-permission: '%prefix%<red>You are not allowed to do that.'
+  players-only: '%prefix%<red>That command can only be used by a player.'
+  loading: '%prefix%<red>Your data is still loading. Try again in a second.'
+  storage: '%prefix%<red>The change could not be saved. Tell an administrator.'
+  load-failed: '<red>We could not load your data.<newline><gray>Please try again in a few minutes.'
+  player-not-found: '%prefix%<red>%player% is not online.'
+  command-disabled: '%prefix%<red>That command is switched off on this server.'
+  command-world: '%prefix%<red>That command is switched off in this world.'
+  module-disabled: '%prefix%<red>That feature is switched off on this server.'
+  command-recursion: '%prefix%<red>That command runs itself, so it was stopped. Check its run-as-console lines.'
+
+
+core:
+  usage: '%prefix%<gray>ChorusCore <white>%version%</white>. Use <white>/chorus</white> with <white>reload</white>, <white>status</white>, <white>debug</white>, <white>import</white> or <white>purge</white>.'
+  reloaded: '%prefix%<green>Configuration reloaded.<newline>%prefix%<gray>Storage and aliases still need a server restart.'
+  status-header: '<dark_gray>» <c:brand><bold>CHORUSCORE</bold></c> <dark_gray>« <gray>%version%'
+  status-storage: '<dark_gray>▪ <gray>Storage <dark_gray>» <white>%storage%'
+  status-economy: '<dark_gray>▪ <gray>Economy <dark_gray>» <white>%economy%'
+  status-placeholders: '<dark_gray>▪ <gray>PlaceholderAPI <dark_gray>» <white>%placeholders%'
+  status-modules: '<dark_gray>▪ <gray>Modules <dark_gray>» <white>%modules%'
+  prompt-cancel: '%prefix%<dark_gray>▪ <gray>Type <white>cancel</white> to leave it as it is.'
+  prompt-expired: '%prefix%<gray>Nothing typed, so nothing changed.'
+
+  reloaded-module: '%prefix%<green>Reloaded <white>%module%</white>.'
+  reload-unknown: '%prefix%<red>There is no module called <white>%module%</white>.'
+  confirm-again: '%prefix%<gray>Run the same command again within <white>%seconds%s</white> to confirm.'
+  help-header: '<dark_gray>» <c:brand><bold>COMMANDS</bold></c> <dark_gray>« <gray>%count% <dark_gray>▪ <gray>%page%<dark_gray>/<gray>%pages%'
+  help-module: '<dark_gray>▪ <gray>%module%'
+  help-entry: '<dark_gray>  » <white>/%command% <dark_gray>- <gray>%description%'
+  help-more: '%prefix%<gray>See the rest with <white>/commands %search%</white>.'
+  help-modules: '%prefix%<dark_gray>▪ <gray>Narrow it down with <white>/commands [module]</white> <dark_gray>(<gray>%modules%<dark_gray>)'
+  help-empty: '%prefix%<gray>There is nothing here you are allowed to use.'
+  help-no-match: '%prefix%<gray>Nothing matches <white>%search%</white>.'
+  debug-header: '<dark_gray>» <c:brand><bold>CHORUSCORE</bold></c> <dark_gray>« <gray>%version%'
+  debug-server: '<dark_gray>▪ <gray>Server <dark_gray>» <white>%server% %game% <dark_gray>▪ <gray>Java <white>%java%'
+  debug-platform: '<dark_gray>▪ <gray>Scheduling <dark_gray>» <white>%platform% <dark_gray>▪ <gray>Memory <white>%memory%'
+  debug-storage: '<dark_gray>▪ <gray>Storage <dark_gray>» <white>%storage% <dark_gray>▪ <gray>Economy <white>%economy%'
+  debug-modules: '<dark_gray>▪ <gray>On <dark_gray>» <white>%on%<newline><dark_gray>▪ <gray>Off <dark_gray>» <white>%off%'
+  debug-commands: '<dark_gray>▪ <gray>Commands <dark_gray>» <white>%count% <dark_gray>▪ <gray>Online <white>%players%'
+  debug-plugins: '<dark_gray>▪ <gray>Other plugins <dark_gray>» <white>%count% <dark_gray>(<gray>%plugins%<dark_gray>)'
+  debug-none: 'none'
+
+  import-usage: '%prefix%<gray>Use <white>/chorus import essentials</white> or <white>/chorus import quickshop</white> to see what would come across, then add <white>run</white>.'
+  import-not-found: '%prefix%<red>No Essentials folder next to this one.'
+  import-checking: '%prefix%<gray>Reading <white>%folder%</white>. Nothing will be written.'
+  import-started: '%prefix%<gray>Importing from <white>%folder%</white>. This may take a moment.'
+  import-confirm: '%prefix%<red>This writes homes, balances, warps and mail into Chorus. Nothing in the Essentials folder is touched, and anything Chorus already has is left alone.'
+  import-confirm-overwrite: '%prefix%<red>This will REPLACE what Chorus already has with what Essentials has.'
+  import-would: '%prefix%<gray>Found <white>%players%</white> players. Nothing was written.'
+  import-done: '%prefix%<green>Imported <white>%players%</white> players.'
+  import-counts: '<dark_gray>▪ <gray>Homes <white>%homes%</white> <dark_gray>▪ <gray>Balances <white>%balances%</white> <dark_gray>▪ <gray>Warps <white>%warps%'
+  import-counts-more: '<dark_gray>▪ <gray>Mail <white>%mail%</white> <dark_gray>▪ <gray>Nicknames <white>%nicknames%</white> <dark_gray>▪ <gray>Prices <white>%prices%'
+  import-skipped: '<dark_gray>▪ <gray>Left alone because Chorus already had them <dark_gray>» <white>%skipped%'
+  import-problem: '<dark_gray>▪ <red>%problem%'
+  import-problems-more: '<dark_gray>▪ <red>and %count% more like that'
+  import-empty: '%prefix%<gray>That folder contains nothing this can read.'
+  import-failed: '%prefix%<red>The import stopped. The console says why, and nothing was lost.'
+  import-next: '%prefix%<gray>To apply it, run <white>/chorus import essentials run</white>.'
+  import-restart: '%prefix%<gray>Restart the server so the new data is loaded.'
+  import-shops-not-found: '%prefix%<red>No QuickShop folder next to this one.'
+  import-shops-confirm: '%prefix%<red>This writes every QuickShop shop into Chorus. The QuickShop database is only ever read, and a block Chorus already has a shop on is left alone.'
+  import-shops-confirm-overwrite: '%prefix%<red>This will REPLACE any Chorus shop standing on the same block as a QuickShop one.'
+  import-shops-would: '%prefix%<gray>Would bring across <white>%shops%</white> shops from <white>%source%</white>. Nothing was written.'
+  import-shops-done: '%prefix%<green>Brought across <white>%shops%</white> shops from <white>%source%</white>.'
+  import-shops-counts: '<dark_gray>▪ <gray>Read <white>%read%</white> <dark_gray>▪ <gray>Already here <white>%skipped%</white> <dark_gray>▪ <gray>Unreadable <white>%broken%'
+  import-shops-empty: '%prefix%<gray>That folder contains no shops this can read.'
+  import-shops-next: '%prefix%<gray>To apply it, run <white>/chorus import quickshop run</white>.'
+  import-shops-restart: '%prefix%<gray>Restart the server so the shops are loaded, then take QuickShop out.'
+
+  purge-usage: '%prefix%<gray>Use <white>/chorus purge %min%</white> to see what would go, then <white>/chorus purge %min% run</white>.'
+  purge-range: '%prefix%<red>The fewest days a purge will take is <white>%min%</white>.'
+  purge-confirm: '%prefix%<red>This permanently deletes the homes, money, mail and settings of everybody not seen in %days% days.'
+  purge-checking: '%prefix%<gray>Counting players not seen in <white>%days%</white> days. Nothing will be deleted.'
+  purge-started: '%prefix%<gray>Purging players not seen in <white>%days%</white> days.'
+  purge-would: '%prefix%<gray>Would forget <white>%players%</white> players <dark_gray>(<gray>%rows% rows<dark_gray>)<gray>. Nothing was deleted.'
+  purge-done: '%prefix%<green>Forgot <white>%players%</white> players <dark_gray>(<gray>%rows% rows<dark_gray>)<green>.'
+  purge-shops: '<dark_gray>▪ <gray>Left alone because they own a chest shop <dark_gray>» <white>%count%'
+  purge-empty: '%prefix%<gray>Nobody has been away that long.'
+  purge-failed: '%prefix%<red>The purge stopped. The console says why, and nothing was deleted.'
+  purge-next: '%prefix%<gray>To apply it, add <white>run</white> to the end.'
+
+  status-updates: '<dark_gray>▪ <gray>Updates <dark_gray>» <white>%updates%'
+  update-available: '%prefix%<gray>ChorusCore <white>%latest%</white> is out. This server is on <white>%current%</white>.'
+  update-current: 'up to date'
+  update-off: 'not checked'
+
+
+cooldown:
+  wait: '%prefix%<red>Wait <white>%time%</white> before using that again.'

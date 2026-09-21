@@ -1,6 +1,6 @@
 # The message of the day. Sent as players join, and again on /motd.
 #
-# Lines are written the way messages.yml is: MiniMessage tags such as <gray> and
+# Lines are written the way the messages folder is: MiniMessage tags such as <gray> and
 # <gradient:#a06bff:#e0c3fc>, or old codes such as &7. Both work, together.
 #
 # %player% %world% %online% %max% are filled in for whoever is reading.

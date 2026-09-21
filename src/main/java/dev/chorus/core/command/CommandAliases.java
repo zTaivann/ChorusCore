@@ -14,20 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Puts the aliases from aliases.yml into the server's command map.
- *
- * <p>plugin.yml deliberately declares none, so this file is the only place aliases come
- * from and there is never a stale one left behind by an edit. They are applied while the
- * plugin enables, which is why changing them asks for a restart rather than a reload.
- *
- * <p>The unregister below is the whole reason any of this works. Bukkit keeps two lists: the
- * aliases a command was given, and the ones it is actually answering to. {@code setAliases}
- * only refreshes the second while the command is unregistered, and Bukkit registers every
- * command in plugin.yml a moment before the plugin enables. Setting them without taking the
- * command back out first therefore changes a list nothing reads, quietly, with no error to
- * say so.
- */
+/** Puts the aliases from aliases.yml into the server's command map. */
 public final class CommandAliases {
 
     private CommandAliases() {
@@ -52,17 +39,11 @@ public final class CommandAliases {
 
             List<String> aliases = clean(file.data().getStringList(name), name);
 
-            // A command from a module that is switched off answers that it is switched off,
-            // and that is no reason to take a name away from the server. Turning a module
-            // off should give back what was there before, not leave a hole where both were.
             boolean live = !switchedOff.contains(name);
             boolean freed = live && takeOverBuiltIn(map, name, command);
             if (live) {
                 for (String alias : aliases) {
-                    // An alias the server itself answers to, such as clear, has to be freed
-                    // the same way the command's own name does. Bukkit silently drops an
-                    // alias that is already spoken for, so without this the line in
-                    // aliases.yml would do nothing at all and say nothing about it.
+                    // Bukkit silently drops an alias another command already owns.
                     if (takeOverBuiltIn(map, alias, command)) {
                         taken.put(alias, name);
                         freed = true;
@@ -74,16 +55,13 @@ public final class CommandAliases {
             }
 
             command.unregister(map);
-            // Bukkit drops an alias another command already owns by editing this list in
-            // place, so it has to be one we own and can modify.
             command.setAliases(new ArrayList<>(aliases));
             map.register(fallbackPrefix, command);
             changed = true;
         }
 
         if (changed) {
-            // Clients are told the command list once, on join. Without this the aliases work
-            // when typed but do not turn up in tab completion until the next reconnect.
+            // Clients are told the command list on join, so it has to be sent again.
             plugin.getServer().getOnlinePlayers().forEach(Player::updateCommands);
         }
         return Map.copyOf(taken);
@@ -92,11 +70,6 @@ public final class CommandAliases {
     /**
      * Frees a name the server itself already answers to, such as {@code /tps} or
      * {@code /list}.
-     *
-     * <p>Bukkit will not let a plugin take a name that is already spoken for, which is right
-     * when the holder is another plugin and wrong when it is a built-in the owner installed
-     * this one to replace. So the name is only taken when nothing from a plugin holds it:
-     * another plugin's command is never touched, whichever loaded first.
      *
      * @return whether anything had to be moved out of the way.
      */

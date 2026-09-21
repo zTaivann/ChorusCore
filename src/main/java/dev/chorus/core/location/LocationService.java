@@ -12,14 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
-/**
- * One category of named positions, held in memory.
- *
- * <p>There are only ever a handful of these and every player shares them, so the whole set
- * lives in the cache and reads never touch the database. The sorted view is kept too, since
- * tab completion asks for it on every keystroke and re-sorting a list of warps that has not
- * changed is pure waste.
- */
+/** One category of named positions, held in memory. */
 public final class LocationService {
 
     private final String category;

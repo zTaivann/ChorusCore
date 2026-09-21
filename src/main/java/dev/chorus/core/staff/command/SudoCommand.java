@@ -11,12 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Runs a command as somebody else, with their permissions rather than yours.
- *
- * <p>Anyone holding {@code chorus.staff.sudo.exempt} cannot be a target. Without that, the
- * command is a way for one member of staff to make another do anything they can do.
- */
+/** Runs a command as somebody else, with their permissions rather than yours. */
 public final class SudoCommand extends ChorusCommand {
 
     private static final String EXEMPT_PERMISSION = "chorus.staff.sudo.exempt";
@@ -55,8 +50,7 @@ public final class SudoCommand extends ChorusCommand {
         }
 
         settle(sender);
-        // Written down before it runs: a command that crashes the server is exactly the one
-        // somebody will want to look up afterwards.
+        // Written down before it runs.
         audit.record(sender, "sudo", target.getName(), command);
 
         messages.send(sender, "staff.sudo-ran", "player", target.getName(), "command", command);

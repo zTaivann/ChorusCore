@@ -19,10 +19,6 @@ import java.util.Locale;
 /**
  * {@code /eco give|take|set|reset <player> [amount]}: the administrative side of the economy,
  * where money is created and destroyed rather than moved.
- *
- * <p>Works on a player the server has never had online. A name the server does not recognise
- * is looked up in the plugin's own record of who has played here, so somebody who joined once
- * two years ago can still be paid.
  */
 public final class EcoCommand extends ChorusCommand {
 
@@ -84,8 +80,6 @@ public final class EcoCommand extends ChorusCommand {
             return;
         }
 
-        // Not in the server's own cache. Chorus keeps its own record of who has played here,
-        // which reaches further back than a cache that gets cleared.
         profiles.find(args[1]).whenComplete((found, failure) -> {
             if (failure != null) {
                 messages.send(sender, "error.storage");
@@ -116,8 +110,7 @@ public final class EcoCommand extends ChorusCommand {
         settle(sender);
         audit.record(sender, "eco-" + action, name, economy.format(amount));
 
-        // Both keys are written out in full rather than pasted together from the action, so
-        // the check that nothing in messages.yml is orphaned can actually find them.
+        // Both keys written out in full, so the check for orphaned lines can find them.
         String toSender = switch (action) {
             case "give" -> "economy.eco-give-done";
             case "take" -> "economy.eco-take-done";

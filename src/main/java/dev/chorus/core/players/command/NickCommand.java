@@ -16,14 +16,7 @@ import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-/**
- * {@code /nick [player] <name|off>}: what somebody is called on screen.
- *
- * <p>Colours need their own permission, and the length limit counts letters rather than
- * codes, so a coloured nickname is not half as long as a plain one. A nickname that is
- * already somebody else's username is refused outright: two people answering to one name is
- * how a staff member ends up impersonated.
- */
+/** {@code /nick [player] <name|off>}: what somebody is called on screen. */
 public final class NickCommand extends ChorusCommand {
 
     private static final String OTHERS = "chorus.players.nick.others";

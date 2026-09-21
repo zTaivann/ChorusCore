@@ -29,12 +29,7 @@ public final class SqlBackupRepository implements BackupRepository {
     private static final String DELETE_OLD =
             "DELETE FROM chorus_inventory_backups WHERE taken_at < ?";
 
-    /**
-     * Everything past the newest few for one player.
-     *
-     * <p>Counting the rows newer than each one is what both dialects agree on. Window
-     * functions would read better and are not in every MySQL a server might be running.
-     */
+    /** Everything past the newest few for one player. */
     private static final String DELETE_SURPLUS = """
             DELETE FROM chorus_inventory_backups
             WHERE id IN (
@@ -231,12 +226,7 @@ public final class SqlBackupRepository implements BackupRepository {
         return value == null ? "" : value;
     }
 
-    /**
-     * The table, then the columns that arrived after it.
-     *
-     * <p>Added rather than folded into the create, so a server that already has the first
-     * shape of the table gains the rest without losing what it saved.
-     */
+    /** The table, then the columns that arrived after it. */
     private static List<String> steps(SqlDialect dialect) {
         String integer = dialect == SqlDialect.SQLITE ? "INTEGER" : "INT";
         String text = dialect == SqlDialect.SQLITE ? "TEXT" : "VARCHAR(64)";

@@ -12,13 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Backs /gamemode and the four short forms.
- *
- * <p>A fixed mode means the command already knows what it does, so /gmc takes a player name
- * where /gamemode takes the mode first. Each mode carries its own permission, which is what
- * lets a rank have creative without also having spectator.
- */
+/** Backs /gamemode and the four short forms. */
 public final class GameModeCommand extends ChorusCommand {
 
     private static final String OTHERS_PERMISSION = "chorus.staff.gamemode.others";

@@ -15,16 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * A live window onto another player's inventory or ender chest.
- *
- * <p>The layout copies what a chest can show. For an inventory that is armour, offhand and a
- * head with the player's state along the top, a row of panes underneath, then the twenty-seven
- * storage slots and the hotbar on the bottom row, exactly where a player expects it.
- *
- * <p>Nothing is stored here except the target's id: the window is filled from the live player
- * on every refresh and written straight back when someone edits it.
- */
+/** A live window onto another player's inventory or ender chest. */
 public final class InventoryMirror implements InventoryHolder {
 
     public enum Kind {
@@ -168,8 +159,7 @@ public final class InventoryMirror implements InventoryHolder {
             meta.displayName(name);
             meta.lore(lore);
             if (meta instanceof org.bukkit.inventory.meta.SkullMeta skull) {
-                // The target is online, so their profile is already in memory and this
-                // costs nothing. It would be a blocking lookup for an offline player.
+                // Online, so the profile is in memory. It would be a blocking lookup otherwise.
                 skull.setOwningPlayer(target);
             }
             item.setItemMeta(meta);

@@ -1,0 +1,72 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   P L A Y E R S                                                        │
+# │   /afk  /seen  /playtime  /whois  /list  /nick  /ptime  /pweather      │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Part of the messages folder. See core.yml.
+# A 'prefix' set here is what %prefix% means in this file.
+
+players:
+  afk-now: '%prefix%<gray>You are now away.'
+  afk-now-broadcast: '%prefix%<white>%player%</white><gray> is now away.'
+  afk-back: '%prefix%<gray>Welcome back.'
+  afk-back-broadcast: '%prefix%<white>%player%</white><gray> is back.'
+  afk-kicked: '<red>Disconnected for being away too long.'
+  seen-usage: '%prefix%<gray>Usage: <white>/seen [player]</white>'
+  seen-online: '%prefix%<white>%player%</white><gray> is online right now, in <white>%world%</white>.'
+  seen-online-afk: '%prefix%<white>%player%</white><gray> is online but away, in <white>%world%</white>.'
+  seen-offline: '%prefix%<white>%player%</white><gray> was last seen <white>%ago%</white> ago. First joined %first%.'
+  playtime: '%prefix%<gray>You have played for <white>%time%</white>.'
+  playtime-other: '%prefix%<white>%player%</white><gray> has played for <white>%time%</white>.'
+  whois-usage: '%prefix%<gray>Usage: <white>/whois [player]</white>'
+  whois-header: '<dark_gray>» <c:heading-info>%player%</c> <dark_gray>«'
+  whois-uuid: '<dark_gray>▪ <gray>UUID <dark_gray>» <white>%uuid%'
+  whois-status-online: '<dark_gray>▪ <gray>Status <dark_gray>» <green>online'
+  whois-status-away: '<dark_gray>▪ <gray>Status <dark_gray>» <yellow>away'
+  whois-status-offline: '<dark_gray>▪ <gray>Status <dark_gray>» <red>offline<gray>, last seen <white>%ago%</white> ago'
+  whois-world: '<dark_gray>▪ <gray>Location <dark_gray>» <white>%world%</white> <dark_gray>(<white>%x%<dark_gray>, <white>%y%<dark_gray>, <white>%z%<dark_gray>)'
+  whois-health: '<dark_gray>▪ <gray>Health <dark_gray>» <white>%health%</white> <dark_gray>| <gray>Food <dark_gray>» <white>%food%'
+  whois-gamemode: '<dark_gray>▪ <gray>Gamemode <dark_gray>» <white>%gamemode%'
+  whois-ping: '<dark_gray>▪ <gray>Ping <dark_gray>» <white>%ping% ms'
+  whois-playtime: '<dark_gray>▪ <gray>Playtime <dark_gray>» <white>%time%'
+  whois-first: '<dark_gray>▪ <gray>First joined <dark_gray>» <white>%date%'
+  whois-flags: '<dark_gray>▪ <gray>Flags <dark_gray>» <white>%flags%'
+  whois-address: '<dark_gray>▪ <gray>Address <dark_gray>» <white>%address%'
+  whois-banned: '<dark_gray>▪ <gray>Banned <dark_gray>» <red>yes'
+  list-header: '<dark_gray>» <gray>Online <dark_gray>» <white>%online%<dark_gray>/<white>%max%</white> <dark_gray>(<yellow>%away%</yellow><gray> away<dark_gray>)'
+  list-names: '<gray>%players%'
+  list-empty: '<gray>Nobody else is here right now.'
+  ptime-usage: '%prefix%<gray>Usage: <white>/ptime [time] [player]</white><newline>%prefix%<gray>Times: <white>day noon sunset night midnight sunrise reset</white>, or a number from <white>0</white> to <white>23999</white>.'
+  ptime-set: '%prefix%<gray>Your sky is now showing <white>%value%</white>.'
+  ptime-set-other: '%prefix%<gray>Set the sky of <white>%player%</white> to <white>%value%</white>.'
+  ptime-reset: '%prefix%<gray>Your sky follows the world again.'
+  ptime-reset-other: '%prefix%<gray>The sky of <white>%player%</white> follows the world again.'
+  ptime-unknown: '%prefix%<red>No time called <white>%value%</white>. Try a name or a number from 0 to 23999.'
+  pweather-usage: '%prefix%<gray>Usage: <white>/pweather [clear|rain|reset] [player]</white>'
+  pweather-set: '%prefix%<gray>Your weather is now <white>%value%</white>.'
+  pweather-set-other: '%prefix%<gray>Set the weather of <white>%player%</white> to <white>%value%</white>.'
+  pweather-reset: '%prefix%<gray>Your weather follows the world again.'
+  pweather-reset-other: '%prefix%<gray>The weather of <white>%player%</white> follows the world again.'
+  pweather-unknown: '%prefix%<red>No weather called <white>%value%</white>. Try clear, rain or reset.'
+
+  afk-now-reason: '%prefix%<gray>You are away <dark_gray>» <white>%reason%'
+  afk-now-reason-broadcast: '%prefix%<gray>%player% is away <dark_gray>» <white>%reason%'
+  seen-where: '<dark_gray>▪ <gray>Left in <white>%world%</white> at <white>%x% %y% %z%'
+  seen-address: '<dark_gray>▪ <gray>Address <dark_gray>» <white>%address%'
+  seen-alts: '<dark_gray>▪ <gray>Shares it with <white>%count%</white> <dark_gray>» <white>%players%'
+  nick-usage: '%prefix%<gray>Use <white>/nick [name]</white> or <white>/nick off</white>.'
+  nick-set: '%prefix%<green>You are now <white>%nickname%</white>.'
+  nick-set-other: '%prefix%<green>%player% is now <white>%nickname%</white>.'
+  nick-cleared: '%prefix%<gray>Back to your own name.'
+  nick-cleared-other: '%prefix%<gray>%player% is back to their own name.'
+  nick-taken: '%prefix%<red>Somebody is already called <white>%nickname%</white>.'
+  nick-too-long: '%prefix%<red>A nickname can be at most <white>%limit%</white> letters.'
+  nick-invalid: '%prefix%<red>Nicknames accept letters, numbers and underscores.'
+  nick-no-colour: '%prefix%<red>You are not allowed colour codes in a nickname.'
+  realname-usage: '%prefix%<gray>Use <white>/realname [nickname]</white>.'
+  realname: '%prefix%<gray>%nickname% is <white>%player%</white>.'
+  realname-unknown: '%prefix%<gray>Nobody online is called <white>%nickname%</white>.'
+
+  whois-country: '<dark_gray>▪ <gray>Country <dark_gray>» <white>%country%'

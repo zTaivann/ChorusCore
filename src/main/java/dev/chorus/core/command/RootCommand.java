@@ -54,13 +54,7 @@ public final class RootCommand extends ChorusCommand {
         }
     }
 
-    /**
-     * {@code /chorus import essentials [run] [overwrite]}.
-     *
-     * <p>Without {@code run} it reads everything and writes nothing, which is the version
-     * worth doing first. The real run asks to be confirmed and never touches the Essentials
-     * folder, so putting the old plugin back is always possible.
-     */
+    /** {@code /chorus import essentials [run] [overwrite]}. */
     private void importFrom(CommandSender sender, String[] args) {
         String what = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
         switch (what) {
@@ -70,13 +64,7 @@ public final class RootCommand extends ChorusCommand {
         }
     }
 
-    /**
-     * {@code /chorus import quickshop [run] [overwrite]}.
-     *
-     * <p>The QuickShop database is opened for reading only, so the old plugin can go back at
-     * any time. A block Chorus already has a shop on is left alone unless overwriting is
-     * asked for.
-     */
+    /** {@code /chorus import quickshop [run] [overwrite]}. */
     private void fromQuickShop(CommandSender sender, String[] args) {
         boolean live = args.length > 2 && args[2].equalsIgnoreCase("run");
         boolean overwrite = args.length > 3 && args[3].equalsIgnoreCase("overwrite");
@@ -200,12 +188,7 @@ public final class RootCommand extends ChorusCommand {
         messages.send(sender, live ? "core.import-restart" : "core.import-next");
     }
 
-    /**
-     * {@code /chorus purge <days> [run]}: forgets players nobody has seen in a long time.
-     *
-     * <p>Without {@code run} it counts what would go and deletes nothing. The real run asks
-     * to be confirmed, and leaves alone anybody who owns a chest shop.
-     */
+    /** {@code /chorus purge <days> [run]}: forgets players nobody has seen in a long time. */
     private void purge(CommandSender sender, String[] args) {
         if (args.length < 2) {
             messages.send(sender, "core.purge-usage", "min", String.valueOf(MIN_PURGE_DAYS));
@@ -224,8 +207,7 @@ public final class RootCommand extends ChorusCommand {
             return;
         }
 
-        // Gathered here rather than in the query: who is online is a question for the server
-        // thread, and the purge itself runs on a worker.
+        // Who is online is a question for the server thread; the purge runs on a worker.
         Set<UUID> online = new HashSet<>();
         plugin.getServer().getOnlinePlayers().forEach(player -> online.add(player.getUniqueId()));
         long before = System.currentTimeMillis() - days * MILLIS_PER_DAY;

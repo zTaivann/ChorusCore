@@ -11,13 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Commands defined entirely in the config, for the /discord and /rules of this world.
- *
- * <p>They are registered into the server's command map by hand, since plugin.yml cannot
- * describe something the admin has not invented yet. They are taken back out on shutdown so
- * a plugin reload does not leave two of each behind.
- */
+/** Commands defined entirely in the config, for the /discord and /rules of this world. */
 public final class CustomCommandsModule implements ChorusModule {
 
     private static final String CONFIG = "modules/custom-commands.yml";
@@ -58,10 +52,7 @@ public final class CustomCommandsModule implements ChorusModule {
         unregister();
     }
 
-    /**
-     * Adding or removing a command needs a restart, the same as aliases do, because the
-     * client is told the command list once when it connects.
-     */
+    /** Adding or removing a command needs a restart, the same as an alias does. */
     @Override
     public void reload() {
         plugin.getLogger().info("New or renamed custom commands need a server restart.");

@@ -1,0 +1,52 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   W A R P S                                                            │
+# │   /warp  /warps  /setwarp  /delwarp  /warpinfo  /warpset               │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Solo las líneas que se traducen. El resto viene de messages/warps.yml.
+
+warp:
+  none: '%prefix%<gray>No hay warps que puedas usar.'
+  created: '%prefix%<gray>Warp <white>%warp%</white> creado.'
+  updated: '%prefix%<gray>Warp <white>%warp%</white> movido a donde estás parado.'
+  deleted: '%prefix%<gray>Warp <white>%warp%</white> borrado.'
+  teleported: '%prefix%<gray>Te teletransportaste a <white>%warp%</white>.'
+  unknown: '%prefix%<red>No existe ningún warp llamado <white>%warp%</white>.'
+  locked: '%prefix%<red>No tienes acceso al warp <white>%warp%</white>.'
+  invalid-name: '%prefix%<red>Nombre inválido. Usa letras, números, <white>-</white> o <white>_</white>, hasta %max% caracteres.'
+  world-missing: '%prefix%<red>El mundo <white>%world%</white> no está cargado ahora mismo.'
+  use-usage: '%prefix%<gray>Uso: <white>/warp [nombre]</white>'
+  set-usage: '%prefix%<gray>Uso: <white>/setwarp [nombre]</white>'
+  delete-usage: '%prefix%<gray>Uso: <white>/delwarp [nombre]</white>'
+  sent: '%prefix%<gray>Mandaste a <white>%player%</white> a <white>%warp%</white>.'
+  sent-received: '%prefix%<gray>%player% te mandó a <white>%warp%</white>.'
+  sign-created: '%prefix%<gray>Cartel hecho. Manda jugadores a <white>%warp%</white>.'
+  settings-help-header: '<dark_gray>» <c:heading-warps><bold>AJUSTES DEL WARP</bold></c> <dark_gray>«'
+  settings-help-hover: '<gray>Clic para empezar a escribir el comando'
+  settings-help-footer: '<dark_gray>▪ <gray>Deja el valor afuera para devolver un ajuste a lo que dice <white>warps.yml</white>.<newline><dark_gray>▪ <gray>Míralo todo con <white>/warpinfo [warp]</white>.'
+  settings-help-icon: 'cómo se ve en el menú de /warps'
+  settings-help-permission: 'quién puede usarlo. Le gana a per-warp-permission'
+  settings-help-price: 'lo que cuesta ese warp en particular, por Vault'
+  settings-help-cooldown: 'la espera después de usar ese warp'
+  settings-help-description: 'una línea bajo su nombre en el menú'
+  settings-help-section: 'lo agrupa con los demás en /warps'
+  info-usage: '%prefix%<gray>Uso: <white>/warpinfo [warp]</white>'
+  info-world: '<dark_gray>▪ <gray>Ubicación <dark_gray>» <white>%world%</white> <dark_gray>(<white>%x%<dark_gray>, <white>%y%<dark_gray>, <white>%z%<dark_gray>)'
+  info-section: '<dark_gray>▪ <gray>Sección <dark_gray>» <white>%section%'
+  info-uses: '<dark_gray>▪ <gray>Usado <dark_gray>» <white>%uses%</white> <gray>veces'
+  info-created: '<dark_gray>▪ <gray>Creado <dark_gray>» <white>%date%'
+  info-price: '<dark_gray>▪ <gray>Cuesta <dark_gray>» <gold>%price%'
+  info-cooldown: '<dark_gray>▪ <gray>Espera <dark_gray>» <white>%time%'
+  info-permission: '<dark_gray>▪ <gray>Permiso <dark_gray>» <white>%permission%'
+  settings-done: '%prefix%<gray>Warp <white>%warp%</white>: <white>%setting%</white> ahora es <white>%value%</white>.'
+  settings-cleared: '%prefix%<gray>Warp <white>%warp%</white>: <white>%setting%</white> volvió a lo de siempre.'
+  settings-bad-icon: '%prefix%<red>Esta versión no tiene ningún ítem llamado <white>%value%</white>.'
+  settings-bad-number: '%prefix%<red>%value% no es un número que este ajuste acepte.'
+  list:
+    header: '%prefix%<gray>Warps <dark_gray>(<white>%count%</white>)</dark_gray>'
+    hover: '<gray>Ir a <white>%warp%</white><newline><dark_gray>%world% %x%, %y%, %z%</dark_gray>'
+    hover-description: '<gray>Ir a <white>%warp%</white><newline><gray>%description%<newline><dark_gray>%world%</dark_gray>'
+  delete-confirm: '%prefix%<red>Esto borra el warp <white>%warp%</white> para siempre.'
+  section-unknown: '%prefix%<gray>No existe ninguna sección llamada <white>%section%</white>.'

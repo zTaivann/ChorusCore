@@ -20,17 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-/**
- * The {@code name:}, {@code lore:} and {@code enchant:} words that can follow an item.
- *
- * <p>One place for all of them, so {@code /give} and anything else that builds an item read
- * the same syntax. Underscores in text become spaces, which is the only way to write a
- * sentence as one argument.
- *
- * <p>A word that means nothing is reported and skipped rather than refusing the whole item:
- * somebody getting a diamond sword without the lore they typed is a better outcome than
- * getting nothing and having to work out which of eight words was wrong.
- */
+/** The {@code name:}, {@code lore:} and {@code enchant:} words that can follow an item. */
 public final class ItemAttributes {
 
     private static final String GLOW_MARKER = "lure";
@@ -126,12 +116,7 @@ public final class ItemAttributes {
         return true;
     }
 
-    /**
-     * The {@code enchant:} word, held to the same rules as {@code /enchant}.
-     *
-     * <p>Without this, a blocked enchantment or a level nobody is allowed to reach could be
-     * put on an item by writing it after {@code /give} instead.
-     */
+    /** The {@code enchant:} word, held to the same rules as {@code /enchant}. */
     private static boolean enchant(ItemMeta meta, String value, Allowed allowed) {
         int colon = value.lastIndexOf(':');
         String name = colon < 0 ? value : value.substring(0, colon);
@@ -216,8 +201,7 @@ public final class ItemAttributes {
         if (!(meta instanceof SkullMeta skull) || value.isEmpty()) {
             return false;
         }
-        // Only a player the server already knows: looking a name up with Mojang is a web
-        // request, and this runs on the server thread.
+        // Only a player the server already knows: a Mojang lookup is a web request.
         OfflinePlayer known = Bukkit.getPlayerExact(value);
         if (known == null) {
             known = Bukkit.getOfflinePlayerIfCached(value);

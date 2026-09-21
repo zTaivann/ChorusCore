@@ -12,13 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /book [author|title]}: reopens a signed book, or renames one.
- *
- * <p>A signed book cannot be edited in game. Turning it back into a writable one is the only
- * way to fix a typo on page four without writing the whole thing again, and signing it puts
- * it back exactly as it was with the same title and author.
- */
+/** {@code /book [author|title]}: reopens a signed book, or renames one. */
 public final class BookCommand extends HeldItemCommand {
 
     private static final String AUTHOR_PERMISSION = "chorus.items.book.author";
@@ -72,12 +66,7 @@ public final class BookCommand extends HeldItemCommand {
                 "text", text);
     }
 
-    /**
-     * Signed to writable and back again.
-     *
-     * <p>The title and author are carried across on the way out and restored on the way in,
-     * so a book that goes round the loop comes back the same book.
-     */
+    /** Signed to writable and back again. */
     private void unseal(Player player, ItemStack item) {
         if (!(item.getItemMeta() instanceof BookMeta meta)) {
             messages.send(player, "items.book-not-a-book");

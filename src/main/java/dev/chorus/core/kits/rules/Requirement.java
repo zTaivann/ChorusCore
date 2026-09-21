@@ -9,23 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 
-/**
- * Something that has to be true before a kit may be claimed.
- *
- * <p>Written the same way as an action, {@code type: argument}, and accepted in two shapes:
- * a bare line, or a line with its own refusal message.
- *
- * <pre>
- * requirements:
- *   - 'permission: chorus.kits.vip'
- *   - condition: 'placeholder: %player_level% &gt;= 10'
- *     deny: '&lt;red&gt;Come back at level 10.'
- * </pre>
- *
- * <p>The {@code placeholder} kind is the one that makes the rest optional: anything any
- * other plugin exposes through PlaceholderAPI can gate a kit, without this plugin knowing
- * that plugin exists.
- */
+/** Something that has to be true before a kit may be claimed. */
 public record Requirement(Kind kind, String argument, @Nullable String deny) {
 
     public enum Kind {
@@ -68,12 +52,7 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
         return null;
     }
 
-    /**
-     * Whether this player passes.
-     *
-     * <p>{@code money} and {@code playtime} are asked of the caller rather than looked up
-     * here, because both live behind services this class has no business knowing about.
-     */
+    /** Whether this player passes. */
     public boolean met(Player player, Context context) {
         return switch (kind) {
             case PERMISSION -> player.hasPermission(argument);

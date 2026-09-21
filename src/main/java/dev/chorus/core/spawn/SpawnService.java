@@ -10,13 +10,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * The spawn point, or one per world when the config asks for it.
- *
- * <p>Spawns share the named-location table with warps under their own category, so a warp
- * can never collide with one. The single-spawn entry keeps the name it has always had, so
- * turning per-world on and off again finds the old point still there.
- */
+/** The spawn point, or one per world when the config asks for it. */
 public final class SpawnService implements SpawnApi {
 
     static final String CATEGORY = "system";
@@ -51,8 +45,7 @@ public final class SpawnService implements SpawnApi {
         if (own.isPresent()) {
             return own;
         }
-        // A world with no spawn of its own falls back to the one named in the config,
-        // and then to the single spawn, so /spawn never simply stops working.
+        // A world with no spawn falls back to the named one, and then to the single spawn.
         if (!current.fallbackWorld().isEmpty()) {
             Optional<NamedLocation> fallback = locations.find(current.fallbackWorld());
             if (fallback.isPresent()) {

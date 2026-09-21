@@ -11,9 +11,6 @@ import java.util.Optional;
  * ChorusProvider.get().flatMap(ChorusApi::homes)
  *         .ifPresent(homes -&gt; homes.list(player.getUniqueId()));
  * </pre>
- *
- * <p>Add {@code depend: [ ChorusCore ]} or {@code softdepend: [ ChorusCore ]} to your
- * plugin.yml. With softdepend, check the result rather than assuming it is there.
  */
 public final class ChorusProvider {
 

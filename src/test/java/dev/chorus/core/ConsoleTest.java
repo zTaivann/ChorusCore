@@ -6,13 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * The name in the console is drawn out of characters, and characters are easy to lose.
- *
- * <p>One row a character short leans the whole word, and nothing else in the plugin would
- * ever say so: it is written once, looked at once, and then only ever seen by whoever starts
- * the server.
- */
+/** The name in the console is drawn out of characters, and characters are easy to lose. */
 class ConsoleTest {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();

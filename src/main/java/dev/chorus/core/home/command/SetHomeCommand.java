@@ -60,12 +60,11 @@ public final class SetHomeCommand extends PlayerCommand {
             return;
         }
 
-        // The price grows with the number already owned, so the tenth home can cost real
-        // money while the first stays free. Moving one you have is never surcharged.
+        // The price grows with the number already owned. Moving one is not surcharged.
         CommandRules against = new CommandRules(rules().enabled(), rules().warmupSeconds(),
                 rules().cooldownSeconds(),
                 homes.settings().priceFor(rules().price(), homes.count(playerId), replacing),
-                rules().worlds(), rules().feedback());
+                rules().worlds(), rules().feedback(), rules().messages());
         if (replacing && !confirmations.confirmed(player, "sethome:" + key,
                 "home.overwrite-confirm", "home", key)) {
             return;
@@ -81,8 +80,6 @@ public final class SetHomeCommand extends PlayerCommand {
 
         homes.save(saved)
                 .whenComplete((ignored, failure) -> {
-                    // A plugin cancelling the event is a decision, not a fault: it has
-                    // already told the player whatever it wanted to.
                     if (failure instanceof CancellationException
                             || failure instanceof CompletionException wrapped
                             && wrapped.getCause() instanceof CancellationException) {

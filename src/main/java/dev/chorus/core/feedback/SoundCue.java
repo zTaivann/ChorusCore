@@ -4,14 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-/**
- * A sound played to one player.
- *
- * <p>The key is handed to Bukkit as a plain string rather than through the {@code Sound}
- * enum on purpose: that type is an enum on 1.18 and an interface on 26, so any code that
- * named a constant would fail to link on half of the supported versions. A string the
- * client does not know simply plays nothing.
- */
+/** A sound played to one player. */
 public record SoundCue(String key, float volume, float pitch) {
 
     public static final SoundCue NONE = new SoundCue("", 1, 1);

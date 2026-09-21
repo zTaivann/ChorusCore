@@ -11,12 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /speed [walk|fly] <1-10> [player]}.
- *
- * <p>The number is scaled so that 1 is exactly what vanilla gives you and 10 is the fastest
- * the client accepts, which makes the same figure mean the same thing on foot and in the air.
- */
+/** {@code /speed [walk|fly] <1-10> [player]}. */
 public final class SpeedCommand extends ChorusCommand {
 
     private static final String OTHERS_PERMISSION = "chorus.utility.speed.others";

@@ -1,0 +1,44 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   C H A T                                                              │
+# │   /msg  /reply  /ignore  /mail  /socialspy                             │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Solo las líneas que se traducen. El resto viene de messages/chat.yml.
+
+chat:
+  msg-usage: '%prefix%<gray>Uso: <white>/msg [jugador] [mensaje]</white>'
+  msg-self: '%prefix%<red>Hablar solo no es una función.'
+  msg-refused: '%prefix%<red>%player% no está recibiendo mensajes ahora mismo.'
+  toggle-off: '%prefix%<gray>Los mensajes privados están <white>apagados</white>. Nadie puede escribirte.'
+  toggle-on: '%prefix%<gray>Los mensajes privados están <white>encendidos</white> otra vez.'
+  ignore-usage: '%prefix%<gray>Uso: <white>/ignore [jugador]</white> o <white>/ignore list</white>'
+  ignore-self: '%prefix%<red>No puedes ignorarte a ti mismo.'
+  ignore-added: '%prefix%<gray>No vas a volver a saber de <white>%player%</white>.'
+  ignore-removed: '%prefix%<gray>Vuelves a saber de <white>%player%</white>.'
+  ignore-empty: '%prefix%<gray>No estás ignorando a nadie.'
+  ignore-header: '%prefix%<gray>Ignorando <dark_gray>(<white>%count%</white>)</dark_gray>'
+  msg-sent: '<dark_gray>[<gray>tú <dark_gray>-> <white>%player%</white><dark_gray>] <gray>%message%'
+  msg-received: '<dark_gray>[<white>%player%</white> <dark_gray>-> <gray>tú<dark_gray>] <gray>%message%'
+  reply-usage: '%prefix%<gray>Uso: <white>/reply [mensaje]</white>'
+  no-reply-target: '%prefix%<red>No hay a quién responderle.'
+  spy-enabled: '%prefix%<gray>Social spy <green>activado</green>.'
+  spy-disabled: '%prefix%<gray>Social spy <red>desactivado</red>.'
+  spy-unavailable: '%prefix%<red>El social spy está apagado en este servidor.'
+  mail-usage: '%prefix%<gray>Usa <white>/mail</white>, <white>/mail send [jugador] [mensaje]</white> o <white>/mail clear</white>.'
+  mail-header: '<dark_gray>» <c:heading-info><bold>CORREO</bold></c> <dark_gray>« <gray>%count% <dark_gray>▪ <gray>%page%<dark_gray>/<gray>%pages%'
+  mail-entry: '<dark_gray>%id%. <gray>%player% <dark_gray>» <gray>%message% <dark_gray>(<gray>hace %ago%<dark_gray>)'
+  mail-entry-new: '<dark_gray>%id%. <white>%player% <dark_gray>» <white>%message% <dark_gray>(<gray>hace %ago%<dark_gray>)'
+  mail-empty: '%prefix%<gray>No tienes nada esperando.'
+  mail-waiting: '%prefix%<gray>Tienes <white>%count%</white> esperando. Léelos con <white>/mail</white>.'
+  mail-arrived: '%prefix%<gray>%player% te dejó un mensaje. Léelo con <white>/mail</white>.'
+  mail-sent: '%prefix%<green>Le quedó a <white>%player%</white>.'
+  mail-sent-all: '%prefix%<green>Le quedó a <white>%count%</white> jugadores.'
+  mail-full: '%prefix%<red>La bandeja de %player% está llena.'
+  mail-cleared: '%prefix%<gray>Se borraron <white>%count%</white> mensajes.'
+  mail-cleared-one: '%prefix%<gray>Se borró el mensaje <white>%id%</white>.'
+  mail-missing: '%prefix%<gray>No existe el mensaje <white>%id%</white>.'
+  mail-of: '%prefix%<gray>La bandeja de <white>%player%</white>. Leerla la deja sin leer para él.'
+  rtoggle-sender: '%prefix%<gray>/reply ahora le responde a quien te escribió último.'
+  rtoggle-recipient: '%prefix%<gray>/reply ahora le responde a quien le escribiste último.'

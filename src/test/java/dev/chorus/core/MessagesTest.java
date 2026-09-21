@@ -1,5 +1,6 @@
 package dev.chorus.core;
 
+import dev.chorus.core.locale.Palette;
 import dev.chorus.core.locale.TextFormat;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -21,39 +22,28 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Keeps messages.yml, menus.yml and the code that sends from them in step.
- *
- * <p>The list of keys is scanned out of the source rather than written down here, so it can
- * never drift: a message the code sends is by definition one this test looks for.
- */
+/** Keeps the messages folder and the code that sends from it in step. */
 class MessagesTest {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
-    /** Every file a line can come from. The key says which: menu. is a screen. */
-    private static final List<String> FILES = List.of("messages.yml", "menus.yml");
+    /** The colours the lines are written in, which have to go in before anything parses. */
+    private static final Palette PALETTE =
+            Palette.read(Resources.read("palette.yml"), loop -> { });
 
     /** The top-level sections of both files, which every key begins with. */
     private static final String ROOTS = "error|core|cooldown|economy|chat|home|warp|spawn"
             + "|request|back|teleport|utility|staff|players|items|menu|kits|world|shops";
 
-    /**
-     * Any literal shaped like a dotted key whose first segment is one of our roots.
-     *
-     * <p>Broad on purpose: a key reaches send() through a ternary, through a helper of
-     * this plugin's own, or from the next line down, and a pattern anchored on the call
-     * would miss most of them and call every one of those messages dead.
-     *
-     * <p>The one thing it has to rule out is a config path, which looks exactly the same:
-     * config.section("kits.editor") is not a message and reporting it as a missing one
-     * sends whoever reads the failure looking for a line that was never meant to exist.
-     */
+    /** Any literal shaped like a dotted key whose first segment is one of our roots. */
     private static final Pattern MESSAGE_KEY = Pattern.compile(
-            "(?<!section[(])[\"]((?:" + ROOTS + ")(?:[.][a-z-]+)+)[\"]");
+            "(?<!section[(])[\"]((?:" + ROOTS + ")(?:[.](?!yml[\"])[a-z-]+)+)[\"]");
 
     /** A %name% in a template, which names a value the code passes in. */
     private static final Pattern PLACEHOLDER = Pattern.compile("%([a-z_]+)%");
+
+    /** A colour by name, which palette.yml has to know. */
+    private static final Pattern COLOUR = Pattern.compile("<c:([a-z0-9_-]+)>");
 
     @Test
     void everyTemplateParses() {
@@ -64,6 +54,51 @@ class MessagesTest {
                 .toList();
 
         assertEquals(List.of(), broken, "these templates are not valid MiniMessage");
+    }
+
+    /** A colour nobody named is drawn as the tag itself, in the middle of the sentence. */
+    @Test
+    void everyColourNamedIsInThePalette() {
+        YamlConfiguration messages = allLines();
+        Set<String> named = new TreeSet<>(PALETTE.names());
+        List<String> unknown = new ArrayList<>();
+
+        for (String key : messages.getKeys(true)) {
+            if (!messages.isString(key)) {
+                continue;
+            }
+            Matcher matcher = COLOUR.matcher(messages.getString(key, ""));
+            while (matcher.find()) {
+                if (!named.contains(matcher.group(1))) {
+                    unknown.add(key + " uses <c:" + matcher.group(1) + ">");
+                }
+            }
+        }
+        assertEquals(List.of(), unknown, "palette.yml names none of these colours");
+    }
+
+    /** A close with nothing open reaches MiniMessage as a stray tag. */
+    @Test
+    void noLineClosesAColourItNeverOpened() {
+        YamlConfiguration messages = allLines();
+        List<String> wrong = messages.getKeys(true).stream()
+                .filter(messages::isString)
+                .filter(key -> closesTooMuch(messages.getString(key, "")))
+                .toList();
+
+        assertEquals(List.of(), wrong, "these lines close a colour that was never opened");
+    }
+
+    private static boolean closesTooMuch(String template) {
+        int open = 0;
+        Matcher matcher = Pattern.compile("<c:[a-z0-9_-]+>|</c>").matcher(template);
+        while (matcher.find()) {
+            open += matcher.group().equals("</c>") ? -1 : 1;
+            if (open < 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Test
@@ -89,13 +124,7 @@ class MessagesTest {
         assertEquals(List.of(), unused, "these lines exist but nothing sends them");
     }
 
-    /**
-     * A newline inside one line of item lore is not a line break.
-     *
-     * <p>Lore is a list of lines, so the game draws the newline as the missing character it
-     * is: a little box in the middle of the sentence. A template with one in it has to go
-     * through renderLines, which splits it into the separate lines it was asking for.
-     */
+    /** A newline inside one line of item lore is not a line break. */
     @Test
     void noLoreLineIsSentAsOnePieceWhenItAsksForSeveral() throws IOException {
         YamlConfiguration messages = allLines();
@@ -112,31 +141,19 @@ class MessagesTest {
                 "these lore lines hold a newline but are rendered as one piece; use renderLines");
     }
 
-    /**
-     * The menus explain how to colour a line, so the examples have to survive being drawn.
-     *
-     * <p>An unescaped one turns into the colour it is describing and explains nothing, which
-     * is a failure nobody notices until somebody opens the screen and finds a blank space
-     * where the instruction was.
-     */
+    /** The menus explain how to colour a line, so the examples have to survive being drawn. */
     @Test
     void theHelpTextShowsTheCodesRatherThanUsingThem() {
         YamlConfiguration messages = allLines();
         String drawn = PLAIN.serialize(MiniMessage.miniMessage()
-                .deserialize(TextFormat.toTags(
-                        messages.getString("menu.editor.action-add-lore", ""))));
+                .deserialize(TextFormat.toTags(PALETTE.apply(
+                        messages.getString("menu.editor.action-add-lore", "")))));
 
         assertTrue(drawn.contains("&a"), "the example colour code should still be readable");
         assertTrue(drawn.contains("<green>"), "the example tag should still be readable");
     }
 
-    /**
-     * A translation may be incomplete, but it may not invent keys.
-     *
-     * <p>A key with a typo in it would simply never be sent, and the English line would go
-     * out instead with nobody the wiser, which is exactly the kind of thing nobody notices
-     * until a player asks why one message is in the wrong language.
-     */
+    /** A translation may be incomplete, but it may not invent keys. */
     @Test
     void everyTranslatedKeyExists() {
         YamlConfiguration base = allLines();
@@ -190,11 +207,13 @@ class MessagesTest {
         assertEquals(List.of(), wrong, "these placeholders are in no English line");
     }
 
-    /** Every other language that ships in the jar. */
+    /** Every file of every other language that ships in the jar. */
     private static List<String> translations() {
-        String[] found = Resources.FOLDER.toFile()
-                .list((folder, name) -> name.startsWith("messages_") && name.endsWith(".yml"));
-        return found == null ? List.of() : List.of(found);
+        List<String> files = new ArrayList<>();
+        for (String code : Resources.languages()) {
+            files.addAll(Resources.messageFiles(Resources.MESSAGES + "/" + code));
+        }
+        return files;
     }
 
     private static Set<String> slotsIn(String template) {
@@ -206,16 +225,10 @@ class MessagesTest {
         return slots;
     }
 
-    /**
-     * Both files as one, which is how the plugin reads them.
-     *
-     * <p>Which file a line lives in is a question for whoever is editing them, not for the
-     * code: a key is a key. Reading them together is also what catches the same key being
-     * written into both.
-     */
+    /** The whole folder as one, which is how the plugin reads it. */
     private static YamlConfiguration allLines() {
         YamlConfiguration everything = new YamlConfiguration();
-        for (String file : FILES) {
+        for (String file : Resources.messageFiles(Resources.MESSAGES)) {
             YamlConfiguration read = Resources.read(file);
             for (String key : read.getKeys(true)) {
                 if (read.isString(key)) {
@@ -261,7 +274,7 @@ class MessagesTest {
     /** Through the same two steps the plugin uses, old codes to tags and then to text. */
     private static boolean parses(String template) {
         try {
-            MiniMessage.miniMessage().deserialize(TextFormat.toTags(template));
+            MiniMessage.miniMessage().deserialize(TextFormat.toTags(PALETTE.apply(template)));
             return true;
         } catch (RuntimeException rejected) {
             return false;

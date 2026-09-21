@@ -12,12 +12,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
-/**
- * One YAML file in the plugin folder, backed by the copy shipped in the jar.
- *
- * <p>Keys added by a later version resolve against the bundled defaults, so an admin never
- * has to delete their file after an update to pick up new options.
- */
+/** One YAML file in the plugin folder, backed by the copy shipped in the jar. */
 public final class ConfigFile {
 
     private final Plugin plugin;
@@ -56,10 +51,6 @@ public final class ConfigFile {
 
     /**
      * Writes the file back out.
-     *
-     * <p>Only for the parts of the config a command edits, such as the kits. Comments live
-     * with the key above them and survive as long as that key does, so the file a person
-     * wrote stays a file a person can read.
      *
      * @return whether it was written.
      */

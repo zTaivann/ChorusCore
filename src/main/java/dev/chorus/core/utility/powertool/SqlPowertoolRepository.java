@@ -14,14 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * One row per item a player has bound something to.
- *
- * <p>The commands on an item are stored as one field with a newline between them. A command
- * cannot hold a newline, so nothing has to be escaped, and the alternative — a row for each
- * line with an order column — would be three times the code for a list that is never longer
- * than a handful.
- */
+/** One row per item a player has bound something to. */
 public final class SqlPowertoolRepository implements PowertoolRepository {
 
     private static final String SEPARATOR = "\n";

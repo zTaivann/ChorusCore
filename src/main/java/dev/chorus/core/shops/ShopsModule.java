@@ -89,8 +89,7 @@ public final class ShopsModule implements ChorusModule {
                 plugin.economy(), plugin.prompts(),
                 ChestShopSettings.read(config.section("shops")));
         plugin.register(chestSigns);
-        // The worlds are already loaded by the time a module starts, so the chunk events
-        // alone would leave every existing shop bare until somebody walked away and back.
+        // The worlds are already loaded when a module starts, so chunk events are not enough.
         displays.showEverything();
         // So /editsign and anything else that rewrites a block leaves a shop alone.
         plugin.reserved().register(block -> chestShops.at(block) != null);

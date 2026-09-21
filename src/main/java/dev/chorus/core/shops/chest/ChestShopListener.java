@@ -40,13 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Making, using and protecting a chest shop.
- *
- * <p>Protection is most of this file. A shop is only as trustworthy as the block it sits on,
- * so the container, the sign and the other half of a double chest are all defended from being
- * broken, exploded, pushed by a piston, merged into by a second chest or drained by a hopper.
- */
+/** Making, using and protecting a chest shop. */
 public final class ChestShopListener implements Listener {
 
     private static final String CREATE_PERMISSION = "chorus.shops.chest.create";
@@ -136,8 +130,7 @@ public final class ChestShopListener implements Listener {
             return;
         }
 
-        // No price on the sign, so it is asked for in chat. The sign is taken back down if
-        // they change their mind, rather than left standing and doing nothing.
+        // No price on the sign, so it is asked for in chat.
         Block sign = event.getBlock();
         messages.send(player, "shops.chest-ask-price",
                 "item", ChestShopSign.itemName(template));
@@ -284,13 +277,7 @@ public final class ChestShopListener implements Listener {
                 () -> messages.send(player, "shops.chest-cancelled"));
     }
 
-    /**
-     * The trade itself, with everything measured again.
-     *
-     * <p>Seconds have passed since the screen said how much there was. The shop may be gone,
-     * the chest may be empty, the player may have walked into another world. None of what
-     * was shown is trusted here.
-     */
+    /** The trade itself, with everything measured again. */
     private void finish(Player player, ChestShop shop, ItemStack template, String typed) {
         if (!player.isOnline()) {
             return;
@@ -414,8 +401,7 @@ public final class ChestShopListener implements Listener {
             return;
         }
 
-        // The owner breaking any part of it takes the whole shop down, so a sign and a
-        // registration can never disagree.
+        // Breaking any part of it takes the whole shop down.
         displays.hide(shop.key());
         shops.remove(shop);
         messages.send(player, "shops.chest-removed");
@@ -494,11 +480,7 @@ public final class ChestShopListener implements Listener {
 
     // ── The floating item ─────────────────────────────────────────────────────
 
-    /**
-     * Two shops selling the same thing side by side would otherwise become one item.
-     *
-     * <p>The likeliest way to lose a display, and the hardest to work out afterwards.
-     */
+    /** Two shops selling the same thing side by side must not merge into one item. */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onItemMerge(ItemMergeEvent event) {
         if (displays.isDisplay(event.getEntity()) || displays.isDisplay(event.getTarget())) {
@@ -539,9 +521,7 @@ public final class ChestShopListener implements Listener {
     public void onChunkLoad(ChunkLoadEvent event) {
         displays.showIn(event.getChunk());
 
-        // Rewriting the signs here is what makes an imported shop look like one of ours, and
-        // what puts a sign back that another plugin or a rollback left saying the wrong
-        // thing. A chunk holds a handful of shops at most.
+        // Rewriting the signs puts back one another plugin or a rollback changed.
         for (ChestShop shop : displays.in(event.getChunk())) {
             Location where = shop.location();
             if (where != null) {

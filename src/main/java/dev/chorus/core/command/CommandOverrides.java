@@ -10,20 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Sends a name taken from the server's own commands to the command that took it.
- *
- * <p>Freeing the name in the command map is only half of a takeover. The server keeps its
- * commands in a tree of its own as well, and a plugin registering the same name is merged
- * into the branch that is already there rather than replacing it: the bare {@code /clear}
- * reaches us, {@code /clear Notch} still matches the argument the server put there first,
- * and the permission the server asks for stays on the branch above both.
- *
- * <p>So the line is rewritten before any of that happens. {@code /clear Notch} is read as
- * {@code /clearinventory Notch}, which is a command of ours all the way down: our arguments,
- * our permission, our messages. The original is still reachable under its own namespace, as
- * {@code /minecraft:clear}, for anybody who wants it.
- */
+/** Sends a name taken from the server's own commands to the command that took it. */
 public final class CommandOverrides implements Listener {
 
     /** Taken name to the command of ours that answers to it, both already in lower case. */

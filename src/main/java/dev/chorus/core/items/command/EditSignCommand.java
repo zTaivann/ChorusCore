@@ -17,15 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 
-/**
- * {@code /editsign <set|clear|copy|paste>}: rewrites the sign you are looking at.
- *
- * <p>This writes straight to the block, so a protection plugin does not get a say. It is an
- * operator tool and the default permission says so.
- *
- * <p>A sign another part of the plugin owns, such as a shop, is refused: rewriting the price
- * line of a shop from under it is how a sign and what it actually does stop agreeing.
- */
+/** {@code /editsign <set|clear|copy|paste>}: rewrites the sign you are looking at. */
 public final class EditSignCommand extends PlayerCommand {
 
     private static final int RANGE = 8;

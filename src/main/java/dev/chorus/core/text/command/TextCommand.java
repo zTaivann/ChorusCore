@@ -11,13 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * {@code /motd} and {@code /info}: a text file from the plugin folder, a page at a time.
- *
- * <p>One class for both. They differ in nothing but which file they read and what they are
- * called, and writing the second one out again would only give the two of them room to drift
- * apart.
- */
+/** {@code /motd} and {@code /info}: a text file from the plugin folder, a page at a time. */
 public final class TextCommand extends ChorusCommand {
 
     private final ServerText text;

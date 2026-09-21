@@ -6,12 +6,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-/**
- * Shows the message of the day to whoever just walked in.
- *
- * <p>It goes through the command rather than around it, so the file is read and filled in
- * exactly once, in one place.
- */
+/** Shows the message of the day to whoever just walked in. */
 public final class MotdListener implements Listener {
 
     private final TextCommand motd;

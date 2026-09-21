@@ -14,23 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 
-/**
- * A text file in the plugin folder, read as chapters of pages.
- *
- * <p>{@code #rules} opens a chapter and names it. An optional second word on that line is the
- * permission needed to read it, so a private chapter is written where it lives rather than in
- * a second file that has to be kept in step:
- *
- * <pre>
- * #staff chorus.admin
- * </pre>
- *
- * <p>A {@code #} followed by a space is a note to whoever is editing the file and is never
- * shown to anybody, which is what lets the file explain itself at the top.
- *
- * <p>Everything before the first chapter line is the opening chapter, which is what a bare
- * {@code /info} or {@code /motd} shows.
- */
+/** A text file in the plugin folder, read as chapters of pages. */
 public final class ServerText {
 
     private static final int LINES_PER_PAGE = 9;

@@ -28,8 +28,6 @@ import java.util.Locale;
  *   /firework clear
  *   /firework fire 5
  * </pre>
- *
- * <p>Each run with colours adds one burst, so a rocket with three of them is three commands.
  */
 public final class FireworkCommand extends HeldItemCommand {
 

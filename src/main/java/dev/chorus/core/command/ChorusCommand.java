@@ -18,17 +18,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Base for every command in the plugin.
- *
- * <p>The permission is checked here rather than in plugin.yml. Bukkit refuses a command
- * declared with a permission before the executor ever runs, which would replace the message
- * in messages.yml with its own.
- */
+/** Base for every command in the plugin. */
 public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
 
     private static final String WORLD_BYPASS = "chorus.bypass.worlds";
 
+    /**
+     * This command's own view of the messages, so that a { messages} block in its
+     * config can replace a line for this command without touching it anywhere else.
+     */
     protected final Messages messages;
     protected final ActionGuard guard;
     protected final Schedulers schedulers;
@@ -39,20 +37,14 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     private volatile CommandRules rules = CommandRules.FREE;
 
     protected ChorusCommand(CommandSupport support, String name, @Nullable String permission) {
-        this.messages = support.messages();
+        this.messages = support.messages().forCommand();
         this.guard = support.guard();
         this.schedulers = support.schedulers();
         this.name = name;
         this.permission = permission;
     }
 
-    /**
-     * Runs work that touches another player on the thread that is allowed to touch them.
-     *
-     * <p>On an ordinary server that is the one server thread and this changes nothing. On
-     * Folia the player belongs to whichever region they are standing in, which is not the
-     * region the command arrived from when they are somewhere else.
-     */
+    /** Runs work that touches another player on the thread that is allowed to touch them. */
     protected final void onPlayer(Entity who, Runnable action) {
         schedulers.entity(who, action);
     }
@@ -69,6 +61,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
 
     public final void apply(CommandRules updated) {
         this.rules = updated;
+        messages.override(updated.messages());
     }
 
     protected final CommandRules rules() {
@@ -147,13 +140,6 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     /**
      * Looks up a player who may not be online, reporting it and returning null when there is
      * nobody by that name.
-     *
-     * <p>Someone online is answered straight away: being here is proof enough that they
-     * exist, and asking {@code hasPlayedBefore} about them would say no on their very first
-     * session, which is how a brand new player becomes invisible to half the plugin.
-     *
-     * <p>Never a lookup with Mojang. That is a web request, and these commands run on the
-     * server thread.
      */
     protected final @Nullable OfflinePlayer known(CommandSender sender, String name) {
         Player online = sender.getServer().getPlayerExact(name);
@@ -178,10 +164,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
         return target;
     }
 
-    /**
-     * Names for tab completion, filtered while iterating rather than after. On a busy server
-     * this runs on every keystroke and there is no reason to build a list of everyone first.
-     */
+    /** Names for tab completion, filtered while iterating rather than after. */
     protected static List<String> onlineNames(CommandSender sender, String input, boolean includeSelf) {
         String typed = input.toLowerCase(Locale.ROOT);
         List<String> names = new ArrayList<>();

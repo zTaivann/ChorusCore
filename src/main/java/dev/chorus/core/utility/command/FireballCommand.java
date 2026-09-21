@@ -26,13 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * {@code /fireball [kind] [speed]}: throws something from where you are looking.
- *
- * <p>What an explosive one does where it lands is set in utility.yml and not by whoever
- * types the command, so the same permission cannot mean a firework on one server and a
- * crater on another.
- */
+/** {@code /fireball [kind] [speed]}: throws something from where you are looking. */
 public final class FireballCommand extends PlayerCommand {
 
     private static final Map<String, Class<? extends Projectile>> KINDS = kinds();

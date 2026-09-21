@@ -4,12 +4,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * When each player last took each kit.
- *
- * <p>It lives in the database rather than in memory because a kit on a week's cooldown is
- * worthless if a restart wipes it.
- */
+/** When each player last took each kit. */
 public interface KitRepository {
 
     void createTables() throws SQLException;

@@ -14,22 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-/**
- * One thing that happens when a kit is claimed, or when a claim is refused.
- *
- * <p>Written as {@code type: argument}, which keeps a whole sequence readable in the file
- * and means adding a new kind of action never changes the shape of anybody's config:
- *
- * <pre>
- * claim-actions:
- *   - 'message: &lt;green&gt;Enjoy your %kit% kit.'
- *   - 'broadcast: &lt;gray&gt;%player% just claimed %kit%.'
- *   - 'sound: entity.player.levelup 1 1.4'
- *   - 'title: &lt;gold&gt;&lt;bold&gt;VIP;&lt;gray&gt;Welcome aboard'
- *   - 'console: lp user %player% parent add vip'
- *   - 'close'
- * </pre>
- */
+/** One thing that happens when a kit is claimed, or when a claim is refused. */
 public record KitAction(Kind kind, String argument) {
 
     public enum Kind {
@@ -100,13 +85,7 @@ public record KitAction(Kind kind, String argument) {
                 Duration.ofMillis(TITLE_FADE_MILLIS)));
     }
 
-    /**
-     * {@code sound: key [volume] [pitch]}.
-     *
-     * <p>Played by name rather than through the {@link Sound} constants, which were renamed
-     * between the versions this jar runs on. A name the client does not know simply plays
-     * nothing, so a typo can never break anything.
-     */
+    /** {@code sound: key [volume] [pitch]}. */
     private static void playSound(Player player, String filled) {
         String[] parts = filled.split("\\s+");
         if (parts.length == 0 || parts[0].isEmpty()) {

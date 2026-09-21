@@ -10,13 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 
-/**
- * A burst of particles at a position, sent to everyone who can see it.
- *
- * <p>Mojang renamed a good number of particles along the way, so a name that is right on one
- * version is wrong on another. {@link #RENAMES} maps the pairs both ways, which means an
- * admin can write either spelling and get the one their server actually has.
- */
+/** A burst of particles at a position, sent to everyone who can see it. */
 public record ParticleCue(@Nullable Particle particle, int count, double spread, double height,
                           double speed) {
 

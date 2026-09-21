@@ -8,13 +8,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-/**
- * How money is written down and how far it is allowed to go.
- *
- * <p>Amounts are rounded to the number of decimals the server uses before anything is
- * stored, so a balance can never end up a fraction of a penny away from what it says on
- * screen.
- */
+/** How money is written down and how far it is allowed to go. */
 public record Currency(String symbol, boolean suffix, int decimals, String singular, String plural,
                        double startingBalance, double minimum, double maximum) {
 

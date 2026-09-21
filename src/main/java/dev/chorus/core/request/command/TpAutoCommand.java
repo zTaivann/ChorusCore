@@ -6,12 +6,7 @@ import dev.chorus.core.flags.PlayerFlag;
 import dev.chorus.core.flags.PlayerFlagService;
 import org.bukkit.entity.Player;
 
-/**
- * Accepts every teleport request on arrival instead of asking.
- *
- * <p>Turning it on clears {@code /tptoggle}, since blocking every request and accepting
- * every request cannot both be true and the one just asked for is the one that wins.
- */
+/** Accepts every teleport request on arrival instead of asking. */
 public final class TpAutoCommand extends PlayerCommand {
 
     private final PlayerFlagService flags;

@@ -1,0 +1,61 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   T E L E P O R T                                                      │
+# │   /tpa  /tpahere  /tpaccept  /tpdeny  /back  /tptoggle                 │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Solo las líneas que se traducen. El resto viene de messages/teleport.yml.
+
+request:
+  usage: '%prefix%<gray>Uso: <white>/%command% [jugador]</white>'
+  self: '%prefix%<red>No puedes mandarte una solicitud a ti mismo.'
+  duplicate: '%prefix%<red>Ya tienes una solicitud esperando a <white>%player%</white>.'
+  sent: '%prefix%<gray>Solicitud enviada a <white>%player%</white>. Vence en %seconds% segundos.'
+  received: '%prefix%<white>%player%</white><gray> quiere teletransportarse hacia ti.'
+  received-here: '%prefix%<white>%player%</white><gray> quiere que vayas hacia él.'
+  button-accept: '<green><bold>[ ACEPTAR ]</bold></green>'
+  button-deny: '<red><bold>[ RECHAZAR ]</bold></red>'
+  button-separator: '<gray> o </gray>'
+  button-accept-hover: '<gray>Dejar pasar a <white>%player%</white>'
+  button-deny-hover: '<gray>Rechazar a <white>%player%</white>'
+  accepted: '%prefix%<gray>Aceptaste la solicitud de <white>%player%</white>.'
+  accepted-by: '%prefix%<white>%player%</white><gray> aceptó tu solicitud.'
+  denied: '%prefix%<gray>Rechazaste la solicitud de <white>%player%</white>.'
+  denied-by: '%prefix%<white>%player%</white><gray> rechazó tu solicitud.'
+  cancelled: '%prefix%<gray>Tu solicitud a <white>%player%</white> se canceló.'
+  cancelled-by: '%prefix%<white>%player%</white><gray> canceló su solicitud.'
+  expired: '%prefix%<gray>Tu solicitud a <white>%player%</white> venció.'
+  none: '%prefix%<red>No tienes solicitudes pendientes.'
+  none-sent: '%prefix%<red>No has mandado ninguna solicitud.'
+  none-from: '%prefix%<red>No tienes ninguna solicitud pendiente de <white>%player%</white>.'
+  none-to: '%prefix%<red>No tienes ninguna solicitud pendiente hacia <white>%player%</white>.'
+  toggle-off: '%prefix%<gray>Las solicitudes de teletransporte están <red>bloqueadas</red>.'
+  toggle-on: '%prefix%<gray>Vuelves a <green>aceptar</green> solicitudes de teletransporte.'
+  blocked: '%prefix%<red>%player% no está aceptando solicitudes de teletransporte.'
+  auto-on: '%prefix%<green>Las solicitudes se van a aceptar solas.'
+  auto-off: '%prefix%<gray>Las solicitudes van a volver a preguntarte.'
+  auto-accepted: '%prefix%<gray>%player% acepta todas las solicitudes. En camino.'
+  auto-accepted-by: '%prefix%<gray>%player% viene en camino, aceptado automáticamente.'
+  offline-usage: '%prefix%<gray>Usa <white>/tpoffline [jugador]</white>.'
+  offline-went: '%prefix%<gray>Te llevamos a donde <white>%player%</white> se desconectó hace <white>%ago%</white>.'
+  offline-here: '%prefix%<gray>%player% está conectado, así que esto es simplemente donde está.'
+  offline-nowhere: '%prefix%<gray>No hay nada anotado de <white>%player%</white>.'
+  all-sent: '%prefix%<gray>Se le preguntó a <white>%count%</white> jugadores; <white>%came%</white> vinieron de una. Tienen <white>%seconds%s</white>.'
+  all-nobody: '%prefix%<gray>No hay a quién preguntarle.'
+
+
+back:
+  teleported: '%prefix%<gray>Volviste a donde estabas.'
+  none: '%prefix%<red>No hay a dónde volver.'
+  world-missing: '%prefix%<red>Ese mundo ya no está cargado.'
+  out-of-range: '%prefix%<red>Solo puedes retroceder <white>%depth%</white> pasos.'
+
+
+teleport:
+  warmup: '%prefix%<gray>No te muevas por <white>%seconds%</white> segundos.'
+  cancelled-move: '%prefix%<red>Teletransporte cancelado: te moviste.'
+  cancelled-damage: '%prefix%<red>Teletransporte cancelado: recibiste daño.'
+  failed: '%prefix%<red>El teletransporte no se pudo completar.'
+  warmup-countdown: '<gray>Teletransportando en <white><bold>%seconds%</bold></white>'
+  unsafe: '%prefix%<red>No hay dónde caer sin peligro ahí.'

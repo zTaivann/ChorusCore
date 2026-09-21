@@ -12,14 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-/**
- * A kit icon chosen in game was saved, reported as saved, and came back as a chest.
- *
- * <p>The cause was one shape too few. Writing the icon leaves a {@link Map} in the config;
- * reading the file back hands out a {@link ConfigurationSection}. The code looked for the
- * first and quietly fell through to the default on the second, which is the shape it has
- * every time after a restart.
- */
+/** A kit icon chosen in game was saved, reported as saved, and came back as a chest. */
 class KitIconTest {
 
     @Test

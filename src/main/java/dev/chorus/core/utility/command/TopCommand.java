@@ -25,8 +25,7 @@ public final class TopCommand extends PlayerCommand {
         World world = player.getWorld();
         if (world.getEnvironment() == World.Environment.NETHER
                 && !utility.settings().top().allowInNether()) {
-            // The highest block in the Nether is the bedrock roof, which is not somewhere
-            // anyone wants to be dropped.
+            // The highest block in the Nether is the bedrock roof.
             messages.send(player, "utility.top-unavailable");
             return;
         }

@@ -14,9 +14,6 @@ import java.util.function.Predicate;
 /**
  * The open /tpa requests, kept per target and in the order they arrived so that a bare
  * /tpaccept answers the most recent one.
- *
- * <p>Everything here runs on the server thread: commands, the expiry sweep and the quit
- * listener all do. Plain maps are therefore enough and cheaper than concurrent ones.
  */
 public final class TeleportRequestService {
 

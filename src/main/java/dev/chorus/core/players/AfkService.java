@@ -22,13 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Tracks who is away.
- *
- * <p>Activity is only recorded when a player crosses into a new block, types a command or
- * interacts, which keeps the move listener down to two comparisons for a player who is
- * simply looking around.
- */
+/** Tracks who is away. */
 public final class AfkService implements Listener {
 
     private static final long SWEEP_TICKS = 20L * 20;

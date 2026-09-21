@@ -33,12 +33,7 @@ public record ChestShopSettings(boolean enabled, int defaultLimit, double creati
                 Math.max(2, Math.min(32, chest.getInt("reach", 8))));
     }
 
-    /**
-     * How many shops this player may have.
-     *
-     * <p>The highest {@code chorus.shops.chest.limit.<n>} they hold, or the default. The
-     * unlimited permission is checked by the caller, which has the player to hand.
-     */
+    /** How many shops this player may have. */
     public int limitFor(Player player) {
         int limit = defaultLimit;
         for (PermissionAttachmentInfo permission : player.getEffectivePermissions()) {

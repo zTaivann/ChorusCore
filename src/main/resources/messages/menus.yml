@@ -1,0 +1,195 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   S C R E E N S                                                        │
+# │   every word that appears on a screen                                  │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Part of the messages folder. See core.yml.
+# A 'prefix' set here is what %prefix% means in this file.
+
+menu:
+
+  # ── The navigation strip ────────────────────────────────────────────────
+  #
+  # The bottom row of every paged screen.
+  buttons:
+    previous: '<c:accent>« Previous'
+    previous-lore: '<dark_gray>▪ <gray>Page <white>%page%'
+    next: '<c:accent>Next »'
+    next-lore: '<dark_gray>▪ <gray>Page <white>%page%'
+    close: '<c:bad>✖ Close'
+    close-lore: '<dark_gray>▪ <gray>Closes this menu'
+    back: '<c:accent>« Back'
+    back-lore: '<dark_gray>▪ <gray>To the screen before this one'
+
+  # ── /homes ──────────────────────────────────────────────────────────────
+  homes:
+    title: '<c:frame>» <c:screen-homes>YOUR HOMES</c> <c:frame>« <c:muted>%page%<c:frame>/<c:muted>%pages%'
+    entry: '<c:screen-homes>%home%'
+    lore-world: '<dark_gray>▪ <gray>World <dark_gray>» <white>%world%'
+    lore-location: '<dark_gray>▪ <gray>Location <dark_gray>» <white>%x%<dark_gray>, <white>%y%<dark_gray>, <white>%z%'
+    lore-created: '<dark_gray>▪ <gray>Created on <dark_gray>» <white>%date%'
+    lore-divider: '<dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪'
+    lore-action: '<c:good>➜ <gray>Click to teleport'
+
+  # ── /warps ──────────────────────────────────────────────────────────────
+  #
+  # Warps with a section of their own open a screen of sections first. Give them
+  # one with /warpset <warp> section <name>.
+  warps:
+    title: '<c:frame>» <c:screen-warps>WARPS</c> <c:frame>« <c:muted>%page%<c:frame>/<c:muted>%pages%'
+    section: '<c:screen-warps>%section%'
+    section-lore: '<dark_gray>▪ <gray>Contains <white>%count%</white> <gray>warps<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to open'
+    section-title: '<c:frame>» <c:screen-warps>%section%</c> <c:frame>« <c:muted>%page%<c:frame>/<c:muted>%pages%'
+    section-loose: 'Other'
+    entry: '<c:screen-warps>%warp%'
+    lore-description: '<gray>%description%'
+    lore-uses: '<dark_gray>▪ <gray>Used <dark_gray>» <white>%uses%</white> <gray>times'
+    lore-world: '<dark_gray>▪ <gray>World <dark_gray>» <white>%world%'
+    lore-location: '<dark_gray>▪ <gray>Location <dark_gray>» <white>%x%<dark_gray>, <white>%y%<dark_gray>, <white>%z%'
+    lore-divider: '<dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪'
+    lore-action: '<c:good>➜ <gray>Click to teleport'
+
+  # ── /kits ───────────────────────────────────────────────────────────────
+  kits:
+    title: '<c:frame>» <c:screen-kits>KITS</c> <c:frame>« <c:muted>%page%<c:frame>/<c:muted>%pages%'
+    lore-divider: '<dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪'
+    lore-action: '<c:good>➜ <gray>Click to claim this kit'
+    lore-cooldown: '<c:bad>✖ <gray>Ready in <white>%time%'
+    lore-taken: '<c:bad>✖ <gray>Already taken'
+    lore-locked: '<c:bad>✖ <gray>You do not meet what it asks for'
+
+  # ── /restore ────────────────────────────────────────────────────────────
+  #
+  # The saved inventories, one of them laid out, and its ender chest.
+  backups:
+    title: '<c:frame>» <c:screen-backups>BACKUPS</c> <c:frame>« <c:muted>%player% <c:frame>▪ <c:muted>%page%<c:frame>/<c:muted>%pages%'
+    entry: '<c:screen-backups>%reason%</c> <dark_gray>▪ <gray>%ago% ago'
+    entry-lore: '<dark_gray>▪ <gray>By <dark_gray>» <white>%actor%<newline><dark_gray>▪ <gray>At <dark_gray>» <white>%world% %x% %y% %z%<newline><dark_gray>▪ <gray>Level <white>%level%</white> <dark_gray>▪ <gray>Health <white>%health%</white> <dark_gray>▪ <gray>Food <white>%food%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to look inside'
+    entry-death-lore: '<dark_gray>▪ <c:bad>Cause <dark_gray>» <white>%cause%<newline><dark_gray>▪ <gray>At <dark_gray>» <white>%world% %x% %y% %z%<newline><dark_gray>▪ <gray>Level <white>%level%</white> <dark_gray>▪ <gray>Health <white>%health%</white> <dark_gray>▪ <gray>Food <white>%food%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to look inside'
+    entry-killed-lore: '<dark_gray>▪ <c:bad>Killed by <dark_gray>» <white>%killer%<newline><dark_gray>▪ <gray>At <dark_gray>» <white>%world% %x% %y% %z%<newline><dark_gray>▪ <gray>Level <white>%level%</white> <dark_gray>▪ <gray>Health <white>%health%</white> <dark_gray>▪ <gray>Food <white>%food%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to look inside'
+    reason-death: 'Death'
+    reason-join: 'Joined'
+    reason-quit: 'Left'
+    reason-world: 'Left world'
+    reason-clear: 'Cleared'
+    reason-kit: 'Kit'
+    reason-restore: 'Restored'
+    reason-manual: 'Saved by hand'
+    view-title: '<c:frame>» <c:screen-backups>BACKUP</c> <c:frame>« <c:muted>%player% <c:frame>▪ <c:muted>%ago% ago'
+    ender-title: '<c:frame>» <c:screen-homes>ENDER CHEST</c> <c:frame>« <c:muted>%player% <c:frame>▪ <c:muted>%ago% ago'
+    ender: '<c:accent>◆ Ender chest'
+    ender-lore: '<dark_gray>▪ <gray>What was in it at the time<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to look'
+    restore: '<c:good>✚ Restore inventory'
+    restore-lore: '<dark_gray>▪ <gray>Puts these items back<newline><dark_gray>▪ <gray>What they carry now is saved first<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to restore'
+    restore-all: '<c:good>✦ Restore everything'
+    restore-all-lore: '<dark_gray>▪ <gray>Inventory, ender chest, XP, health and food<newline><dark_gray>▪ <gray>What they have now is saved first<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to restore'
+    hand-over: '<c:accent>✋ Hand the items over'
+    hand-over-lore: '<dark_gray>▪ <gray>Gives these items back without<newline><dark_gray>▪ <gray>taking away what they carry now<newline><dark_gray>▪ <gray>Anything that does not fit drops at their feet<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to hand over'
+    filter: '<c:accent>◆ Showing <white>%filter%'
+    filter-all: 'everything'
+    filter-lore: '<dark_gray>▪ <gray>Next <dark_gray>» <white>%next%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to change'
+    restore-ender: '<c:good>✚ Restore ender chest'
+    restore-ender-lore: '<dark_gray>▪ <gray>Puts only these items back<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to restore'
+
+  # ── Chest shop signs ────────────────────────────────────────────────────
+  #
+  # The four lines a [Shop] sign shows once it is made.
+  shops:
+    sign-owner: '<c:sign-owner>%player%'
+    sign-selling: '<c:frame>Selling <c:muted>%amount%'
+    sign-buying: '<c:frame>Buying <c:muted>%amount%'
+    sign-item: '<c:muted>%item%'
+    sign-price: '<c:sign-price>%price% <c:frame>each'
+
+
+  # ── Screens that show an inventory ──────────────────────────────────────
+  titles:
+    disposal: '<c:frame>» <c:screen-disposal>DISPOSAL</c> <c:frame>«'
+    invsee: '<c:frame>» <c:screen-warps>INVENTORY</c> <c:frame>« <c:muted>%player%'
+    ecsee: '<c:frame>» <c:screen-homes>ENDER CHEST</c> <c:frame>« <c:muted>%player%'
+
+  # ── /kitedit ────────────────────────────────────────────────────────────
+  #
+  # The kit editor, buttons and chat prompts.
+  editor:
+    list-title: '<c:frame>» <c:screen-kits>KIT EDITOR</c> <c:frame>« <c:muted>%page%<c:frame>/<c:muted>%pages%'
+    ask-name: '%prefix%<gray>Type a name for the new kit. Letters, numbers, <white>-</white> and <white>_</white>.'
+    ask-display: '%prefix%<gray>Type the name <white>%kit%</white> should be shown by. Colours work either way: <white>&&6VIP</white> or <white>\<gold>VIP'
+    ask-lore: '%prefix%<gray>Type the lines under the name of <white>%kit%</white>. Separate them with <white>|</white>, or type <white>none</white> to clear them.'
+    ask-permission: '%prefix%<gray>Type the permission <white>%kit%</white> should need, or <white>none</white> for everyone.'
+    ask-cooldown: '%prefix%<gray>Type the wait for <white>%kit%</white>, in seconds. <white>3600</white> is an hour, <white>86400</white> a day.'
+    ask-maxclaims: '%prefix%<gray>Type how many times <white>%kit%</white> may ever be taken. <white>0</white> is no limit.'
+    ask-price: '%prefix%<gray>Type what <white>%kit%</white> should cost. <white>0</white> is free.'
+    icon: '<c:accent>✎ Icon'
+    icon-lore: '<dark_gray>▪ <gray>Now <dark_gray>» <white>%icon%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click an item in your inventory to copy it<newline><dark_gray>▪ <gray>Its name and enchantments are kept<newline><dark_gray>▪ <gray>Nothing is taken from your inventory'
+    icon-title: '<c:frame>» <c:screen-kits>%kit%</c> <c:frame>« <c:muted>Click an item to copy it'
+    icon-set: '%prefix%<gray>Kit <white>%kit%</white> <dark_gray>» <gray>icon is now <white>%icon%</white>.'
+    lore: '<c:accent>✎ Lore'
+    lore-lore: '<dark_gray>▪ <gray>Lines <dark_gray>» <white>%value%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to type them'
+    header-lore: '<dark_gray>▪ <gray>Shown as <dark_gray>» <white>%display%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to rename it'
+    list-entry: '<c:screen-kits>%kit%'
+    list-entry-lore: '<dark_gray>▪ <gray>Contains <white>%items%</white> items<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to edit'
+    new: '<c:good>✚ New kit'
+    new-lore: '<dark_gray>▪ <gray>Carry what it should hold first<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click for the command'
+    title: '<c:frame>» <c:screen-kits>%kit%</c> <c:frame>«'
+    header: '<c:screen-kits>%kit%'
+    items: '<c:accent>✦ Items'
+    items-lore: '<dark_gray>▪ <gray>Contains <white>%count%</white><newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to lay them out<newline><dark_gray>▪ <gray>Copies only. Nothing is taken from your inventory'
+    items-title: '<c:frame>» <c:screen-kits>%kit%</c> <c:frame>« <c:muted>Click to copy, close to save'
+    preview: '<c:accent>◆ Preview'
+    preview-lore: '<dark_gray>▪ <gray>See it as a player would<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to look'
+    preview-title: '<c:frame>» <c:screen-warps>%kit%</c> <c:frame>« <c:muted>Preview'
+    cooldown: '<c:accent>● Cooldown'
+    cooldown-lore: '<dark_gray>▪ <gray>Now <dark_gray>» <white>%value%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>▸ <gray>Left <white>+1m</white><dark_gray>, <gray>right <white>-1m<newline><c:good>▸ <gray>Shift for whole days<newline><c:good>▸ <gray>Press <white>Q</white> to type the seconds'
+    maxclaims: '<c:accent>◇ Max claims'
+    maxclaims-lore: '<dark_gray>▪ <gray>Now <dark_gray>» <white>%value%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>▸ <gray>Left <white>+1</white><dark_gray>, <gray>right <white>-1<newline><c:good>▸ <gray>Shift for ten at a time<newline><c:good>▸ <gray>Press <white>Q</white> to type the number'
+    price: '<c:accent>★ Price'
+    price-lore: '<dark_gray>▪ <gray>Now <dark_gray>» <white>%value%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>▸ <gray>Left <white>+10</white><dark_gray>, <gray>right <white>-10<newline><c:good>▸ <gray>Shift for hundreds<newline><c:good>▸ <gray>Press <white>Q</white> to type the amount'
+    permission: '<c:accent>✎ Permission'
+    permission-lore: '<dark_gray>▪ <gray>Now <dark_gray>» <white>%value%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to change it'
+    onetime: '<c:accent>◆ One-time'
+    onetime-lore: '<dark_gray>▪ <gray>Now <dark_gray>» <white>%value%<newline><dark_gray>▪ <gray>Can only ever be claimed once, whatever the cooldown is<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to switch'
+    autoarmor: '<c:accent>◆ Auto armour'
+    autoarmor-lore: '<dark_gray>▪ <gray>Now <dark_gray>» <white>%value%<newline><dark_gray>▪ <gray>Armour goes on, not into the inventory<newline><dark_gray>▪ <gray>A slot already filled is left alone<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to switch'
+    clearinventory: '<c:accent>◆ Clear first'
+    clearinventory-lore: '<dark_gray>▪ <gray>Now <dark_gray>» <white>%value%<newline><dark_gray>▪ <gray>Empties the inventory before handing it over<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to switch'
+    back: '<c:accent>« Back'
+    back-lore: '<dark_gray>▪ <gray>To the list of kits'
+    delete: '<c:bad>✖ Delete'
+    delete-lore: '<dark_gray>▪ <gray>Removes it from kits.yml<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:bad>➜ <gray>Shift-click to confirm'
+    delete-confirm: '%prefix%<c:bad>Shift-click to delete <white>%kit%</white> for good.'
+    requirements: '<c:accent>◇ Requirements'
+    requirements-lore: '<dark_gray>▪ <gray>Set <dark_gray>» <white>%count%<newline><dark_gray>▪ <gray>What has to be true to take it<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to open them'
+    requirements-title: '<c:frame>» <c:screen-kits>%kit%</c> <c:frame>« <c:muted>Requirements'
+    claimactions: '<c:accent>✦ Claim actions'
+    claimactions-lore: '<dark_gray>▪ <gray>Set <dark_gray>» <white>%count%<newline><dark_gray>▪ <gray>What happens when it is taken<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to open them'
+    claimactions-title: '<c:frame>» <c:screen-kits>%kit%</c> <c:frame>« <c:muted>Claim actions'
+    failactions: '<c:accent>✖ Fail actions'
+    failactions-lore: '<dark_gray>▪ <gray>Set <dark_gray>» <white>%count%<newline><dark_gray>▪ <gray>What happens when it is refused<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to open them'
+    failactions-title: '<c:frame>» <c:screen-kits>%kit%</c> <c:frame>« <c:muted>Fail actions'
+    placeholders: '<c:accent>◆ Placeholders'
+    placeholders-lore: '<dark_gray>▪ <gray>Now <dark_gray>» <white>%value%<newline><dark_gray>▪ <gray>Fills <white>%player%</white> and <white>%date%</white> into item text<newline><dark_gray>▪ <gray>Only items that use one are rebuilt<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to switch'
+    rule-entry: '<c:accent>%index%<dark_gray>. <white>%kind%'
+    rule-entry-lore: '<dark_gray>▪ <gray>%line%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to rewrite it<newline><c:bad>➜ <gray>Shift-click to remove it'
+    requirement-entry-lore: '<dark_gray>▪ <gray>%line%<newline><dark_gray>▪ <gray>Refused with <dark_gray>» <white>%deny%<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to rewrite it<newline><c:good>▸ <gray>Right-click for the refusal line<newline><c:bad>➜ <gray>Shift-click to remove it'
+    rule-deny-default: 'the usual message'
+    rule-unknown: '<c:bad>%index%<dark_gray>. <c:bad>Not understood'
+    rule-unknown-lore: '<dark_gray>▪ <gray>%line%<newline><dark_gray>▪ <gray>As it stands this line does nothing<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:good>➜ <gray>Click to rewrite it<newline><c:bad>➜ <gray>Shift-click to remove it'
+    rule-empty: '<gray>Nothing here yet'
+    rule-empty-lore: '<dark_gray>▪ <gray>Click <white>Add</white> below<newline><dark_gray>▪ <gray>Its lore lists everything you can write'
+    rule-add: '<c:good>✚ Add'
+    action-add-lore: '<dark_gray>▪ <gray>Written as <white>type: value<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:accent>▸ <white>message: <gray>a line to the player<newline><c:accent>▸ <white>broadcast: <gray>a line to everyone<newline><c:accent>▸ <white>actionbar: <gray>a line above the hotbar<newline><c:accent>▸ <white>title: <gray>big text<dark_gray>;<gray>small text<newline><c:accent>▸ <white>sound: <gray>name volume pitch<newline><c:accent>▸ <white>console: <gray>a command run as the server<newline><c:accent>▸ <white>player: <gray>a command run as the player<newline><c:accent>▸ <white>close <gray>shuts the screen<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><dark_gray>▪ <gray>Example <dark_gray>» <white>sound: entity.player.levelup 1 1.4<newline><dark_gray>▪ <gray>Colours work: <white>&&a</white> or <white>\<green><newline><dark_gray>▪ <gray>They run in the order listed<newline><c:good>➜ <gray>Click to type one'
+    requirement-add-lore: '<dark_gray>▪ <gray>Written as <white>type: value<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><c:accent>▸ <white>permission: <gray>a permission node<newline><c:accent>▸ <white>money: <gray>how much they must have<newline><c:accent>▸ <white>playtime: <gray>seconds they must have played<newline><c:accent>▸ <white>kit: <gray>another kit they must have taken<newline><c:accent>▸ <white>placeholder: <gray>any PlaceholderAPI value<newline><dark_gray>▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪<newline><dark_gray>▪ <gray>Compare with <white>>=</white> <white>\<=</white> <white>==</white> <white>!=</white> <white>></white> <white>\<</white> <gray>or <white>contains<newline><dark_gray>▪ <gray>Example <dark_gray>» <white>placeholder: %player_level% >= 10<newline><dark_gray>▪ <gray>Example <dark_gray>» <white>money: 500<newline><dark_gray>▪ <gray>All of them must pass<newline><c:good>➜ <gray>Click to type one'
+    rule-back: '<c:accent>« Back'
+    rule-back-lore: '<dark_gray>▪ <gray>To <white>%kit%'
+    rule-current: '%prefix%<gray>Now <dark_gray>» <white>%line%'
+    rule-saved: '%prefix%<gray>Kit <white>%kit%</white> <dark_gray>» <gray>saved.'
+    rule-removed: '%prefix%<gray>Kit <white>%kit%</white> <dark_gray>» <gray>line removed.'
+    ask-claimaction: '%prefix%<gray>Type what happens when <white>%kit%</white> is taken, as <white>type: value</white>.<newline><c:accent>▸ <white>message<dark_gray>, <white>broadcast<dark_gray>, <white>actionbar<dark_gray>, <white>title<dark_gray>, <white>sound<dark_gray>, <white>console<dark_gray>, <white>player<dark_gray>, <white>close<newline><c:good>▸ <gray>For example <dark_gray>» <white>message: \<green>Enjoy your kit'
+    ask-failaction: '%prefix%<gray>Type what happens when <white>%kit%</white> is refused, as <white>type: value</white>.<newline><c:accent>▸ <white>message<dark_gray>, <white>broadcast<dark_gray>, <white>actionbar<dark_gray>, <white>title<dark_gray>, <white>sound<dark_gray>, <white>console<dark_gray>, <white>player<dark_gray>, <white>close<newline><c:good>▸ <gray>For example <dark_gray>» <white>sound: block.note_block.bass 0.5 0.7'
+    ask-requirement: '%prefix%<gray>Type a requirement for <white>%kit%</white>, as <white>type: value</white>.<newline><c:accent>▸ <white>permission<dark_gray>, <white>money<dark_gray>, <white>playtime<dark_gray>, <white>kit<dark_gray>, <white>placeholder<newline><c:accent>▸ <gray>Compare with <white>>=</white> <white>\<=</white> <white>==</white> <white>!=</white> <white>></white> <white>\<</white> <gray>or <white>contains<newline><c:good>▸ <gray>For example <dark_gray>» <white>placeholder: %player_level% >= 10'
+    ask-deny: '%prefix%<gray>Type what a player is told when they fail this requirement for <white>%kit%</white>, or <white>none</white> for the usual message.'
+    bad-action: '%prefix%<c:bad>That is not an action.<newline><c:accent>▸ <white>message<dark_gray>, <white>broadcast<dark_gray>, <white>actionbar<dark_gray>, <white>title<dark_gray>, <white>sound<dark_gray>, <white>console<dark_gray>, <white>player<dark_gray>, <white>close<newline><c:good>▸ <gray>Written as <white>type: value<dark_gray>, <gray>for example <white>message: Enjoy your kit'
+    bad-requirement: '%prefix%<c:bad>That is not a requirement.<newline><c:accent>▸ <white>permission<dark_gray>, <white>money<dark_gray>, <white>playtime<dark_gray>, <white>kit<dark_gray>, <white>placeholder<newline><c:good>▸ <gray>Written as <white>type: value<dark_gray>, <gray>for example <white>money: 500'

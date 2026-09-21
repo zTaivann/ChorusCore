@@ -3,15 +3,7 @@ package dev.chorus.core.platform;
 import java.lang.reflect.Method;
 import java.util.List;
 
-/**
- * Every Folia method the scheduler bridge reaches for, written down as data.
- *
- * <p>As data rather than as a dozen lookups buried in a constructor because the checks
- * resolve this same list against the newest Paper API. A signature that does not exist
- * therefore fails the build, which is the only place a mistake in a reflective lookup can be
- * caught: the compiler never sees one, and on a real server the first sign of trouble is a
- * stack trace pointing at whatever happened to be scheduled first.
- */
+/** Every Folia method the scheduler bridge reaches for, written down as data. */
 enum FoliaCall {
 
     GLOBAL_RUN(Api.GLOBAL, "run", Api.PLUGIN, Api.CONSUMER),

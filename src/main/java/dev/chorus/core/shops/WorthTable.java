@@ -12,9 +12,6 @@ import java.util.function.Consumer;
 /**
  * What each material is worth, for {@code /sell} and for a {@code [Sell]} sign with no price
  * written on it.
- *
- * <p>Read into a map keyed by the material itself rather than by name, so a sale costs one
- * lookup instead of a string comparison per item in the inventory.
  */
 public final class WorthTable {
 

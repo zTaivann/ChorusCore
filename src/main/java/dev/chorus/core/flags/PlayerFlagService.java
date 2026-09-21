@@ -12,9 +12,6 @@ import java.util.logging.Logger;
 /**
  * The per-player switches, held in memory for everyone online and written through to the
  * database as they change.
- *
- * <p>Reading one has to be free: {@code /tpa} asks whether the other player is accepting
- * before it does anything else, and a database round trip there would be felt.
  */
 public final class PlayerFlagService {
 

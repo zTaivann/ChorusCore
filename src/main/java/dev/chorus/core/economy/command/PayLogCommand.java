@@ -42,8 +42,6 @@ public final class PayLogCommand extends ChorusCommand {
                 messages.send(sender, "error.no-permission");
                 return;
             }
-            // "*" is the only way to read the whole server's log, and it needs the same
-            // permission as reading somebody else's.
             if (args[0].equals("*")) {
                 subject = null;
             } else {

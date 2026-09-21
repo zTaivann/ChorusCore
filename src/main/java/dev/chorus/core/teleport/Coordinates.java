@@ -4,13 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Reading the three numbers somebody typed.
- *
- * <p>{@code ~} means where they already are, and {@code ~10} ten blocks from it, the way the
- * vanilla commands read it. One place for it, so {@code /tp} and {@code /tppos} cannot end up
- * accepting different things.
- */
+/** Reading the three numbers somebody typed. */
 public final class Coordinates {
 
     private static final char RELATIVE = '~';

@@ -20,9 +20,6 @@ import java.util.Locale;
 /**
  * Signs that trade with the server: {@code [Buy]} hands items over for money, {@code [Sell]}
  * takes them back.
- *
- * <p>Stock is not tracked. These are the server's own shops, which is what the two words on
- * the first line have meant since the day somebody first wrote them on a sign.
  */
 public final class ShopSignListener implements Listener {
 
@@ -178,11 +175,7 @@ public final class ShopSignListener implements Listener {
                 "price", economy.format(price));
     }
 
-    /**
-     * Signs grew a back side in 1.20, which is why reading a line without saying which side
-     * is deprecated on newer servers. It still reads the front, which is the one people write
-     * on, and the method that replaced it does not exist on 1.18.
-     */
+    /** Signs grew a back side in 1.20. The front is read, and the newer method is not on 1.18. */
     private static @Nullable ShopSign shopOn(Block block) {
         if (!(block.getState() instanceof Sign sign)) {
             return null;

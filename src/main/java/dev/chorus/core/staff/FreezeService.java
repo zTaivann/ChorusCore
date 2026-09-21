@@ -17,16 +17,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Holds a player still while staff talk to them.
- *
- * <p>The hold is on the block they are standing on rather than their exact position, so
- * looking around and small nudges from the server still work and the client is never fighting
- * the server for control of the camera.
- *
- * <p>Frozen players keep the state if they reconnect, because logging out to escape being
- * frozen is the first thing anybody tries.
- */
+/** Holds a player still while staff talk to them. */
 public final class FreezeService implements Listener {
 
     private static final long REMINDER_TICKS = 20L * 3;

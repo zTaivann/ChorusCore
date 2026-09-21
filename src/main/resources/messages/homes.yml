@@ -1,0 +1,40 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   H O M E S                                                            │
+# │   /home  /sethome  /delhome  /homes  /renamehome  /homeicon            │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Part of the messages folder. See core.yml.
+# A 'prefix' set here is what %prefix% means in this file.
+
+home:
+  none: '%prefix%<gray>You have no homes yet. Create one with <white>/sethome</white>.'
+  created: '%prefix%<gray>Home <white>%home%</white> created.'
+  updated: '%prefix%<gray>Home <white>%home%</white> moved to where you are standing.'
+  deleted: '%prefix%<gray>Home <white>%home%</white> deleted.'
+  teleported: '%prefix%<gray>Welcome back to <white>%home%</white>.'
+  unknown: '%prefix%<red>You have no home called <white>%home%</white>.'
+  invalid-name: '%prefix%<red>Invalid name. Use letters, numbers, <white>-</white> or <white>_</white>, up to %max% characters.'
+  limit-reached: '%prefix%<red>You already have %limit% homes. Delete one with <white>/delhome</white>.'
+  world-missing: '%prefix%<red>The world <white>%world%</white> is not loaded right now.'
+  delete-usage: '%prefix%<gray>Usage: <white>/delhome [name]</white>'
+  rename-usage: '%prefix%<gray>Usage: <white>/renamehome [old] [new]</white>'
+  renamed: '%prefix%<gray>Home <white>%home%</white> is now called <white>%name%</white>.'
+  rename-same: '%prefix%<red>That is already its name.'
+  rename-taken: '%prefix%<red>You already have a home called <white>%home%</white>.'
+  world-limit-reached: '%prefix%<red>You already have %limit% homes in %world%.'
+  icon-usage: '%prefix%<gray>Usage: <white>/homeicon [home] [item]</white>. Leave the item off to reset it.'
+  icon-set: '%prefix%<gray>Home <white>%home%</white> now shows as <white>%icon%</white>.'
+  icon-cleared: '%prefix%<gray>Home <white>%home%</white> shows the default icon again.'
+  icon-unknown: '%prefix%<red>This version has no item called <white>%icon%</white>.'
+  list:
+    header: '%prefix%<gray>Your homes <dark_gray>(<white>%count%</white>/%limit%)</dark_gray>'
+    entry: '<white>%home%</white>'
+    separator: '<dark_gray>, </dark_gray>'
+    hover: '<gray>Go to <white>%home%</white><newline><dark_gray>%world% %x%, %y%, %z%</dark_gray>'
+
+  none-other: '%prefix%<gray>%player% has no homes.'
+  teleported-other: '%prefix%<gray>Taken to <white>%home%</white>, a home of <white>%player%</white>.'
+  overwrite-confirm: '%prefix%<gray>You already have a home called <white>%home%</white>. This moves it here.'
+  delete-confirm: '%prefix%<red>This deletes the home <white>%home%</white> for good.'

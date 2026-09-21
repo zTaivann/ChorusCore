@@ -20,16 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
-/**
- * Asks a player for a value in chat, and takes the answer without letting it become a message.
- *
- * <p>This is what makes a screen a screen. A menu that sends you away to type a command has
- * only moved the typing somewhere else; clicking a button, being asked for a number and
- * typing the number is the whole point.
- *
- * <p>The answer arrives on the chat thread and is handed back on the server thread, because
- * everything it goes on to do — writing a file, reopening an inventory — belongs there.
- */
+/** Asks a player for a value in chat, and takes the answer without letting it become a message. */
 public final class ChatPrompts implements Listener {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
@@ -89,8 +80,7 @@ public final class ChatPrompts implements Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onChat(AsyncChatEvent event) {
-        // Concurrent because the answer arrives on the chat thread while everything that
-        // sets a prompt up runs on the server one.
+        // The answer arrives on the chat thread; prompts are set up on the server one.
         Prompt prompt = waiting.remove(event.getPlayer().getUniqueId());
         if (prompt == null) {
             return;

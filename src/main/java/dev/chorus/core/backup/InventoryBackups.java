@@ -19,16 +19,7 @@ import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * A copy of everything a player was carrying, taken before they lose it.
- *
- * <p>Death is the reason this exists. A player who dies in lava, or to a bug, or to somebody
- * who should not have been able to kill them, has no way back without one of these. Clearing
- * an inventory and quitting are copied too, so a rollback has something to roll back to.
- *
- * <p>Taking one is fire and forget: the copy is made on the server thread, where the
- * inventory is, and written from a worker. Nobody waits on it.
- */
+/** A copy of everything a player was carrying, taken before they lose it. */
 public final class InventoryBackups {
 
     private static final int MAX_LIST = 45;
@@ -59,8 +50,6 @@ public final class InventoryBackups {
         ConfigurationSection on = backups.getConfigurationSection("on");
         Set<BackupReason> wanted = EnumSet.noneOf(BackupReason.class);
         for (BackupReason reason : BackupReason.values()) {
-            // A restore always leaves one behind. Undoing a mistaken restore is the whole
-            // point of the copy, and switching that off leaves no way back from the way back.
             if (reason == BackupReason.RESTORE || on == null
                     || on.getBoolean(reason.setting(), true)) {
                 wanted.add(reason);
@@ -99,8 +88,7 @@ public final class InventoryBackups {
             return;
         }
 
-        // Encoded here, on the thread that owns the inventory. Handing the live arrays to a
-        // worker would read them while the player carries on playing.
+        // Encoded on the thread that owns the inventory, not on the worker.
         Location where = player.getLocation();
         InventorySnapshot snapshot = new InventorySnapshot(0, player.getUniqueId(),
                 System.currentTimeMillis(),
@@ -141,9 +129,6 @@ public final class InventoryBackups {
     /**
      * Puts one back, after copying what the player is carrying now.
      *
-     * <p>Restoring is itself something that empties an inventory, so it leaves a copy of its
-     * own behind. Reaching for the wrong one should not be the end of it.
-     *
      * @return what was put back, so the caller can say. Empty when it cannot be read at all.
      */
     public Set<Part> restore(Player player, InventorySnapshot snapshot, Set<Part> parts,
@@ -181,9 +166,6 @@ public final class InventoryBackups {
 
     /**
      * Hands the saved items over without taking anything away.
-     *
-     * <p>For the times somebody should get their diamonds back but has since gone and
-     * earned a new set. Whatever does not fit falls at their feet rather than vanishing.
      *
      * @return how many items were handed over, or -1 when the copy cannot be read.
      */

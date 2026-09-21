@@ -73,8 +73,7 @@ public final class WarpCommand extends PlayerCommand {
             return;
         }
 
-        // Sending somebody else is a staff action, and paying for their trip out of your own
-        // pocket, or waiting out their cooldown, is nobody's idea of how that should work.
+        // Sending somebody else is a staff action: no price and no cooldown for the sender.
         if (!traveller.equals(player)) {
             send(player, traveller, warp, destination);
             return;

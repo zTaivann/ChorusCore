@@ -29,7 +29,7 @@ class CommandConfigTest {
 
     private static final Set<String> OPTIONS =
             Set.of("enabled", "warmup-seconds", "cooldown-seconds", "price", "worlds",
-                    "sound", "particle");
+                    "sound", "particle", "messages");
 
     private static Set<String> declaredCommands() {
         return new TreeSet<>(Resources.section(Resources.read("plugin.yml"), "commands").getKeys(false));

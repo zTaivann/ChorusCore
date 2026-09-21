@@ -34,25 +34,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-/**
- * Reads a server's EssentialsX data into Chorus.
- *
- * <p>Nobody changes the plugin that holds every home and every balance on their server if it
- * means losing them, so this exists and has to be trusted. Three rules make that possible:
- *
- * <ol>
- *   <li><b>Nothing in the Essentials folder is touched.</b> Every file is opened for reading.
- *       If the import goes wrong, or the server owner changes their mind, putting the old
- *       plugin back is all it takes.</li>
- *   <li><b>Nothing already in Chorus is overwritten</b> unless it is asked for. A home, a
- *       warp or a balance that is already here is counted as skipped and left alone.</li>
- *   <li><b>It can be run without doing anything.</b> The check pass reads every file and
- *       reports exactly what a real run would write.</li>
- * </ol>
- *
- * <p>Kits are deliberately not imported. Essentials writes them as its own item strings, and
- * a kit that came across half right is worse than one that never came across at all.
- */
+/** Reads a server's EssentialsX data into Chorus. */
 public final class EssentialsImport {
 
     private static final String WARP_CATEGORY = "warp";

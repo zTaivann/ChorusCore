@@ -8,13 +8,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 
-/**
- * Moving items and money in the same breath.
- *
- * <p>Each of these does the money side only once the item side is certain, and puts the
- * money back if the item side then fails. A trade that half happened is worse than one that
- * did not.
- */
+/** Moving items and money in the same breath. */
 public final class ShopService {
 
     private final Economy economy;
@@ -51,12 +45,7 @@ public final class ShopService {
         return space;
     }
 
-    /**
-     * Takes exactly this many out of the inventory.
-     *
-     * <p>Only plain items: a renamed or enchanted one is somebody's, not stock, and selling
-     * it by the stack would be a way to lose it for the price of the metal.
-     */
+    /** Takes exactly this many out of the inventory. */
     public static int take(Player player, Material material, int wanted) {
         Inventory inventory = player.getInventory();
         int left = wanted;

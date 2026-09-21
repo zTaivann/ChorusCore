@@ -16,13 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * The blocks a player may place without using them up.
- *
- * <p>Per material rather than all or nothing, so a builder can hand out stone for ever while
- * their diamonds stay countable. The list is held in memory and goes when they log out: an
- * unlimited stack that outlives a session is how a creative world leaks into a survival one.
- */
+/** The blocks a player may place without using them up. */
 public final class UnlimitedPlacing implements Listener {
 
     private final Map<UUID, Set<Material>> allowed = new HashMap<>();
@@ -54,12 +48,7 @@ public final class UnlimitedPlacing implements Listener {
         allowed.clear();
     }
 
-    /**
-     * Puts the block back in the hand after it was placed.
-     *
-     * <p>At MONITOR and only for a place that actually went through, so a protection plugin
-     * cancelling the placement leaves the stack exactly as it was.
-     */
+    /** Puts the block back in the hand after it was placed. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event) {
         if (allowed.isEmpty()) {

@@ -25,9 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * The purge deletes, so every one of these is about what it leaves behind.
- */
+/** The purge deletes, so every one of these is about what it leaves behind. */
 class PlayerPurgeTest {
 
     private static final long DAY = 24L * 60 * 60 * 1000;

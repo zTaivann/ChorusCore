@@ -1,0 +1,50 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   C H A T                                                              │
+# │   /msg  /reply  /ignore  /mail  /socialspy                             │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Part of the messages folder. See core.yml.
+# A 'prefix' set here is what %prefix% means in this file.
+
+chat:
+  msg-usage: '%prefix%<gray>Usage: <white>/msg [player] [message]</white>'
+  msg-self: '%prefix%<red>You cannot message yourself.'
+  msg-refused: '%prefix%<red>%player% is not taking messages right now.'
+  toggle-off: '%prefix%<gray>Private messages are <white>off</white>. Nobody can write to you.'
+  toggle-on: '%prefix%<gray>Private messages are <white>on</white> again.'
+  ignore-usage: '%prefix%<gray>Usage: <white>/ignore [player]</white> or <white>/ignore list</white>'
+  ignore-self: '%prefix%<red>You cannot ignore yourself.'
+  ignore-added: '%prefix%<gray>You will not hear from <white>%player%</white> again.'
+  ignore-removed: '%prefix%<gray>You will hear from <white>%player%</white> again.'
+  ignore-empty: '%prefix%<gray>You are not ignoring anybody.'
+  ignore-header: '%prefix%<gray>Ignoring <dark_gray>(<white>%count%</white>)</dark_gray>'
+  ignore-entry: '<white>%player%</white>'
+  ignore-separator: '<dark_gray>, </dark_gray>'
+  msg-sent: '<dark_gray>[<gray>you <dark_gray>-> <white>%player%</white><dark_gray>] <gray>%message%'
+  msg-received: '<dark_gray>[<white>%player%</white> <dark_gray>-> <gray>you<dark_gray>] <gray>%message%'
+  msg-spy: '<dark_gray>[spy] <gray>%from% <dark_gray>-> <gray>%to%<dark_gray>: <gray>%message%'
+  reply-usage: '%prefix%<gray>Usage: <white>/reply [message]</white>'
+  no-reply-target: '%prefix%<red>There is nobody to reply to.'
+  spy-enabled: '%prefix%<gray>Social spy <green>enabled</green>.'
+  spy-disabled: '%prefix%<gray>Social spy <red>disabled</red>.'
+  spy-unavailable: '%prefix%<red>Social spy is switched off on this server.'
+
+  mail-usage: '%prefix%<gray>Use <white>/mail</white>, <white>/mail send [player] [message]</white>, <white>/mail sendall [message]</white> or <white>/mail clear</white>.'
+  mail-header: '<dark_gray>» <c:heading-info><bold>MAIL</bold></c> <dark_gray>« <gray>%count% <dark_gray>▪ <gray>%page%<dark_gray>/<gray>%pages%'
+  mail-entry: '<dark_gray>%id%. <gray>%player% <dark_gray>» <gray>%message% <dark_gray>(<gray>%ago% ago<dark_gray>)'
+  mail-entry-new: '<dark_gray>%id%. <white>%player% <dark_gray>» <white>%message% <dark_gray>(<gray>%ago% ago<dark_gray>)'
+  mail-empty: '%prefix%<gray>Nothing waiting for you.'
+  mail-waiting: '%prefix%<gray>You have <white>%count%</white> waiting. Read it with <white>/mail</white>.'
+  mail-arrived: '%prefix%<gray>%player% left you a message. Read it with <white>/mail</white>.'
+  mail-sent: '%prefix%<green>Mail left for <white>%player%</white>.'
+  mail-sent-all: '%prefix%<green>Mail left for <white>%count%</white> players.'
+  mail-full: '%prefix%<red>The inbox of %player% is full.'
+  mail-cleared: '%prefix%<gray>Cleared <white>%count%</white> letters.'
+  mail-cleared-one: '%prefix%<gray>Cleared letter <white>%id%</white>.'
+  mail-missing: '%prefix%<gray>There is no letter <white>%id%</white>.'
+
+  mail-of: '%prefix%<gray>The inbox of <white>%player%</white>. Reading it leaves it unread for them.'
+  rtoggle-sender: '%prefix%<gray>/reply now answers whoever last wrote to you.'
+  rtoggle-recipient: '%prefix%<gray>/reply now answers whoever you last wrote to.'

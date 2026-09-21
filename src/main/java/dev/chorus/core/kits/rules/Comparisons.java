@@ -7,10 +7,6 @@ import java.util.Locale;
 /**
  * Reads a comparison that has already had its placeholders filled in, such as
  * {@code "12 >= 10"} or {@code "Gold contains old"}.
- *
- * <p>Numbers are compared as numbers when both sides look like one, and as text otherwise.
- * That is what lets one line work for a level, a rank name and a yes/no, which is most of
- * what a server owner wants to gate a kit on.
  */
 final class Comparisons {
 
@@ -34,8 +30,7 @@ final class Comparisons {
             String[] sides = split(filled, operator);
             return compare(sides[0], sides[1], operator);
         }
-        // No operator at all: read it as a plain yes or no, which is how most placeholders
-        // that answer a question are written.
+        // No operator: read as a plain yes or no.
         String value = filled.trim();
         return value.equalsIgnoreCase("true") || value.equalsIgnoreCase("yes");
     }
@@ -59,8 +54,6 @@ final class Comparisons {
         return switch (operator) {
             case "!=" -> !same;
             case "==" -> same;
-            // Asking whether one word is greater than another is a mistake, not a question,
-            // and answering it either way would hide the mistake.
             default -> false;
         };
     }

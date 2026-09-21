@@ -101,16 +101,7 @@ public final class KitsModule implements ChorusModule {
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 
-    /**
-     * Reads the kits out of the config already in memory, never off the disk.
-     *
-     * <p>This is also what /kitedit calls after changing one. The file was just written out
-     * of this same memory, so reading it back would be a second trip to the disk on every
-     * click of a button somebody might click twenty times in a row.
-     *
-     * <p>It does mean an icon arrives here as a plain map rather than as the section a saved
-     * file gives back, which is exactly why the reader accepts both.
-     */
+    /** Reads the kits out of the config already in memory, never off the disk. */
     private void load() {
         ConfigurationSection root = config.section("kits");
         settings = KitSettings.read(root, this::warn);

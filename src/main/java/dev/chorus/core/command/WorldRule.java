@@ -8,21 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/**
- * Which worlds a command works in.
- *
- * <p>One list does both jobs. A name on its own is the only place the command works; a name
- * with {@code !} in front is the one place it does not:
- *
- * <pre>
- * worlds: [ ]                        everywhere, which is the default
- * worlds: [ world, world_nether ]    only those two
- * worlds: [ '!event' ]               everywhere except the event world
- * </pre>
- *
- * <p>Names are compared without case, since a world folder and the name typed in a config
- * rarely agree on it.
- */
+/** Which worlds a command works in. */
 public record WorldRule(Set<String> allowed, Set<String> denied) {
 
     public static final WorldRule EVERYWHERE = new WorldRule(Set.of(), Set.of());

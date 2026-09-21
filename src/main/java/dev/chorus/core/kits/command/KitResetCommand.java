@@ -16,9 +16,6 @@ import java.util.Locale;
 /**
  * {@code /kitreset <kit|*> [player]}: clears a cooldown, or lets a one-time kit be taken
  * again.
- *
- * <p>The player has to be online, since the record of what they have taken is only loaded
- * while they are.
  */
 public final class KitResetCommand extends ChorusCommand {
 

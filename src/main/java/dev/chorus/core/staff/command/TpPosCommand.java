@@ -56,10 +56,7 @@ public final class TpPosCommand extends ChorusCommand {
         }
 
         settle(sender);
-        // Exactly where they asked. These are numbers somebody typed a second ago, not a
-        // home saved last year, so there is nothing here that has gone stale and nothing to
-        // second-guess: moving them to the nearest floor would be answering a different
-        // question. Staff who wanted the ground can read the coordinates off /getpos.
+        // Exactly where they asked: typed coordinates are not a place that may have moved.
         teleports.teleport(traveller, destination, rules(), name(), TeleportService.Landing.EXACT, () ->
                 messages.send(sender, "staff.tppos-done",
                         "player", traveller.getName(),

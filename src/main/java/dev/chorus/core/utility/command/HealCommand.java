@@ -26,9 +26,7 @@ public final class HealCommand extends TargetedCommand {
         UtilitySettings settings = utility.settings();
         UtilitySettings.Heal heal = settings.heal();
 
-        // getMaxHealth() is deprecated in favour of the max health attribute, but that
-        // attribute was renamed between 1.18 and 26 and this method was not, so it is the
-        // only way to spell this that works across the whole supported range.
+        // Deprecated, but the attribute replacing it was renamed between 1.18 and 26.
         target.setHealth(target.getMaxHealth());
 
         if (heal.extinguish()) {

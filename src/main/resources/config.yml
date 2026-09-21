@@ -8,8 +8,10 @@
 # This file only holds things the whole plugin shares. Everything else has its own file:
 #
 #   aliases.yml           extra names for the commands
-#   messages.yml          every line the plugin sends to chat
-#   menus.yml             every word that appears on a screen
+#   palette.yml           the colours every line is written in
+#   messages/             every line the plugin sends, one file per part of it
+#   messages/menus.yml    every word that appears on a screen
+#   messages/es/          the same in Spanish, and a folder per language after it
 #   modules/homes.yml     /home /sethome /delhome /homes
 #   modules/warps.yml     /warp /warps /setwarp /delwarp
 #   modules/spawn.yml     /spawn /setspawn
@@ -91,13 +93,14 @@ economy:
     plural: coins
 
 # ── Language ─────────────────────────────────────────────────────────────
-# Other languages live beside messages.yml as messages_es.yml, messages_fr.yml
-# and so on. A translation only writes down the lines it translates; anything
-# it leaves out comes from messages.yml, so one is never out of date, only
-# incomplete. Dropping a file in and running /chorus reload is all it takes.
+# Other languages are folders inside messages/: messages/es/, messages/fr/ and so
+# on. A translation only writes down the lines it translates, in as many or as few
+# files as it likes; anything it leaves out comes from English, so one is never out
+# of date, only incomplete. Making the folder and running /chorus reload is all it
+# takes.
 language:
-  # The language everybody gets, by the code in the file name. Empty is English,
-  # which is messages.yml itself.
+  # The language everybody gets, by the name of its folder. Empty is English,
+  # which is the messages folder itself.
   default: ''
 
   # true sends each player the translation that matches their own Minecraft
@@ -116,18 +119,17 @@ confirmations:
 
 # ── Metrics ──────────────────────────────────────────────────────────────
 # Sends the server version, the storage type and how many modules are on to
-# bStats, which is how anybody knows the plugin is being used. No player data.
+# bStats. No player data.
 metrics: true
 
 # ── Staff log ────────────────────────────────────────────────────────────
 staff-log:
-  # Writes down the staff actions worth being able to look up later: freezing
-  # and unfreezing, /sudo, /lockdown, /tempfly, notes, and every /eco. Read it
-  # in game with /stafflog.
+  # Writes down freezing and unfreezing, /sudo, /lockdown, /tempfly, notes and
+  # every /eco. Read it in game with /stafflog.
   enabled: true
 
   # Entries older than this are dropped when the server starts. 0 keeps them
-  # for ever, which on a busy server means a table that only ever grows.
+  # for ever.
   keep-days: 60
 
   # How many entries one /stafflog prints. Maximum 50.

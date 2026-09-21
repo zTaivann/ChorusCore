@@ -5,16 +5,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * The signs that stand in for a command.
- *
- * <p>Each one runs the command a player would have typed, which is what keeps them honest:
- * the permission, the cooldown, the price and the message all come from that command rather
- * than being written a second time here and drifting apart from it.
- *
- * <p>{@link #FREE} is the exception. There is no command for handing an item over, so it is
- * the one kind the listener carries out itself.
- */
+/** The signs that stand in for a command. */
 public enum ServiceSign {
 
     HEAL("[heal]", "heal"),

@@ -6,12 +6,7 @@ import dev.chorus.core.flags.PlayerFlag;
 import dev.chorus.core.flags.PlayerFlagService;
 import org.bukkit.entity.Player;
 
-/**
- * {@code /rtoggle}: which end of a conversation {@code /reply} answers.
- *
- * <p>It only matters when a conversation is interrupted: you write to Anna, Ben writes to
- * you, and {@code /r} has to pick one. The choice is kept between sessions.
- */
+/** {@code /rtoggle}: which end of a conversation {@code /reply} answers. */
 public final class ReplyToggleCommand extends PlayerCommand {
 
     private final PlayerFlagService flags;

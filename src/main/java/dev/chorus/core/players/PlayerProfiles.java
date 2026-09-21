@@ -22,9 +22,6 @@ import java.util.logging.Logger;
 /**
  * The record of who has been on the server: names, nicknames, where they last were and the
  * address they came from.
- *
- * <p>Everything about somebody online is held in memory, because /list and the chat read it
- * constantly. Everything about somebody who is not comes out of the database on demand.
  */
 public final class PlayerProfiles {
 
@@ -174,12 +171,7 @@ public final class PlayerProfiles {
         return socket.getAddress().getHostAddress();
     }
 
-    /**
-     * Names for tab completion: everyone online, then anyone who has been here before.
-     *
-     * <p>Blocking, so it belongs on a worker thread. Tab completion runs on the server
-     * thread, which is why the commands that offer offline names cap what they ask for.
-     */
+    /** Names for tab completion: everyone online, then anyone who has been here before. */
     public List<String> knownNames(Player asker, String prefix, int limit) {
         List<String> names = new ArrayList<>();
         String typed = prefix.toLowerCase(Locale.ROOT);

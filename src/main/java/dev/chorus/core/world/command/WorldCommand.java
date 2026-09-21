@@ -15,12 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BooleanSupplier;
 
-/**
- * {@code /world [name]}: lists the worlds, or goes to one.
- *
- * <p>A world can be locked behind {@code chorus.world.go.<name>} by turning per-world
- * permissions on, which is how a creative or event world stays shut without a second plugin.
- */
+/** {@code /world [name]}: lists the worlds, or goes to one. */
 public final class WorldCommand extends PlayerCommand {
 
     private static final String PER_WORLD = "chorus.world.go.";

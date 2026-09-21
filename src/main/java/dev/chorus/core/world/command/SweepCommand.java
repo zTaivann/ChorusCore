@@ -21,13 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 
-/**
- * {@code /sweep [what] [radius]}: clears entities out of the world.
- *
- * <p>The word can be a group such as {@code drops} or {@code monsters}, or the name of one
- * kind of mob. Without a radius it takes the whole world the sender is standing in, which is
- * the version worth asking twice about.
- */
+/** {@code /sweep [what] [radius]}: clears entities out of the world. */
 public final class SweepCommand extends ChorusCommand {
 
     private static final int MAX_RADIUS = 512;
@@ -67,13 +61,7 @@ public final class SweepCommand extends ChorusCommand {
         wholeWorld(sender, world, matches, wanted);
     }
 
-    /**
-     * Counts first, asks, then clears.
-     *
-     * <p>Two passes rather than one because the count has to be in the question, and a whole
-     * world cannot be read in one go on a server that ticks its regions in parallel. The
-     * number can move a little between the two, which is what a confirmation is for.
-     */
+    /** Counts first, asks, then clears. */
     private void wholeWorld(CommandSender sender, World world, Predicate<Entity> matches,
                             String wanted) {
         EntitySweep.run(schedulers, List.of(world), matches, false, count -> {

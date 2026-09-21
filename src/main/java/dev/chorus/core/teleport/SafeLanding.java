@@ -8,24 +8,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
-/**
- * Finds somewhere a player can actually stand near where they asked to go.
- *
- * <p>Warps and homes outlive the world around them: the platform gets mined, lava flows in, a
- * new build swallows the spot. Rather than dropping the player inside a wall or into a lake of
- * lava, the destination is nudged to the nearest place with a floor and room to stand.
- *
- * <p>The test is the player's own box against the boxes of the blocks it reaches, not whether
- * the block at their feet is passable. A player standing on a slab, a stair or a snow layer is
- * half a block into the one below them, and the coarser test would move them up a block every
- * time they went home.
- *
- * <p>Materials are matched by name rather than by enum constant, because the list of blocks
- * that hurt has grown over the versions and a constant that does not exist yet will not
- * compile. A name this server has never heard of simply never matches.
- */
+/** Finds somewhere a player can actually stand near where they asked to go. */
 public final class SafeLanding {
 
+    /** Matched by name: a block a version does not have simply never matches. */
     private static final Set<String> DEADLY = Set.of(
             "LAVA", "FIRE", "SOUL_FIRE", "CAMPFIRE", "SOUL_CAMPFIRE", "MAGMA_BLOCK", "CACTUS",
             "SWEET_BERRY_BUSH", "WITHER_ROSE", "POWDER_SNOW", "END_PORTAL", "NETHER_PORTAL",
@@ -46,9 +32,7 @@ public final class SafeLanding {
      * The given spot if it will do, otherwise the closest one above or below it within
      * {@code radius} blocks, otherwise null.
      *
-     * @param needsFloor false for a player who can fly, who only needs the room and not the
-     *                   ground under it. Asking a flying player for a floor turns a warp over
-     *                   a canyon into a refusal for no reason.
+     * @param needsFloor false for a player who can fly, who needs the room and not the ground
      */
     public static @Nullable Location nearest(Location wanted, int radius, boolean needsFloor) {
         if (standable(wanted, needsFloor)) {
@@ -120,21 +104,14 @@ public final class SafeLanding {
         return true;
     }
 
-    /**
-     * Something directly under the feet, reaching up to them.
-     *
-     * <p>The block below is the one that holds a player up on flat ground; on a slab or a
-     * stair it is the block their feet are nominally inside, whose top happens to be exactly
-     * where they stand.
-     */
+    /** Something directly under the feet, reaching up to them. */
     private static boolean supported(World world, Location at) {
         Block under = world.getBlockAt(
                 at.getBlockX(), (int) Math.floor(at.getY() - EPSILON), at.getBlockZ());
         if (deadly(under)) {
             return false;
         }
-        // Water holds a player up well enough. Refusing it turns every warp, home and
-        // teleport on a coast or a river into "there is nowhere safe to land there".
+        // Water holds a player up.
         if (WATER.equals(under.getType().name())) {
             return true;
         }

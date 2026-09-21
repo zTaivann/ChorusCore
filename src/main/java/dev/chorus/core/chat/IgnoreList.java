@@ -9,13 +9,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Who each player has asked not to hear from.
- *
- * <p>Read once while they are still logging in and kept in memory, so the check on every
- * message costs nothing. Staff are never ignored: somebody who can see the whole server's
- * messages can reach anybody on it.
- */
+/** Who each player has asked not to hear from. */
 public final class IgnoreList {
 
     private static final String BYPASS_PERMISSION = "chorus.chat.ignore.bypass";

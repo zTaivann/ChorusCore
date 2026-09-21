@@ -1,0 +1,57 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   W O R L D                                                            │
+# │   /world  /time  /weather  /spawnmob  /sweep  /locate                  │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Part of the messages folder. See core.yml.
+# A 'prefix' set here is what %prefix% means in this file.
+
+world:
+  not-found: '%prefix%<red>There is no world called <white>%world%</white>.'
+  already-there: '%prefix%<gray>You are already in <white>%world%</white>.'
+  went: '%prefix%<gray>Welcome to <white>%world%</white>.'
+  every-world: 'every world'
+  list-header: '<dark_gray>» <c:heading-server><bold>WORLDS</bold></c> <dark_gray>« <gray>%count%'
+  list-entry: '<dark_gray>▪ <white>%world% <dark_gray>» <gray>%environment% <dark_gray>▪ <gray>%players% online'
+  time-usage: '%prefix%<gray>Use <white>/time [day|noon|night|midnight|ticks] [world|all]</white>.'
+  time-now: '%prefix%<gray>%world% <dark_gray>» <white>%clock% <dark_gray>(<gray>%ticks% ticks<dark_gray>)'
+  time-set: '%prefix%<gray>Time set to <white>%time%</white> in <white>%world%</white>.'
+  weather-usage: '%prefix%<gray>Use <white>/weather [clear|rain|storm] [minutes] [world]</white>.'
+  weather-now: '%prefix%<gray>%world% <dark_gray>» <white>%weather%'
+  weather-set: '%prefix%<gray>Weather set to <white>%weather%</white> in <white>%world%</white> for <white>%minutes%</white> minutes.'
+  spawnmob-usage: '%prefix%<gray>Use <white>/spawnmob [mob] [amount] [player]</white>.'
+  spawnmob-unknown: '%prefix%<red>There is no mob called <white>%mob%</white>.'
+  spawnmob-limit: '%prefix%<red>At most <white>%limit%</white> at a time.'
+  spawnmob-done: '%prefix%<gray>Spawned <white>%count% %mob%</white> at <white>%player%</white>.'
+  sweep-unknown: '%prefix%<red>There is nothing called <white>%target%</white> to sweep.'
+  sweep-radius: '%prefix%<gray>The radius has to be a number of blocks.'
+  sweep-none: '%prefix%<gray>Nothing here counts as <white>%target%</white>.'
+  sweep-confirm: '%prefix%<red>This removes <white>%count% %target%</white> from the whole of <white>%world%</white>.'
+  sweep-done: '%prefix%<green>Removed <white>%count% %target%</white>.'
+
+  tree-usage: '%prefix%<gray>Use <white>/tree [kind]</white> <dark_gray>» <gray>%kinds%'
+  tree-unknown: '%prefix%<red>There is no tree called <white>%kind%</white>.'
+  tree-nowhere: '%prefix%<gray>Look at the ground where it should grow.'
+  tree-refused: '%prefix%<gray>Nothing will grow there.'
+  tree-grown: '%prefix%<green>Grew a <white>%kind%</white>.'
+  spawner-none: '%prefix%<gray>You are not looking at a spawner.'
+  spawner-usage: '%prefix%<gray>Use <white>/spawner [mob] [delay]</white>.'
+  spawner-now: '%prefix%<gray>That spawner makes <white>%mob%</white> every <white>%delay%</white> ticks.'
+  spawner-set: '%prefix%<green>That spawner now makes <white>%mob%</white>.'
+  unlimited-on: '%prefix%<green>%item% will not run out while you place it.'
+  unlimited-off: '%prefix%<gray>%item% counts again.'
+  unlimited-empty: '%prefix%<gray>Nothing is unlimited for you.'
+  unlimited-cleared: '%prefix%<gray>Everything counts again.'
+  unlimited-not-a-block: '%prefix%<gray>Hold a block.'
+  locate-usage: '%prefix%<gray>Use <white>/locate [structure|biome] [name]</white>, or just the name.<newline>%prefix%<dark_gray>▪ <gray>Structures <dark_gray>» <white>%structures%<newline>%prefix%<dark_gray>▪ <gray>Biomes <dark_gray>» <white>%biomes%</white> <gray>of them, from <white>/locate biome </white>and tab.'
+  locate-unknown: '%prefix%<red>There is no structure or biome called <white>%kind%</white>.'
+  locate-none: '%prefix%<gray>No <white>%kind%</white> within reach of here.'
+  locate-refused: '%prefix%<gray>This server would not run that search from where you are standing.'
+  locate-found: '%prefix%<gray>Nearest <white>%kind%</white> <dark_gray>» <white>%x%<dark_gray>, <white>%y%<dark_gray>, <white>%z%</white> <dark_gray>(<gray>%distance% blocks away<dark_gray>)'
+  locate-hover: '<gray>%world% <dark_gray>» <white>%x% %y% %z%'
+  locate-hover-teleport: '<gray>%world% <dark_gray>» <white>%x% %y% %z%<newline><c:good>➜ <gray>Click to teleport there'
+  unlimited-list: '%prefix%<gray>Unlimited <dark_gray>» <white>%count%</white> <dark_gray>(<gray>%items%<dark_gray>)'
+  auto-sweep-warning: '%prefix%<gray>Clearing <white>%target%</white> off the ground in <white>%seconds%</white> seconds. Pick up anything you want.'
+  auto-sweep-done: '%prefix%<gray>Cleared <white>%count% %target%</white>.'

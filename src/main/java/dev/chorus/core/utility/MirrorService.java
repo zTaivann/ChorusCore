@@ -21,12 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Keeps every open /invsee and /ecsee window in step with the player it is showing.
- *
- * <p>The refresh task only exists while somebody actually has a window open, so a server
- * where nobody uses the command pays nothing for it at all.
- */
+/** Keeps every open /invsee and /ecsee window in step with the player it is showing. */
 public final class MirrorService implements Listener {
 
     private final Plugin plugin;

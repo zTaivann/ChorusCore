@@ -10,11 +10,7 @@ import java.util.Locale;
 /**
  * Enchantments looked up by namespaced key rather than by field name.
  *
- * <p>The constants on {@link Enchantment} were renamed more than once between 1.18 and 26,
- * but {@code minecraft:protection} has meant the same thing throughout. The list below holds
- * every vanilla id from either end of that range, including the ones that were renamed and
- * the ones that were added later; whatever the running server does not know is simply left
- * out of {@link #known()}.
+ * <p>The constants on {@link Enchantment} were renamed more than once between 1.18 and 26.
  */
 public final class Enchantments {
 

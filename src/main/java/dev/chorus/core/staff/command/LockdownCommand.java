@@ -13,12 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /lockdown on [reason]} or {@code /lockdown off}.
- *
- * <p>Nobody already on the server is thrown out. Closing the door is for stopping whatever is
- * arriving, and kicking everyone at once turns a problem into an outage.
- */
+/** {@code /lockdown on [reason]} or {@code /lockdown off}. */
 public final class LockdownCommand extends ChorusCommand {
 
     private static final String BYPASS_PERMISSION = "chorus.staff.lockdown.bypass";

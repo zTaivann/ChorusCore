@@ -14,18 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntConsumer;
 import java.util.function.Predicate;
 
-/**
- * Counts or removes entities across whole worlds, a chunk at a time.
- *
- * <p>Chunk by chunk rather than {@code world.getEntities()} because there is no one thread
- * allowed to touch a whole world on Folia: each region ticks on its own, and reaching into
- * another one is a crash. Each chunk is visited on the thread that owns where it is, and the
- * totals are added up as the answers come back.
- *
- * <p>That also means the work is spread over as many threads as the server has regions
- * instead of stalling one, which on an ordinary server changes nothing and on a busy Folia
- * server is the difference between a hitch and none.
- */
+/** Counts or removes entities across whole worlds, a chunk at a time. */
 public final class EntitySweep {
 
     private static final int CHUNK_BLOCKS = 16;

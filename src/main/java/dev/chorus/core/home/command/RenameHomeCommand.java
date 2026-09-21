@@ -64,8 +64,7 @@ public final class RenameHomeCommand extends PlayerCommand {
             return;
         }
 
-        // Saved under the new name before the old one goes: an outage between the two leaves
-        // the player with a duplicate rather than with nothing.
+        // Saved under the new name before the old one goes.
         homes.save(existing.get().renamedTo(to))
                 .thenCompose(ignored -> homes.delete(playerId, from))
                 .whenComplete((removed, failure) -> {

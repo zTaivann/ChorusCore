@@ -11,13 +11,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
-/**
- * What may be handed out and what may be put on an item.
- *
- * <p>Every rule here is off in the file that ships, so a server that has never opened this
- * section behaves exactly as it did before. {@code chorus.bypass.restrictions} is above all
- * of them.
- */
+/** What may be handed out and what may be put on an item. */
 public record ItemRestrictions(Set<Material> blockedItems, boolean permissionPerItem,
                                Set<String> blockedEnchantments, boolean permissionPerEnchantment,
                                boolean unsafeEnchantments) {
@@ -59,9 +53,6 @@ public record ItemRestrictions(Set<Material> blockedItems, boolean permissionPer
     /**
      * The highest level this sender may put on, which is the vanilla maximum unless both the
      * server and their permissions allow going past it.
-     *
-     * <p>One place for it, so {@code /enchant} and the {@code enchant:} word behind
-     * {@code /give} cannot drift into allowing different things.
      */
     public int highestLevel(Permissible who, Enchantment enchantment) {
         boolean beyond = unsafeEnchantments

@@ -16,23 +16,7 @@ import java.util.function.DoubleFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * The ledger the plugin keeps when it is the economy itself.
- *
- * <p>Every account is held in memory. A balance has to be readable the instant a priced
- * command runs and there is no room for a database round trip in the middle of one, so the
- * table is read once at startup and written back whenever an amount changes. The whole of a
- * large server's ledger is a few megabytes, and a lookup costs a hash.
- *
- * <p>Every change goes through {@link #change}, which reads the old amount and writes the new
- * one in a single step the map will not let anything else interleave with. Checking a balance
- * and then taking money from it as two separate operations is how a shop gets paid twice on a
- * server that ticks more than one thread.
- *
- * <p>Writes to the database are queued rather than waited on. A balance that changed is
- * already correct for everybody reading it; the row catching up a moment later changes
- * nothing.
- */
+/** The ledger the plugin keeps when it is the economy itself. */
 public final class Balances {
 
     /** How long a /baltop ranking is reused before it is worked out again. */
@@ -175,13 +159,7 @@ public final class Balances {
         });
     }
 
-    /**
-     * The richest accounts, richest first.
-     *
-     * <p>Ranked from memory rather than asked of the database, and the ranking is kept for
-     * half a minute: sorting every account on a server with a hundred thousand of them is not
-     * something to do again because two people ran /baltop in the same breath.
-     */
+    /** The richest accounts, richest first. */
     public List<Ranked> top(int limit, int offset) {
         List<Ranked> ranked = rank();
         int from = Math.min(offset, ranked.size());
@@ -215,8 +193,7 @@ public final class Balances {
 
         ranking = List.copyOf(ranked);
         rankedAt = now;
-        // Last, and with the value read before the sort: a change that landed while this was
-        // building leaves the generation behind, and the next call works it out again.
+        // The generation is read before the sort, so a change landing during it is not lost.
         rankedFor = generation;
         return ranking;
     }

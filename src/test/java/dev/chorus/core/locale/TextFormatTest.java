@@ -12,9 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Both ways of writing coloured text have to work, in the same line if somebody wants.
- */
+/** Both ways of writing coloured text have to work, in the same line if somebody wants. */
 class TextFormatTest {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();

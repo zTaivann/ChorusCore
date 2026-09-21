@@ -18,9 +18,7 @@ public final class MenuListener implements Listener {
         }
 
         if (holder instanceof Menu menu) {
-            // Menus never hold real items, so no click in one may ever move anything. That
-            // includes the shift-click and the number key, which act on the top inventory
-            // from the bottom one and would otherwise slip past a check on the slot alone.
+            // Menus hold no real items. Shift-click and number keys reach the top inventory too.
             event.setCancelled(true);
             if (event.getRawSlot() >= 0 && event.getRawSlot() < menu.size()) {
                 menu.click(player, event.getRawSlot(), event.getClick());
@@ -29,8 +27,6 @@ public final class MenuListener implements Listener {
         }
 
         if (holder instanceof PaletteMenu palette) {
-            // Also cancelled, always. A palette copies rather than moves, so letting the
-            // click through would be the one thing it exists to prevent.
             event.setCancelled(true);
             int slot = event.getRawSlot();
             if (slot >= 0 && slot < palette.size()) {
@@ -38,9 +34,7 @@ public final class MenuListener implements Listener {
             } else {
                 palette.putOn(event.getCurrentItem());
             }
-            // Cancelling a click tells the client to put back what it thought was there,
-            // which is the screen as it was a moment ago. Sending it again is what makes
-            // the copy appear under the cursor rather than on the next click after that.
+            // Cancelling makes the client redraw what it had, so the screen is sent again.
             player.updateInventory();
         }
     }
@@ -53,13 +47,7 @@ public final class MenuListener implements Listener {
         }
     }
 
-    /**
-     * A palette keeps whatever was left on it.
-     *
-     * <p>Closing is the only moment the contents are read. Somebody arranging a kit has not
-     * decided anything until they shut the screen, and saving on every click would write a
-     * half-built kit to disk a dozen times over.
-     */
+    /** A palette keeps whatever was left on it. */
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         if (event.getView().getTopInventory().getHolder() instanceof PaletteMenu palette

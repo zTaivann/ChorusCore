@@ -53,6 +53,12 @@
 #   particle.height   how tall the burst is, in blocks.
 #   particle.speed    how fast they drift. Keep it small.
 #
+#   messages          lines this command says instead of the ones in the messages
+#                     folder, by the same keys. A blank one silences that line:
+#
+#                       messages:
+#                         error.no-permission: '<red>Buy VIP to use this.'
+#
 # Teleport commands show their particles twice: once where the player left from
 # and once where they arrive.
 
@@ -144,8 +150,7 @@ commands:
       pitch: 0.8
 
 
-  # Everything a single warp overrides lives in the database rather than here,
-  # because warps are made in game. Set them with /warpset:
+  # Everything a single warp overrides lives in the database. Set it with /warpset:
   #
   #   /warpset shop icon EMERALD          how it looks in /warps
   #   /warpset shop price 100             what that one warp costs

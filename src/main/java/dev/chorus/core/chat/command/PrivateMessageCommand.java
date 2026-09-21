@@ -29,12 +29,7 @@ abstract class PrivateMessageCommand extends PlayerCommand {
         this.ignores = ignores;
     }
 
-    /**
-     * Whether this message should not arrive, having told the sender so.
-     *
-     * <p>One line for both reasons. A player who has been ignored is told the same thing as
-     * one writing to somebody with messages off, which spares both of them the argument.
-     */
+    /** Whether this message should not arrive, having told the sender so. */
     protected final boolean refuses(Player from, Player to) {
         if (from.hasPermission(ignores.bypassPermission())) {
             return false;
@@ -50,7 +45,6 @@ abstract class PrivateMessageCommand extends PlayerCommand {
     protected final void deliver(Player from, Player to, String text) {
         chat.remember(from.getUniqueId(), to.getUniqueId());
         settle(from);
-        // The point of a message sound is that the person receiving it hears something.
         rules().feedback().play(to);
 
         messages.send(from, "chat.msg-sent", "player", to.getName(), "message", text);

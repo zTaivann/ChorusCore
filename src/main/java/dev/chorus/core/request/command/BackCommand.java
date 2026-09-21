@@ -50,12 +50,9 @@ public final class BackCommand extends PlayerCommand {
             return;
         }
 
-        // Taken off the history only now that the command is going through, so a refusal
-        // further up leaves the player's trail exactly as it was.
+        // Taken off the history only once the command is going through.
         Location destination = teleports.takePrevious(player.getUniqueId(), steps).orElse(previous);
 
-        // The teleport itself records where the player is standing now, so a bare /back
-        // toggles between here and there.
         teleports.teleport(player, destination, rules(), name(), () -> {
             settle(player);
             messages.send(player, "back.teleported");

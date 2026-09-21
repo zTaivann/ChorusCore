@@ -15,14 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Working out which block is which around a shop.
- *
- * <p>Two things make this less obvious than it sounds. A chest can be half of a double chest,
- * in which case the stock lives in both halves and the shop has to see all of it. And a sign
- * can be on the side of a container or on top of it, which are different blocks in different
- * directions.
- */
+/** Working out which block is which around a shop. */
 public final class ShopContainers {
 
     private static final BlockFace[] AROUND =
@@ -45,12 +38,7 @@ public final class ShopContainers {
         return container.getInventory();
     }
 
-    /**
-     * The other half of a double chest, or null.
-     *
-     * <p>Found by asking each neighbour whether it shares this chest's inventory, which is
-     * the only answer that stays right whichever way the chest is facing.
-     */
+    /** The other half of a double chest, or null. */
     public static @Nullable Block otherHalf(Block block) {
         if (!(block.getState() instanceof Chest chest)) {
             return null;

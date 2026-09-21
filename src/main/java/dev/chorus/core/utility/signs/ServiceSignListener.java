@@ -23,10 +23,6 @@ import java.util.Map;
 /**
  * The signs that do what a command does: {@code [Heal]}, {@code [Kit]}, {@code [Repair]} and
  * the rest.
- *
- * <p>A price on the last line is charged here and the command is run as the player, so
- * whatever that command would have refused it still refuses. Nothing is charged unless the
- * command goes through.
  */
 public final class ServiceSignListener implements Listener {
 
@@ -111,8 +107,7 @@ public final class ServiceSignListener implements Listener {
                 ? free(player, sign)
                 : player.performCommand(line(kind, sign));
 
-        // Only a command that actually ran costs anything, so a sign pointing at something
-        // switched off is free rather than quietly expensive.
+        // Only a command that actually ran costs anything.
         if (done && price > 0 && economy.enabled() && economy.withdraw(player, price)) {
             messages.send(player, "economy.charged", "price", economy.format(price));
         }

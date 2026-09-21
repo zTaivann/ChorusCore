@@ -47,8 +47,7 @@ public final class KitCommand extends PlayerCommand {
         }
 
         Kit kit = found.get();
-        // A kit the player may not have is reported as missing rather than as forbidden,
-        // so /kit does not double as a list of what other ranks get.
+        // Reported as missing rather than forbidden, so /kit lists nobody else's kits.
         if (!kit.allowed(player)) {
             messages.send(player, "kits.unknown", "kit", args[0]);
             return;
@@ -72,17 +71,10 @@ public final class KitCommand extends PlayerCommand {
         });
     }
 
-    /**
-     * Every reason a kit might be refused, in the order a player would ask them.
-     *
-     * <p>Each refusal runs the kit's fail actions, so a server can put a sound or a title on
-     * "no" as readily as on "yes".
-     */
+    /** Every reason a kit might be refused, in the order a player would ask them. */
     private boolean claimable(Player player, Kit kit) {
         long left = kits.remaining(player.getUniqueId(), kit, System.currentTimeMillis());
         if (left == Long.MAX_VALUE) {
-            // Two different reasons a kit is gone for good, and telling a player the wrong
-            // one sends them looking for a cooldown that will never come.
             refuse(player, kit);
             messages.send(player, kit.oneTime() ? "kits.one-time" : "kits.spent",
                     "kit", kit.name());
@@ -103,8 +95,6 @@ public final class KitCommand extends PlayerCommand {
             messages.send(player, "kits.requirement", "kit", kit.name());
             return false;
         }
-        // A requirement may carry its own line, which will always read better than a
-        // sentence built out of an operator and two numbers.
         player.sendMessage(messages.parse(
                 Placeholders.fill(player, unmet.denyMessage().replace("%kit%", kit.name()))));
         return false;

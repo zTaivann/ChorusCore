@@ -7,12 +7,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 
-/**
- * What the console sees when the plugin starts.
- *
- * <p>Sent as components rather than through the logger, which would put a level and a plugin
- * name in front of every line. Paper colours a component on its way to the console.
- */
+/** What the console sees when the plugin starts. */
 final class Console {
 
     /** Deep to light, one shade a row, which reads as a single letterform rather than stripes. */
@@ -71,7 +66,7 @@ final class Console {
         console.sendMessage(Component.empty());
     }
 
-    /** Something the plugin found and is now using. Green, because it is good news. */
+    /** Something the plugin found and is now using. */
     void connected(String what, String detail) {
         line("  " + CONNECTED + LABEL + pad(what) + VALUE + detail);
     }

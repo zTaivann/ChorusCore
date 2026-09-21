@@ -10,12 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * A paginated grid of clickable entries, used by /homes and /warps.
- *
- * <p>The bottom row is always navigation with its own filler, so the number of entries a
- * page holds never changes and the strip reads as a separate band.
- */
+/** A paginated grid of clickable entries, used by /homes and /warps. */
 public final class ListMenu {
 
     /**

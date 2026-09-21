@@ -8,13 +8,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Every warp's settings, held in memory.
- *
- * <p>A server has tens of warps, not thousands, and {@code /warps} asks about all of them at
- * once to sort and group the menu. Loading the lot at startup makes that free; the writes are
- * rare enough to go to the database in the background as they happen.
- */
+/** Every warp's settings, held in memory. */
 public final class WarpDetailsService {
 
     private final WarpDetailsRepository repository;

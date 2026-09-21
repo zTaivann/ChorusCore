@@ -10,14 +10,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import java.util.Locale;
 import java.util.logging.Logger;
 
-/**
- * Vault bridge.
- *
- * <p>The provider is looked up when the server finishes loading rather than on demand:
- * economy plugins register their service while they start and there is no guarantee they
- * got there before this one did. Caching it means a priced command costs a field read
- * instead of walking the plugin and service managers every time it runs.
- */
+/** Vault bridge. */
 public final class VaultEconomy implements Economy, Listener {
 
     private final Server server;
@@ -49,8 +42,7 @@ public final class VaultEconomy implements Economy, Listener {
             RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> registration =
                     server.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
             if (registration == null) {
-                // The commonest mix-up by a distance. Vault is only a bridge: on its own it
-                // holds no money and nothing has registered an economy behind it.
+                // Vault on its own holds no money: something has to register an economy behind it.
                 reason = "Vault is installed but no economy plugin has registered with it, "
                         + "so every price is ignored";
             } else {

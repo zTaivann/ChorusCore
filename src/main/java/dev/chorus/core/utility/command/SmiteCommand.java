@@ -12,13 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/**
- * {@code /smite [player]}: a lightning bolt on a player, or on whatever you are looking at.
- *
- * <p>The strike is asked for on the thread that owns where it lands rather than the one the
- * command was typed on, which on Folia is not the same thread when the target is standing in
- * another region.
- */
+/** {@code /smite [player]}: a lightning bolt on a player, or on whatever you are looking at. */
 public final class SmiteCommand extends ChorusCommand {
 
     private static final int REACH = 120;

@@ -14,14 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * The claim actions, the fail actions and the requirements, through the file and back.
- *
- * <p>The screen that edits them works by position, so a line that changes shape on the way
- * to disk and back is a line that gets rewritten in the wrong place. That is the bug this
- * is here to catch, and it is the same one that once made a saved kit icon come back as a
- * chest.
- */
+/** The claim actions, the fail actions and the requirements, through the file and back. */
 class KitRulesTest {
 
     @Test
@@ -51,13 +44,7 @@ class KitRulesTest {
                 KitEditor.describe(List.of(new Rule("money: 500", null))));
     }
 
-    /**
-     * An emptied list stays empty.
-     *
-     * <p>The copy of the config bundled in the jar backs the one on disk, so a list that is
-     * taken out altogether goes back to whatever the example kits ship with. Somebody
-     * removing the last action from the daily kit would find it there again after a reload.
-     */
+    /** An emptied list stays empty. */
     @Test
     void anEmptiedListIsStillAList() throws InvalidConfigurationException {
         YamlConfiguration file = new YamlConfiguration();

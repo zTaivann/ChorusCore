@@ -11,13 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/**
- * {@code /commands [module|search] [page]}: what this player can actually run.
- *
- * <p>Only commands they hold the permission for and that are switched on, so the list is
- * never a catalogue of things that will refuse them. The descriptions come from plugin.yml,
- * which is where Bukkit already keeps one for every command.
- */
+/** {@code /commands [module|search] [page]}: what this player can actually run. */
 public final class HelpCommand extends ChorusCommand {
 
     private static final int PAGE_SIZE = 10;

@@ -13,17 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * What staff did, and to whom.
- *
- * <p>Shared by every module rather than owned by the staff one, because the actions worth
- * writing down are scattered: creating money lives with the economy, freezing someone lives
- * with staff, and both belong in the same list when a server owner comes asking.
- *
- * <p>Writing is fire and forget. The action itself has already happened by the time it gets
- * here, and no staff member should be made to wait on a log, nor told their command failed
- * because the database was busy.
- */
+/** What staff did, and to whom. */
 public final class AuditLog {
 
     private static final int MAX_DETAIL = 250;

@@ -11,12 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * What a shop sign says.
- *
- * <p>The lines live in menus.yml like every other piece of text, so a server can translate
- * them or lay them out differently without touching the code.
- */
+/** What a shop sign says. */
 public final class ChestShopSign {
 
     /** The header a player writes to make one. */

@@ -5,21 +5,17 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
-/**
- * Everything one command's config block controls.
- *
- * <p>Each module file opens its {@code commands} section with a {@code defaults} block, and
- * a command only writes down what it does differently. That is why /craft is four lines
- * instead of fifteen, and why adding an option later means editing one place rather than
- * every command in the file.
- */
+/** Everything one command's config block controls. */
 public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSeconds, double price,
-                           WorldRule worlds, CommandFeedback feedback) {
+                           WorldRule worlds, CommandFeedback feedback,
+                           Map<String, String> messages) {
 
     public static final CommandRules FREE =
-            new CommandRules(true, 0, 0, 0, WorldRule.EVERYWHERE, CommandFeedback.NONE);
+            new CommandRules(true, 0, 0, 0, WorldRule.EVERYWHERE, CommandFeedback.NONE, Map.of());
 
     private static final String DEFAULTS = "defaults";
 
@@ -48,6 +44,22 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
                 Math.max(0, block.getDouble("price", base.price())),
                 WorldRule.read(block, base.worlds()),
                 CommandFeedback.read(block, base.feedback(), name -> logger.warning(
-                        "This server has no particle called '" + name + "', configured for /" + command)));
+                        "This server has no particle called '" + name + "', configured for /" + command)),
+                lines(block, base.messages()));
+    }
+
+    /** The lines this command says instead of the ones in the messages folder. */
+    private static Map<String, String> lines(ConfigurationSection block, Map<String, String> base) {
+        ConfigurationSection written = block.getConfigurationSection("messages");
+        if (written == null) {
+            return base;
+        }
+        Map<String, String> merged = new LinkedHashMap<>(base);
+        for (String key : written.getKeys(true)) {
+            if (!written.isConfigurationSection(key)) {
+                merged.put(key, written.getString(key, ""));
+            }
+        }
+        return Map.copyOf(merged);
     }
 }

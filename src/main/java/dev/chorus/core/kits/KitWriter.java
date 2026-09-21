@@ -11,18 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Turns real items back into the shape {@link KitReader} reads.
- *
- * <p>Deliberately not Bukkit's own item serialisation. That would be shorter to write and
- * would carry every last scrap of NBT, but it writes an opaque block with a data version
- * stamped into it: unreadable to whoever opens the file, and not something one jar spanning
- * 1.18 to 26 can promise to read back on a different version.
- *
- * <p>So a kit written from an inventory comes out looking exactly like one typed by hand,
- * and can be edited by hand afterwards. The cost is that anything the format cannot say —
- * custom model data, a plugin's own tags — is not carried over, and the command says so.
- */
+/** Turns real items back into the shape {@link KitReader} reads. */
 final class KitWriter {
 
     private KitWriter() {
@@ -40,13 +29,7 @@ final class KitWriter {
         return written;
     }
 
-    /**
-     * Whether an item carries more than the written form can express.
-     *
-     * <p>{@code hasCustomModelData} is deprecated on new servers in favour of a component
-     * that 1.18 has never heard of. It is not marked for removal, and it is the only way to
-     * ask the question on both, so it stays.
-     */
+    /** Whether an item carries more than the written form can express. */
     static boolean losesDetail(ItemStack item) {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) {

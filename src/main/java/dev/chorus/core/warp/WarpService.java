@@ -39,13 +39,7 @@ public final class WarpService implements WarpApi {
         return locations.all();
     }
 
-    /**
-     * Whether this sender may use one warp.
-     *
-     * <p>A permission set on the warp itself wins outright, so a single warp can be locked
-     * without turning on per-warp permissions for every other one, and an open warp can be
-     * left open on a server where they are on.
-     */
+    /** Whether this sender may use one warp. */
     public boolean canUse(Permissible who, String warp) {
         String own = details.of(warp).permission();
         if (own != null) {

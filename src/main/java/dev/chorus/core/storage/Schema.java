@@ -7,19 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-/**
- * Brings each part of the database up to the shape this version of the plugin expects.
- *
- * <p>{@code CREATE TABLE IF NOT EXISTS} is enough to make a table appear, but it will not add
- * a column to one that is already there, so it cannot carry a server from an older release to
- * a newer one on its own. Instead every table is written as an ordered list of steps — the
- * first creates it, the rest change it — and the number of steps already run is recorded in
- * {@code chorus_schema_version}. A server upgrading from an earlier release runs only the
- * steps it has not seen, and a fresh one runs all of them in order.
- *
- * <p>Steps are therefore append-only. Editing one that has already shipped would leave the
- * two kinds of server with different tables and no way to tell them apart.
- */
+/** Brings each part of the database up to the shape this version of the plugin expects. */
 public final class Schema {
 
     private static final String SELECT =

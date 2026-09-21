@@ -10,10 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * The framing around the items, which is what decides whether a slot comes back in the slot
  * it went into.
- *
- * <p>The items themselves need a running server to encode, so what is checked here is the
- * shape: how many slots there were, which of them were empty, and that nothing readable
- * comes out of text that is not a backup at all.
  */
 class InventoryCodecTest {
 

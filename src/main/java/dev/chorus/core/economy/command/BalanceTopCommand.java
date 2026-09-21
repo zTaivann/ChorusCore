@@ -16,14 +16,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * The richest players on the server.
- *
- * <p>Every account the built-in ledger holds, ranked and paged, since it is all in memory
- * already. On a server whose money belongs to another plugin there is no such list to read:
- * the only way to rank everyone who ever played would be to ask that plugin about each of
- * them in turn, on the server thread, so the ranking falls back to whoever is online.
- */
+/** The richest players on the server. */
 public final class BalanceTopCommand extends ChorusCommand {
 
     private static final String REFRESH = "refresh";
@@ -89,13 +82,7 @@ public final class BalanceTopCommand extends ChorusCommand {
         }
     }
 
-    /**
-     * Throws the ranking away.
-     *
-     * <p>It is worked out from memory and kept for half a minute, which is almost always what
-     * you want. The exception is a server whose balances another plugin changed behind this
-     * one's back, where the list can be right and look wrong until it expires.
-     */
+    /** Throws the ranking away. */
     private void refresh(CommandSender sender) {
         if (!sender.hasPermission(ADMIN)) {
             messages.send(sender, "error.no-permission");

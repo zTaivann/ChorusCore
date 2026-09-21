@@ -4,11 +4,8 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
 /**
- * The plugin's messages.yml. Placeholders are given in pairs, without the percent signs:
+ * The plugin's messages folder. Placeholders are given in pairs, without the percent signs:
  * {@code send(player, "home.created", "home", name)}.
- *
- * <p>Values are put into the parsed component rather than the raw string, so text that came
- * from a player can never carry formatting tags into somebody else's chat.
  */
 public interface MessageApi {
 

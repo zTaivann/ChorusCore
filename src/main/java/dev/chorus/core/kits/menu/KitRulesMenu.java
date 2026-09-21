@@ -21,18 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-/**
- * The claim actions, the fail actions and the requirements, one line to an item.
- *
- * <p>All three are lists of {@code type: value}, so all three are one screen. A line is a
- * button: click it to rewrite it, shift-click to take it out, and on a requirement
- * right-click to give it the sentence the player sees when it turns them away. Editing one
- * line has never meant retyping the list around it.
- *
- * <p>The lines are read from the file rather than from the loaded kit, and shown as the
- * plain text they are. A line this plugin cannot make sense of is still shown, in its own
- * colour, so a typo can be found and fixed here rather than only being missed in game.
- */
+/** The claim actions, the fail actions and the requirements, one line to an item. */
 public final class KitRulesMenu {
 
     private static final int MIN_ROWS = 2;
@@ -104,8 +93,6 @@ public final class KitRulesMenu {
                                 "kit", KitEditor.titled(kit))),
                 clicker -> back.accept(clicker, kit));
 
-        // Everything a line may say is written on this button, because it is the button
-        // somebody presses when they do not yet know what a line may say.
         menu.set(menu.size() - 5, MenuItems.of(settings.add(),
                         messages.render("menu.editor.rule-add"),
                         messages.renderLines(addLoreKey(list))),
@@ -156,8 +143,6 @@ public final class KitRulesMenu {
                         open(player, kit, list);
                         return;
                     }
-                    // The refusal line belongs to the requirement, not to the wording of it,
-                    // so rewriting the condition leaves it alone.
                     Rule written = new Rule(line, rule == null ? null : rule.deny());
                     boolean saved = index < 0
                             ? editor.addRule(kit, list, written)
@@ -175,8 +160,7 @@ public final class KitRulesMenu {
         }
         prompts.ask(player, messages.render("menu.editor.ask-deny", "kit", kit),
                 typed -> {
-                    // "none" puts it back on the general refusal from messages.yml, since an
-                    // empty chat line is not something a player can send.
+                    // "none" puts it back on the general refusal in the messages folder.
                     String deny = typed.equalsIgnoreCase("none") ? null : typed;
                     boolean saved = editor.setRule(kit, list, index, new Rule(rule.line(), deny));
                     messages.send(player, saved ? "menu.editor.rule-saved" : "error.storage",

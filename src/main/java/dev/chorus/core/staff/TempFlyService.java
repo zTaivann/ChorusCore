@@ -13,13 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Flight that runs out.
- *
- * <p>Deliberately not remembered between sessions: a player who logs out lands, and the
- * alternative is a plugin that has to decide whether a timer keeps ticking while nobody is
- * there to use it. Every answer to that is a surprise to somebody.
- */
+/** Flight that runs out. */
 public final class TempFlyService implements Listener {
 
     private static final long TICKS_PER_SECOND = 20L;

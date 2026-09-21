@@ -11,14 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * The second press on anything that cannot be taken back.
- *
- * <p>The first attempt is answered with a warning and remembered; running the same thing
- * again within the window goes through. Anything else the player types in between leaves
- * the pending action alone, so a confirmation is never lost to a stray /msg, but it does
- * expire, so walking away never leaves a live trigger behind.
- */
+/** The second press on anything that cannot be taken back. */
 public final class Confirmations implements Listener {
 
     private static final String BYPASS = "chorus.bypass.confirm";
@@ -37,12 +30,7 @@ public final class Confirmations implements Listener {
         this.seconds = updated;
     }
 
-    /**
-     * Whether the action should happen now.
-     *
-     * <p>The token is what is being confirmed rather than which command asked, so confirming
-     * clearing one player's inventory does not arm clearing somebody else's.
-     */
+    /** Whether the action should happen now. */
     public boolean confirmed(CommandSender sender, String token, String warningKey,
                              String... placeholders) {
         int window = seconds;

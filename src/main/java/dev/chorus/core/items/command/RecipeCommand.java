@@ -20,12 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * {@code /recipe <item|hand> [number]}: how something is made.
- *
- * <p>The recipes come from the server, so a datapack that adds one is shown along with the
- * rest and nothing here has to know what version it is running on.
- */
+/** {@code /recipe <item|hand> [number]}: how something is made. */
 public final class RecipeCommand extends ChorusCommand {
 
     private static final int GRID = 3;

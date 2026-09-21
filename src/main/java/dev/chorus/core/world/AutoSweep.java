@@ -12,13 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Clears the ground on a timer, with a warning first.
- *
- * <p>Every busy server ends up carpeted in dropped cobblestone, and every busy server ends up
- * asking somebody to run a command about it. This does it on its own and tells people before
- * it happens, which is the difference between housekeeping and losing your diamonds.
- */
+/** Clears the ground on a timer, with a warning first. */
 public final class AutoSweep {
 
     private static final long TICKS_PER_SECOND = 20L;

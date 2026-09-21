@@ -10,39 +10,36 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * One language's lines, with the language behind it to fall back on.
- *
- * <p>A translation only has to write down what it translates. Anything it leaves out is
- * taken from the file it falls back to, which is messages.yml, so a half-finished Spanish
- * file is a half-Spanish server rather than a broken one. That is also what lets a
- * translation survive an update that adds twenty new lines.
- */
+/** One language's lines, with the language behind it to fall back on. */
 final class Translations {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
+
+    /** The key that names the prefix rather than a line to send. */
+    private static final String PREFIX = "prefix";
 
     private final Map<String, Component> entries = new HashMap<>();
     private final Map<String, String> templates = new HashMap<>();
     private final Set<String> muted = new HashSet<>();
     private final @Nullable Translations fallback;
+    private final Palette palette;
 
     private Component prefix = Component.empty();
     private String rawPrefix = "";
 
-    Translations(@Nullable Translations fallback) {
+    Translations(@Nullable Translations fallback, Palette palette) {
         this.fallback = fallback;
+        this.palette = palette;
     }
 
     /**
      * Reads a file into this language.
      *
-     * <p>Called more than once for the language that is made of two files, since messages
-     * and menus are one set of keys split by who edits them.
+     * @param prefix what {@code %prefix%} stands for in this file.
      */
     void read(YamlConfiguration data, String prefix) {
         for (String key : data.getKeys(true)) {
-            if (data.isConfigurationSection(key)) {
+            if (data.isConfigurationSection(key) || key.equals(PREFIX)) {
                 continue;
             }
             String template = data.getString(key);
@@ -53,15 +50,16 @@ final class Translations {
                 muted.add(key);
                 continue;
             }
-            String filled = TextFormat.toTags(template.replace("%prefix%", prefix));
+            String filled =
+                    TextFormat.toTags(palette.apply(template.replace("%prefix%", prefix)));
             templates.put(key, filled);
             entries.put(key, MINI_MESSAGE.deserialize(filled));
         }
     }
 
     void prefix(String raw) {
-        this.rawPrefix = raw;
-        this.prefix = raw.isEmpty() ? Component.empty() : TextFormat.parse(raw);
+        this.rawPrefix = palette.apply(raw);
+        this.prefix = rawPrefix.isEmpty() ? Component.empty() : TextFormat.parse(rawPrefix);
     }
 
     Component prefix() {

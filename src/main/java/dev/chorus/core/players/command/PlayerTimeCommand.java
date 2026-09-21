@@ -64,8 +64,7 @@ public final class PlayerTimeCommand extends PersonalViewCommand {
             return;
         }
 
-        // Not relative: the sky the player sees stops where it was put rather than carrying
-        // on from there, which is the whole point of asking for a time.
+        // Not relative: the sky stops where it was put rather than carrying on.
         target.setPlayerTime(ticks, false);
         settle(sender);
         report(sender, target, "players.ptime-set", "players.ptime-set-other", value);

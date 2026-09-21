@@ -48,8 +48,7 @@ abstract class PersonalViewCommand extends ChorusCommand {
         }
 
         String value = args[0].toLowerCase(Locale.ROOT);
-        // The sky and the weather belong to the player, so the change is made on the thread
-        // that owns them rather than the one the command arrived on.
+        // The sky and the weather belong to the player, so it runs on their thread.
         Player subject = target;
         onPlayer(subject, () -> apply(sender, subject, value));
     }
@@ -62,12 +61,7 @@ abstract class PersonalViewCommand extends ChorusCommand {
 
     protected abstract void apply(CommandSender sender, Player target, String value);
 
-    /**
-     * Says it once, to whoever it applies to, and again to the sender when they differ.
-     *
-     * <p>Both keys are named in full rather than one being built from the other, so the check
-     * that every key in messages.yml is reachable can actually see them.
-     */
+    /** Says it once, to whoever it applies to, and again to the sender when they differ. */
     protected final void report(CommandSender sender, Player target,
                                 String toTarget, String toSender, String value) {
         messages.send(target, toTarget, "value", value);

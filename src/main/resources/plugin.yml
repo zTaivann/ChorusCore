@@ -14,7 +14,7 @@ libraries:
 
 # No permission or aliases here on purpose.
 #   permission -> Bukkit would refuse the command itself and print its own message
-#                 instead of the one in messages.yml. Every command checks in code.
+#                 instead of the one in the messages folder. Every command checks in code.
 #   aliases    -> they all live in aliases.yml so there is one place to edit them.
 commands:
   chorus:

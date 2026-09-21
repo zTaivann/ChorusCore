@@ -18,9 +18,6 @@ import java.util.Optional;
 /**
  * Exposes the plugin's numbers to PlaceholderAPI, which is how a scoreboard or tab plugin
  * shows them without depending on ChorusCore at all.
- *
- * <p>Every placeholder reads from memory. None of them touch the database, so a scoreboard
- * refreshing several times a second costs nothing.
  */
 public final class ChorusExpansion extends PlaceholderExpansion {
 

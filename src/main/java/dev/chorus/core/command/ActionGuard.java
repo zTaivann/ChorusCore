@@ -4,13 +4,7 @@ import dev.chorus.core.economy.Economy;
 import dev.chorus.core.locale.Messages;
 import org.bukkit.entity.Player;
 
-/**
- * The cooldown and price checks every priced command runs.
- *
- * <p>Split in two on purpose: {@link #allow} answers "may they" before anything happens, and
- * {@link #charge} runs once it actually did. A teleport cancelled halfway therefore costs
- * nothing and starts no cooldown.
- */
+/** The cooldown and price checks every priced command runs. */
 public final class ActionGuard {
 
     private static final String COOLDOWN_BYPASS = "chorus.bypass.cooldown";

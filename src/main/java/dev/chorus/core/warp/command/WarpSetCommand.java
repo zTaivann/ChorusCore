@@ -18,18 +18,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /warpset <warp> <setting> [value]}: everything about a warp except where it is.
- *
- * <p>Leaving the value off puts a setting back to what the {@code /warp} command block says,
- * which is how a warp is un-priced or unlocked again.
- */
+/** {@code /warpset <warp> <setting> [value]}: everything about a warp except where it is. */
 public final class WarpSetCommand extends ChorusCommand {
 
     /**
      * Each setting with the shape of its value and the line that explains it. The message
      * key is written out rather than built from the name, so the check that every line in
-     * messages.yml is reachable can see all six.
+     * the messages folder is reachable can see all six.
      */
     private record Setting(String name, String value, String help) {
     }

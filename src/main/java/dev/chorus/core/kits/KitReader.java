@@ -30,9 +30,7 @@ public final class KitReader {
                                         Consumer<String> onProblem) {
         Map<String, Kit> kits = new LinkedHashMap<>();
         for (String name : definitions.getKeys(false)) {
-            // Only what the file on disk actually holds. The copy bundled in the jar backs
-            // this config so new options appear without anyone deleting their file, and
-            // without this a kit deleted with /kitedit would come straight back from it.
+            // Only what the file holds: the copy in the jar would bring a deleted kit back.
             if (!definitions.isSet(name)) {
                 continue;
             }
@@ -44,16 +42,12 @@ public final class KitReader {
             String key = name.toLowerCase(Locale.ROOT);
             kits.put(key, kit(key, name, block, onProblem));
         }
-        // Wrapped rather than copied: Map.copyOf gives back a map in whatever order it likes,
-        // and the order kits are listed in is the order the file puts them in. A server owner
-        // who moves a kit to the top of kits.yml means it to be at the top of the screen.
+        // Wrapped rather than copied: the order kits are listed in is the order shown.
         return Collections.unmodifiableMap(kits);
     }
 
     private static Kit kit(String key, String name, ConfigurationSection block,
                            Consumer<String> onProblem) {
-        // Read once and used twice: the items are built differently when it is on, and the
-        // editor has to be able to show which way round it is.
         boolean placeholders = block.getBoolean("placeholders", false);
 
         return new Kit(
@@ -96,9 +90,6 @@ public final class KitReader {
     /**
      * Keeps the written text alongside the built item, but only where it would change from
      * one player to the next.
-     *
-     * <p>An item with no {@code %} in it is the same for everybody however the kit is set up,
-     * and there is no sense in rebuilding it sixty times a day to find that out.
      */
     private static KitItem personal(Map<?, ?> entry, ItemStack item) {
         String name = text(entry.get("name"));
@@ -114,13 +105,7 @@ public final class KitReader {
         return new KitItem(item, namedByPlayer ? name : null, loredByPlayer ? lore : null);
     }
 
-    /**
-     * One item from its written form.
-     *
-     * <p>Shared with the icon, which is the same shape: a kit shown as a named, enchanted
-     * sword reads better than one shown as a plain one, and there was no reason for the icon
-     * to understand less than the contents do.
-     */
+    /** One item from its written form. */
     private static @Nullable ItemStack item(Map<?, ?> entry, String kit,
                                             Consumer<String> onProblem) {
         Material material = material(text(entry.get("material")), null, onProblem);
@@ -155,10 +140,6 @@ public final class KitReader {
 
     /**
      * The written form of an item, whichever shape the config hands it over in.
-     *
-     * <p>Setting a value in memory leaves a {@link Map} behind; reading the same file back
-     * hands out a {@link ConfigurationSection} instead. Checking for only one of them is why
-     * an icon could be saved, reported as saved, and still come back as a chest.
      *
      * @return null when this is not a block at all, such as a bare material name.
      */

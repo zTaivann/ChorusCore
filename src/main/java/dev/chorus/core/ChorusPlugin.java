@@ -130,8 +130,7 @@ public final class ChorusPlugin extends JavaPlugin {
         try {
             schedulers = new Schedulers(this);
         } catch (RuntimeException noSchedulers) {
-            // Nothing else can be started without somewhere to run it, and on Folia there
-            // is no second best: its Bukkit scheduler throws on every call.
+            // On Folia every Bukkit scheduler method throws, so there is no second best.
             getLogger().log(Level.SEVERE, noSchedulers.getMessage(), noSchedulers.getCause());
             getServer().getPluginManager().disablePlugin(this);
             return;
@@ -143,7 +142,7 @@ public final class ChorusPlugin extends JavaPlugin {
             }
         };
         worker = Executors.newFixedThreadPool(2, storageThreadFactory());
-        messages = Messages.load(this, configs.get("messages.yml"), configs.get("menus.yml"));
+        messages = Messages.load(this, configs);
         messages.apply(core.section("language"));
 
         try {
@@ -283,7 +282,7 @@ public final class ChorusPlugin extends JavaPlugin {
         console.ready(millis, String.join(", ", getDescription().getAuthors()));
     }
 
-    /** "1.21.4" out of the long string Bukkit reports, which nobody wants in full. */
+    /** "1.21.4" out of the long string Bukkit reports. */
     private String serverVersion() {
         String bukkit = getServer().getBukkitVersion();
         int dash = bukkit.indexOf('-');
@@ -403,8 +402,6 @@ public final class ChorusPlugin extends JavaPlugin {
     /** The modules that actually started, in the order they did, for /chorus status. */
     public List<String> enabledModules() {
         List<String> names = new ArrayList<>(modules.size());
-        // The deque is a stack for shutdown, so it reads newest first; reversing it puts the
-        // list back into the order they were installed.
         modules.forEach(module -> names.add(0, module.name()));
         return names;
     }
@@ -497,9 +494,7 @@ public final class ChorusPlugin extends JavaPlugin {
             installing = module.name();
             module.commandNames().forEach(name -> {
                 register(new DisabledCommand(support, name));
-                // Noted so it does not go on to take /clear away from the server and then
-                // answer that it is switched off. Turning a module off should give the
-                // server back what it had, not leave a hole where both used to be.
+                // A module switched off still answers its commands, so its names stay claimed.
                 switchedOff.add(name);
             });
             installing = CORE;

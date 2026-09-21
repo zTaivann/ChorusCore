@@ -13,9 +13,6 @@ import java.util.UUID;
 /**
  * One player-run shop: a container, a sign on it, and a price.
  *
- * <p>The item is kept whole rather than as a material name, so a shop selling an enchanted
- * pickaxe sells that pickaxe and nothing that merely looks like it.
- *
  * @param selling   true when the shop hands items to the player, false when it takes them
  * @param unlimited true for a shop with no stock and no till, which only an admin may make
  */

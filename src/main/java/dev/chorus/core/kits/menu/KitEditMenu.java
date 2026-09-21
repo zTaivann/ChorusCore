@@ -22,18 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-/**
- * The kit editor as a screen.
- *
- * <p>Nothing here sends anybody away to type a command. A button holding a number is nudged
- * up and down with the mouse; a button holding text asks for it in chat and takes the answer
- * without it ever becoming a message; the icon is set by dropping an item into a slot. That
- * is the point of a screen, and a menu that ends every second click with "now go and type
- * this" has only moved the typing somewhere else.
- *
- * <p>The commands still exist and still do everything this does. Some people would rather
- * type, and taking that away to make a screen look complete would be a poor trade.
- */
+/** The kit editor as a screen. */
 public final class KitEditMenu {
 
     private static final int ROWS = 5;
@@ -92,13 +81,7 @@ public final class KitEditMenu {
         openList(player, 0);
     }
 
-    /**
-     * One page of it.
-     *
-     * <p>Paged rather than cut off at whatever fits: a server with forty kits had the last
-     * four silently missing from the screen, and there was no way to reach them except by
-     * typing the name of a kit the screen would not show you.
-     */
+    /** One page of it. */
     private void openList(Player player, int page) {
         List<Kit> all = kits.all();
         int pages = Math.max(1, (all.size() + PER_PAGE - 1) / PER_PAGE);
@@ -183,8 +166,7 @@ public final class KitEditMenu {
         menu.setPerClick(DELETE_SLOT,
                 button(settings.delete(), "menu.editor.delete", "menu.editor.delete-lore"),
                 (clicker, click) -> {
-                    // Only on a shift click. A delete button one stray click away from a kit
-                    // somebody spent an afternoon on is not a button, it is a trap.
+                    // Only on a shift click.
                     if (click.isShiftClick()) {
                         editor.delete(kit.name());
                         messages.send(clicker, "kits.edit-deleted", "kit", kit.name());
@@ -198,13 +180,7 @@ public final class KitEditMenu {
         menu.open(player);
     }
 
-    /**
-     * The three lists, each on a screen of its own.
-     *
-     * <p>A kit can hold a dozen actions and half as many requirements, and putting them on
-     * this screen would leave no room for anything else and no way to say which line was
-     * being changed. Each one opens where its lines are one to an item.
-     */
+    /** The three lists, each on a screen of its own. */
     private void lists(Menu menu, Kit kit) {
         menu.set(REQUIREMENTS_SLOT, button(settings.requirements(), "menu.editor.requirements",
                         "menu.editor.requirements-lore",
@@ -265,17 +241,7 @@ public final class KitEditMenu {
                 clicker -> ask(clicker, kit, "menu.editor.ask-permission", "permission"));
     }
 
-    /**
-     * A number button: nudged with the mouse, or typed when the number is a long way off.
-     *
-     * <p>Left raises, right lowers, shift makes the step a big one, and dropping (Q) asks for
-     * the exact figure. Q rather than the middle button because the middle button only
-     * reaches the server in creative mode, which would leave the one gesture that sets a
-     * cooldown of 86400 working for half the people who need it.
-     *
-     * <p>Nothing goes below zero: a negative cooldown is not something anybody wants and
-     * would only have to be undone.
-     */
+    /** A number button: nudged with the mouse, or typed when the number is a long way off. */
     private void number(Player player, Kit kit, ClickType click, String setting, String question,
                         int current, int by) {
         if (asksForIt(click)) {
@@ -292,17 +258,11 @@ public final class KitEditMenu {
                 || click == ClickType.MIDDLE;
     }
 
-    /**
-     * Asks in chat and comes straight back to the kit.
-     *
-     * <p>Reopening is what makes it feel like one screen rather than a detour: whatever was
-     * typed is already saved and already on the button by the time it is seen again.
-     */
+    /** Asks in chat and comes straight back to the kit. */
     private void ask(Player player, Kit kit, String question, String setting) {
         prompts.ask(player, messages.render(question, "kit", kit.name()),
                 typed -> {
-                    // "none" is how a text setting is emptied, since an empty chat line is
-                    // not something a player can send.
+                    // "none" empties a text setting: an empty chat line cannot be sent.
                     String value = typed.equalsIgnoreCase("none") ? "" : typed;
                     if (!editor.set(kit.name(), setting, value)) {
                         messages.send(player, "error.storage");
@@ -339,25 +299,14 @@ public final class KitEditMenu {
 
     private void set(Player player, Kit kit, String setting, String value) {
         if (editor.set(kit.name(), setting, value)) {
-            // Reopened rather than repainted: the file has just been read again, so the kit
-            // held here is already out of date and every button on it with it.
+            // Reopened rather than repainted: the file has just been read again.
             open(player, kit.name());
             return;
         }
         messages.send(player, "error.storage");
     }
 
-    /**
-     * One slot for the icon, and one slot that means one.
-     *
-     * <p>Click an item in your inventory and it takes the slot, whatever was already on it. Having
-     * to take the old icon off before the new one would go on was a step that existed for no
-     * reason other than that the same screen also lays out sixty items at once; here the
-     * slot is full by definition, so filling it is replacing it.
-     *
-     * <p>The whole item is kept rather than its kind alone, so a kit shown as a named,
-     * enchanted sword stays that sword.
-     */
+    /** One slot for the icon, and one slot that means one. */
     private void openIcon(Player player, Kit kit) {
         PaletteMenu slot = new PaletteMenu(player.getServer(),
                 messages.render("menu.editor.icon-title", "kit", KitEditor.titled(kit.name())), 1, 1,
@@ -381,13 +330,7 @@ public final class KitEditMenu {
         slot.open(player);
     }
 
-    /**
-     * The item editor.
-     *
-     * <p>Starts holding what the kit holds and works the same way: click to copy on, click to
-     * take off. Whatever is on it when the screen closes becomes the kit, and nothing has
-     * left the player's inventory to get there.
-     */
+    /** The item editor. */
     private void openItems(Player player, Kit kit) {
         PaletteMenu items = new PaletteMenu(player.getServer(),
                 messages.render("menu.editor.items-title", "kit", KitEditor.titled(kit.name())),
@@ -424,18 +367,10 @@ public final class KitEditMenu {
         menu.open(player);
     }
 
-    /**
-     * Opens a screen on the next tick rather than now.
-     *
-     * <p>Only ever called from a close handler, and it has to be. Opening an inventory while
-     * the server is in the middle of closing one makes it close the one still on screen,
-     * which fires another close, which opens again: a loop that ends when the server does.
-     * A tick later the close is finished and there is nothing left to fall back into.
-     */
+    /** Opens a screen on the next tick rather than now. */
     private void later(Player player, Runnable open) {
         if (!plugin.isEnabled()) {
-            // A close during shutdown. The change is already saved; there is nobody left
-            // to show it to, and asking a stopping server to schedule anything throws.
+            // A close during shutdown. Asking a stopping server to schedule anything throws.
             return;
         }
         schedulers.entity(player, () -> {

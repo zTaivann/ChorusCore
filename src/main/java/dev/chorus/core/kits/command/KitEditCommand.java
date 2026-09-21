@@ -23,27 +23,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Builds and changes kits from inside the game, by screen or by command.
- *
- * <p>{@code /kitedit} on its own opens the editor. Every command form still works exactly as
- * it did, because plenty of people would rather type than click and a screen that replaced
- * the commands would take that away from them. The screen is a faster way to reach the same
- * settings, not a separate feature with its own gaps.
- *
- * <p>The command form is shaped like {@code /warpset} on purpose: everything in this plugin
- * that edits something made in game reads the same way, and one shape to learn beats six.
- */
+/** Builds and changes kits from inside the game, by screen or by command. */
 public final class KitEditCommand extends PlayerCommand {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
-    /**
-     * Each setting with the shape of its value and the line that explains it.
-     *
-     * <p>The message key is written out rather than built from the name, so the check that
-     * every line in messages.yml is reachable can see all of them.
-     */
+    /** Each setting with the shape of its value and the line that explains it. */
     private record Setting(String name, String value, String help) {
     }
 
@@ -242,8 +227,6 @@ public final class KitEditCommand extends PlayerCommand {
         settle(player);
         messages.send(player, "kits.edit-items", "kit", name, "count", String.valueOf(result.count()));
         if (result.simplified() > 0) {
-            // Said plainly rather than hidden: an item that came from another plugin is not
-            // the same item once it has been through a file only this format can describe.
             messages.send(player, "kits.edit-items-simplified",
                     "count", String.valueOf(result.simplified()));
         }
@@ -273,8 +256,7 @@ public final class KitEditCommand extends PlayerCommand {
             return;
         }
 
-        // Shown as it will be read back, not as it was typed. "cooldown is now 510" leaves
-        // the next question unanswered; "cooldown is now 8m 30s" does not.
+        // Shown as it will be read back, not as it was typed.
         messages.send(player, "kits.edit-set",
                 "kit", name, "setting", setting, "value", readable(setting, value));
     }

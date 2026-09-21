@@ -7,12 +7,7 @@ public final class Durations {
     private Durations() {
     }
 
-    /**
-     * Rounds up, so a second and a half left never shows as "1s" and then refuses again.
-     *
-     * <p>Two units at most, largest first. A kit on a week's cooldown reading "168h 0m" is
-     * technically right and tells nobody anything.
-     */
+    /** Rounds up, so a second and a half left never shows as "1s" and then refuses again. */
     public static String format(long millis) {
         long total = (millis + 999) / 1000;
         long days = TimeUnit.SECONDS.toDays(total);

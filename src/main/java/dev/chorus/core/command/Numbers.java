@@ -1,13 +1,6 @@
 package dev.chorus.core.command;
 
-/**
- * Reading a number a player typed.
- *
- * <p>Commands take numbers as text and have to cope with being handed something else, so
- * every one of them wants the same three lines. They live here instead, which is also what
- * keeps the fallback for a bad number from being {@code -1} in one command and {@code 0} in
- * the next.
- */
+/** Reading a number a player typed. */
 public final class Numbers {
 
     private Numbers() {

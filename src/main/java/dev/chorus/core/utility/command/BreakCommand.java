@@ -9,13 +9,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 
 import java.util.Locale;
 
-/**
- * {@code /break}: breaks the block you are looking at, drops and all.
- *
- * <p>A {@link BlockBreakEvent} is fired first, so a protection plugin refuses it exactly as
- * it would refuse a pickaxe. Blocks the game itself will not let anybody mine are left alone,
- * which is what keeps this from being a way through bedrock.
- */
+/** {@code /break}: breaks the block you are looking at, drops and all. */
 public final class BreakCommand extends PlayerCommand {
 
     private static final int RANGE = 10;

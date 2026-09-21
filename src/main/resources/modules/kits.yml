@@ -95,7 +95,7 @@ kits:
   #                     anything any plugin exposes through PlaceholderAPI can
   #                     gate a kit, with >=, <=, ==, !=, >, < or contains.
   #                     Without a deny line they get the message from
-  #                     messages.yml instead.
+  #                     the messages folder instead.
   #
   #   claim-actions     what happens when they take it.
   #   fail-actions      what happens when they are refused, whatever the reason.
@@ -111,11 +111,9 @@ kits:
   #                       - 'player: spawn'
   #                       - 'close'
   #
-  #                     console runs as the server, which is how a kit hands out
-  #                     something the player could not give themselves. It is
-  #                     also how a kit could hand out anything at all, so it is
-  #                     worth reading twice. %player% and %kit% work in all of
-  #                     them, as does anything PlaceholderAPI knows.
+  #                     console runs as the server, so a kit can hand out what
+  #                     the player could not give themselves. %player% and %kit%
+  #                     work in all of them, as does anything PlaceholderAPI knows.
   #   price             what taking it costs, through Vault.
   #   permission        who may take it. Leave it out and it defaults to
   #                     chorus.kit.<name>. Set it to '' for everyone.

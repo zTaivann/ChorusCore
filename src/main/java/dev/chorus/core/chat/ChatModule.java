@@ -99,8 +99,6 @@ public final class ChatModule implements ChorusModule, Listener {
         try {
             ignores.load(event.getUniqueId());
         } catch (SQLException exception) {
-            // An ignore list nobody could read is an empty one. Not a reason to refuse a
-            // player the server.
             plugin.getLogger().log(Level.WARNING,
                     "Could not load the ignore list of " + event.getName(), exception);
         }

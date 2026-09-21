@@ -7,14 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Fills {@code %placeholders%} in a line, through PlaceholderAPI when it is installed.
- *
- * <p>The call into PlaceholderAPI lives in its own class, loaded only once the plugin has
- * been found. A class is linked the first time it is touched, so keeping the reference out
- * of here is what stops a server without PlaceholderAPI from tripping over a type it does
- * not have.
- */
+/** Fills {@code %placeholders%} in a line, through PlaceholderAPI when it is installed. */
 public final class Placeholders {
 
     private static final String PLUGIN = "PlaceholderAPI";

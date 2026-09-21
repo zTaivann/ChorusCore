@@ -14,12 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /itemdb [item]}: what the thing in your hand is actually called.
- *
- * <p>The answer to "what do I type in the config for this". Without an argument it reads the
- * held item, which is how it is used almost every time.
- */
+/** {@code /itemdb [item]}: what the thing in your hand is actually called. */
 public final class ItemDbCommand extends ChorusCommand {
 
     private static final int MAX_MATCHES = 10;

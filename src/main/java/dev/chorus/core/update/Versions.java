@@ -1,12 +1,6 @@
 package dev.chorus.core.update;
 
-/**
- * Compares two version strings the way people read them.
- *
- * <p>{@code 0.10.0} is newer than {@code 0.9.0}, which a plain string comparison gets wrong.
- * A version with something after the number — {@code 1.2.0-SNAPSHOT}, {@code 1.2.0-rc1} —
- * comes before the same number without one, since that is what those suffixes mean.
- */
+/** Compares two version strings the way people read them. */
 public final class Versions {
 
     private static final int MAX_PARTS = 6;

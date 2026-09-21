@@ -58,12 +58,7 @@ public final class ImportReport {
         skipped++;
     }
 
-    /**
-     * A file that could not be read.
-     *
-     * <p>Only the first handful are kept. A folder of ten thousand broken files is one
-     * problem, and printing ten thousand lines about it helps nobody.
-     */
+    /** A file that could not be read. */
     void problem(String what) {
         if (problems.size() < MAX_PROBLEMS) {
             problems.add(what);

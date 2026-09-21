@@ -9,13 +9,7 @@ import dev.chorus.core.request.TeleportRequestService;
 import dev.chorus.core.teleport.TeleportService;
 import org.bukkit.entity.Player;
 
-/**
- * {@code /tpaall}: asks everybody online to come to you.
- *
- * <p>Unlike {@code /tpall}, which simply moves them, this one asks. Anybody with teleport
- * requests switched off is skipped in silence, and anybody who accepts everything comes
- * straight away.
- */
+/** {@code /tpaall}: asks everybody online to come to you. */
 public final class TpAllRequestCommand extends PlayerCommand {
 
     private final TeleportRequestService requests;

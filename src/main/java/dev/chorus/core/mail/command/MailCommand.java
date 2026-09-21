@@ -17,13 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/**
- * {@code /mail [read|send|sendall|clear]}: letters for players who were not here.
- *
- * <p>Reading your own inbox marks it as seen, so the reminder on login only ever counts what
- * has arrived since. Reading somebody else's leaves it unread, because staff looking into a
- * complaint should not change what the player is about to see.
- */
+/** {@code /mail [read|send|sendall|clear]}: letters for players who were not here. */
 public final class MailCommand extends ChorusCommand {
 
     private static final String SEND_PERMISSION = "chorus.mail.send";

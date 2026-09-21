@@ -21,8 +21,6 @@ public final class HatCommand extends HeldItemCommand {
             return;
         }
 
-        // A straight swap, so whatever was on their head lands in the hand it came from
-        // rather than being thrown away.
         PlayerInventory inventory = player.getInventory();
         ItemStack previous = inventory.getHelmet();
         inventory.setHelmet(wanted);

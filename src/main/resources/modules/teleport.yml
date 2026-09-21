@@ -53,6 +53,12 @@
 #   particle.height   how tall the burst is, in blocks.
 #   particle.speed    how fast they drift. Keep it small.
 #
+#   messages          lines this command says instead of the ones in the messages
+#                     folder, by the same keys. A blank one silences that line:
+#
+#                       messages:
+#                         error.no-permission: '<red>Buy VIP to use this.'
+#
 # Teleport commands show their particles twice: once where the player left from
 # and once where they arrive.
 
@@ -82,21 +88,17 @@ teleport:
   # somewhere to stand within this many blocks above or below instead. Turn it
   # off if your warps are deliberately in mid-air. Maximum radius 16.
   #
-  # How much of it applies depends on what the player could survive anyway:
-  #   creative and spectator   nothing is checked. There is no fall to take and no
-  #                            wall to suffocate in
-  #   flying in survival       the room is checked, the ground is not
+  # How much of it applies:
+  #   creative and spectator   nothing is checked
+  #   flying in survival       the room, not the ground
   #   everybody else           both
   #
-  # Coordinates somebody types by hand are never moved either. /tp and /tppos go
-  # exactly where they were told; this is for places that were saved once and may
-  # not be what they were.
+  # Typed coordinates are never moved: /tp and /tppos go exactly where told.
   safe-landing: true
   safe-landing-radius: 5
 
-  # Seconds of not being hittable after arriving anywhere, so a warp into a PvP
-  # world is not a coin toss. Attacking somebody gives it up at once.
-  # 0 turns it off. Maximum 30.
+  # Seconds of not being hittable after arriving anywhere. Attacking somebody
+  # gives it up at once. 0 turns it off. Maximum 30.
   invulnerable-seconds: 3
 
 # ── Requests ──────────────────────────────────────────────────────────────

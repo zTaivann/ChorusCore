@@ -21,12 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /shop}: managing the chest shop you are looking at.
- *
- * <p>Everything except {@code list} acts on the shop under the cursor, which is how somebody
- * standing in front of their own shop expects it to work.
- */
+/** {@code /shop}: managing the chest shop you are looking at. */
 public final class ShopCommand extends PlayerCommand {
 
     private static final String ADMIN_PERMISSION = "chorus.shops.chest.admin";

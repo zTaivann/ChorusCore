@@ -9,12 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * {@code /bottom}: the lowest place under you with room to stand.
- *
- * <p>Walks up from the floor of the world rather than down from the player, so it finds the
- * cave under them rather than the ledge they are already on.
- */
+/** {@code /bottom}: the lowest place under you with room to stand. */
 public final class BottomCommand extends PlayerCommand {
 
     private final TeleportService teleports;

@@ -14,13 +14,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * The commands players have tied to the items they are holding.
- *
- * <p>Held in memory for everyone online and written through as they change, because a click
- * has to know in the same tick whether the thing in that hand does anything, and a database
- * round trip on every swing of a sword is not a thing to do.
- */
+/** The commands players have tied to the items they are holding. */
 public final class Powertools {
 
     /** Enough for a wand that does several things, few enough that a typo cannot run twenty. */

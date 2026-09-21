@@ -54,6 +54,12 @@
 #   particle.height   how tall the burst is, in blocks.
 #   particle.speed    how fast they drift. Keep it small.
 #
+#   messages          lines this command says instead of the ones in the messages
+#                     folder, by the same keys. A blank one silences that line:
+#
+#                       messages:
+#                         error.no-permission: '<red>Buy VIP to use this.'
+#
 # Teleport commands show their particles twice: once where the player left from
 # and once where they arrive.
 

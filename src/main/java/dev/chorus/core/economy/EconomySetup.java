@@ -14,14 +14,7 @@ import java.sql.SQLException;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 
-/**
- * Works out which economy the server is going to use and wires it up.
- *
- * <p>The built-in ledger is offered to the rest of the server through Vault at a low
- * priority, so a server that already runs a dedicated economy plugin keeps using it and one
- * that does not gets a working /pay without installing anything else. Vault is only a
- * bridge, so it is never required: with no Vault at all the ledger is simply used directly.
- */
+/** Works out which economy the server is going to use and wires it up. */
 public final class EconomySetup implements Listener {
 
     private final Plugin plugin;
@@ -79,8 +72,6 @@ public final class EconomySetup implements Listener {
         economy = switch (mode) {
             case SELF -> new ChorusEconomy(balances);
             case VAULT -> new VaultEconomy(plugin.getServer(), plugin.getLogger());
-            // Through Vault when it is there, so another economy plugin wins and every
-            // plugin on the server agrees on one set of balances. Directly when it is not.
             case AUTO -> vault
                     ? new VaultEconomy(plugin.getServer(), plugin.getLogger())
                     : new ChorusEconomy(balances);

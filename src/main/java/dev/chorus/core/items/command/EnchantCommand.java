@@ -67,8 +67,7 @@ public final class EnchantCommand extends HeldItemCommand {
             return;
         }
 
-        // Ignoring the vanilla restrictions on purpose: the permission above is what decides
-        // whether a level beyond the usual maximum is allowed, not the item in hand.
+        // The permission decides whether a level beyond the usual maximum is allowed.
         item.addUnsafeEnchantment(enchantment, level);
         settle(player);
         messages.send(player, "items.enchant",
@@ -96,8 +95,6 @@ public final class EnchantCommand extends HeldItemCommand {
         if (enchantment == null) {
             return List.of();
         }
-        // Every vanilla level, and the ceiling on top when this sender may go past it. Two
-        // hundred and fifty-five entries would be a wall of numbers rather than a suggestion.
         int ceiling = items.settings().restrictions().highestLevel(sender, enchantment);
         List<String> levels = new ArrayList<>();
         for (int level = 1; level <= enchantment.getMaxLevel(); level++) {

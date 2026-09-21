@@ -10,16 +10,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 
-/**
- * A player's inventory as one string, and back again.
- *
- * <p>Each slot is written with {@code serializeAsBytes}, which keeps the whole item: the
- * enchantments, the lore, the custom model data, and whatever another plugin wrote onto it.
- * A backup exists to give somebody exactly what they lost.
- *
- * <p>Unlike the kits, which are written in a readable form so they can be edited by hand,
- * these are never edited. They are taken, kept for a fortnight and handed back.
- */
+/** A player's inventory as one string, and back again. */
 public final class InventoryCodec {
 
     /** An empty slot. Written as a length nothing else can produce. */

@@ -13,13 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Writes down who paid whom, so a dispute about a trade has an answer.
- *
- * <p>Recording is fire and forget: a payment has already gone through by the time it reaches
- * here, and the player who made it should not be kept waiting on a write, nor told it failed
- * when their money moved perfectly well.
- */
+/** Writes down who paid whom, so a dispute about a trade has an answer. */
 public final class PaymentLog {
 
     private final PaymentRepository repository;

@@ -16,12 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * {@code /home [name]}, and {@code /home <player>:<name>} for staff.
- *
- * <p>The second form only reaches a player who is online: homes are held in memory for
- * whoever is here and nowhere else while they are not.
- */
+/** {@code /home [name]}, and {@code /home <player>:<name>} for staff. */
 public final class HomeCommand extends PlayerCommand {
 
     private static final String OTHERS = "chorus.home.others";

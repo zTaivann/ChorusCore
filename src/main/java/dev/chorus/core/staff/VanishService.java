@@ -12,13 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-/**
- * Who is hidden from whom.
- *
- * <p>Bukkit forgets that a player was hidden the moment either side reconnects, so the state
- * is kept here and reapplied on every join: both to hide the people already vanished from
- * whoever just arrived, and to hide a vanished player who has just come back.
- */
+/** Who is hidden from whom. */
 public final class VanishService implements Listener {
 
     private static final String SEE_PERMISSION = "chorus.staff.vanish.see";

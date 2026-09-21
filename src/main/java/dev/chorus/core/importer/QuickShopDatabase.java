@@ -12,18 +12,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.stream.Stream;
 
-/**
- * Finds the database QuickShop keeps its shops in, and opens it for reading.
- *
- * <p>QuickShop-Hikari writes one of three things depending on its own config: a MySQL or
- * MariaDB server, an H2 file, or — on older releases — an SQLite file. The first two of those
- * this plugin can read with the drivers it already has. H2 needs a driver nothing here ships,
- * so if the server has none the import says exactly that instead of failing with a stack
- * trace nobody can act on.
- *
- * <p>Everything is opened read-only. Nothing in the QuickShop folder is written, ever, which
- * is what makes it safe to try the check pass on a live server.
- */
+/** Finds the database QuickShop keeps its shops in, and opens it for reading. */
 final class QuickShopDatabase {
 
     private static final String DEFAULT_PREFIX = "qs_";
@@ -90,8 +79,7 @@ final class QuickShopDatabase {
         try {
             connection.setReadOnly(true);
         } catch (SQLException tooLate) {
-            // SQLite wants to be told before it opens. Nothing here runs anything but a
-            // SELECT either way, so this is a belt on top of braces.
+            // SQLite wants to be told before it opens.
         }
         return connection;
     }
@@ -102,8 +90,7 @@ final class QuickShopDatabase {
         if (h2 != null) {
             String file = h2.toAbsolutePath().toString();
             String base = file.substring(0, file.length() - H2_SUFFIX.length());
-            // No MODE here on purpose. H2 keeps the one it was created with, and naming a
-            // different one on the way in changes how it reads its own table names.
+            // No MODE on purpose: H2 keeps the one it was created with.
             return new Settings(
                     "jdbc:h2:file:" + base + ";ACCESS_MODE_DATA=r;IFEXISTS=TRUE",
                     "", "", prefix, "H2", "org.h2.Driver");

@@ -4,12 +4,7 @@ import org.bukkit.entity.Player;
 
 import java.util.function.Consumer;
 
-/**
- * The vanilla screens a player can open without standing in front of the block.
- *
- * <p>A null location tells Paper to use the player's own position, and the flag forces the
- * screen open even though there is no such block there.
- */
+/** The vanilla screens a player can open without standing in front of the block. */
 public enum PortableMenu {
 
     CRAFTING("craft", player -> player.openWorkbench(null, true)),

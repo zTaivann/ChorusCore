@@ -124,12 +124,7 @@ final class SqlPaymentRepository implements PaymentRepository {
         };
     }
 
-    /**
-     * Every read of this table is "newest first", so the sort is worth paying for once.
-     *
-     * <p>No IF NOT EXISTS here: MySQL has never accepted it on an index, and the version
-     * table already guarantees this runs exactly once.
-     */
+    /** Every read of this table is "newest first". */
     private static String createIndex() {
         return "CREATE INDEX chorus_payments_paid_at ON chorus_payments (paid_at)";
     }

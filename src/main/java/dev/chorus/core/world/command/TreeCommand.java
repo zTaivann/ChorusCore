@@ -14,12 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /tree <kind>}: grows a tree where the player is looking.
- *
- * <p>The kinds come from the server rather than a list written here, so a version that adds
- * one offers it and a version that never had one does not.
- */
+/** {@code /tree <kind>}: grows a tree where the player is looking. */
 public final class TreeCommand extends PlayerCommand {
 
     private static final int RANGE = 64;

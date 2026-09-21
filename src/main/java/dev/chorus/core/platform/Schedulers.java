@@ -11,18 +11,7 @@ import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
-/**
- * Runs work on the thread that is allowed to touch what it is about to touch.
- *
- * <p>On an ordinary server that is the single server thread and every method here goes to
- * the Bukkit scheduler. On Folia there is no single server thread: the world is split into
- * regions that tick in parallel, a player belongs to whichever region they are standing in,
- * and reaching them from anywhere else is a crash. Folia's schedulers are reached by
- * reflection, since the classes are not in the 1.18.2 API this is compiled against.
- *
- * <p>Which method to call follows from what the job touches: {@link #entity} for a player,
- * {@link #region} for blocks somewhere, {@link #global} for the server as a whole.
- */
+/** Runs work on the thread that is allowed to touch what it is about to touch. */
 public final class Schedulers {
 
     private final Plugin plugin;
@@ -150,8 +139,6 @@ public final class Schedulers {
             this.entityRate = FoliaCall.ENTITY_RATE.on(api);
             this.cancel = FoliaCall.TASK_CANCEL.on(api);
 
-            // Through the interface rather than through whatever class the server happens
-            // to be, which is not ours to reach into.
             this.global = FoliaCall.SERVER_GLOBAL.on(api).invoke(plugin.getServer());
             this.regional = FoliaCall.SERVER_REGION.on(api).invoke(plugin.getServer());
         }
@@ -168,9 +155,7 @@ public final class Schedulers {
             try {
                 return new Folia(plugin, api);
             } catch (ReflectiveOperationException | RuntimeException unexpected) {
-                // Never a fall back to the Bukkit scheduler. On Folia every one of its
-                // methods throws, so carrying on would turn one wrong signature into a crash
-                // somewhere else entirely, with nothing pointing back to here.
+                // Never a fall back to the Bukkit scheduler: on Folia every method throws.
                 throw new IllegalStateException(
                         "This is Folia, but its schedulers could not be reached. The plugin "
                                 + "cannot run safely without them; please report this.",
@@ -234,9 +219,7 @@ public final class Schedulers {
             try {
                 return method.invoke(target, arguments);
             } catch (IllegalAccessException | InvocationTargetException failed) {
-                // The cause, not the wrapper: an InvocationTargetException says nothing at
-                // all on its own, which is the difference between a report somebody can act
-                // on and a line that sends them looking in the wrong place.
+                // The cause, not the wrapper: an InvocationTargetException says nothing on its own.
                 Throwable cause = failed instanceof InvocationTargetException wrapped
                         && wrapped.getCause() != null ? wrapped.getCause() : failed;
                 plugin.getLogger().log(Level.WARNING,

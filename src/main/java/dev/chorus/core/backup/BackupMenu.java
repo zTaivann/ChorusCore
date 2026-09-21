@@ -20,16 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * The backups as screens: the list, one of them laid out, and its ender chest.
- *
- * <p>Looking is the point. A staff member deciding whether to give somebody their diamonds
- * back should be able to see the diamonds first, and should not have to restore an inventory
- * to find out it was the wrong one.
- *
- * <p>Every screen is read-only. The items on it are copies of a copy, and no click moves
- * anything anywhere.
- */
+/** The backups as screens: the list, one of them laid out, and its ender chest. */
 public final class BackupMenu {
 
     private static final String RESTORE_PERMISSION = "chorus.items.restore";
@@ -71,13 +62,7 @@ public final class BackupMenu {
         openList(viewer, subject, found, null);
     }
 
-    /**
-     * The same list showing only one kind of copy.
-     *
-     * <p>A player who dies a lot has forty deaths between them and the clear they are
-     * actually looking for, and the filter reads from the list already in hand rather than
-     * asking the database again.
-     */
+    /** The same list showing only one kind of copy. */
     public void openList(Player viewer, Player subject, List<InventorySnapshot> found,
                          @Nullable BackupReason only) {
         List<ListMenu.Entry> entries = new ArrayList<>(found.size());
@@ -204,12 +189,7 @@ public final class BackupMenu {
         menu.open(viewer);
     }
 
-    /**
-     * The two ways to put a backup back, for anybody allowed to.
-     *
-     * <p>Somebody with only the viewing permission sees the screen without them, which is the
-     * whole point of a viewing permission.
-     */
+    /** The two ways to put a backup back, for anybody allowed to. */
     private void restoreButtons(Menu menu, int nav, Player viewer, Player subject,
                                 InventorySnapshot snapshot) {
         if (!viewer.hasPermission(RESTORE_PERMISSION)) {
@@ -325,12 +305,7 @@ public final class BackupMenu {
         return space < 0 ? "" : reason.substring(space + 1);
     }
 
-    /**
-     * What the reason is called on screen.
-     *
-     * <p>Each one is written out rather than built from the constant, so the check that every
-     * line in menus.yml is reachable can see them and a translated file can rename them.
-     */
+    /** What the reason is called on screen. */
     private String named(BackupReason reason, String detail) {
         String name = messages.plain(switch (reason) {
             case DEATH -> "menu.backups.reason-death";

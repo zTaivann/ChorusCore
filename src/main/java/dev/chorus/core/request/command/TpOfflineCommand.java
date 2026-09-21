@@ -15,12 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * {@code /tpoffline <player>}: goes to where somebody logged out.
- *
- * <p>Somebody still online is simply where they are, so the command answers for them too
- * rather than refusing on a technicality.
- */
+/** {@code /tpoffline <player>}: goes to where somebody logged out. */
 public final class TpOfflineCommand extends ChorusCommand {
 
     private final PlayerProfiles profiles;

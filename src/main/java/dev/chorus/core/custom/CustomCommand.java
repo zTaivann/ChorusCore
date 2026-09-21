@@ -16,13 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * A command that exists only because the config says so.
- *
- * <p>These are not in plugin.yml, so they are built here and put straight into the server's
- * command map when the module starts. The permission is checked in code for the same reason
- * every other command in the plugin does it: Bukkit would otherwise answer with its own text.
- */
+/** A command that exists only because the config says so. */
 public final class CustomCommand extends Command {
 
     private static final String COOLDOWN_BYPASS = "chorus.bypass.cooldown";
@@ -69,8 +63,7 @@ public final class CustomCommand extends Command {
                     command -> player.performCommand(command.replace("%player%", who)));
         }
         if (!running.add(definition.name())) {
-            // A command listed among its own run-as-console lines would otherwise call
-            // itself until the stack ran out, taking the server with it.
+            // A command among its own run-as-console lines would call itself for ever.
             messages.send(sender, "error.command-recursion");
             return true;
         }

@@ -15,12 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.IntSupplier;
 
-/**
- * {@code /spawnmob <mob> [amount] [player]}: puts mobs where somebody is looking.
- *
- * <p>The amount is capped in the config, since the difference between forty zombies and four
- * thousand is the difference between a test and a restart.
- */
+/** {@code /spawnmob <mob> [amount] [player]}: puts mobs where somebody is looking. */
 public final class SpawnMobCommand extends ChorusCommand {
 
     private static final String OTHERS = "chorus.world.spawnmob.others";

@@ -11,19 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiConsumer;
 
-/**
- * A screen for laying items out without ever moving one.
- *
- * <p>Clicking something in your own inventory puts a copy on the screen; clicking something
- * on the screen takes the copy off again. Nothing is ever picked up, so nothing can be lost
- * and nothing can be gained: the screen can be opened, filled, emptied and closed all day and
- * the player leaves with exactly what they walked in with.
- *
- * <p>That is not a nicety. The obvious way to build this — a real inventory, filled with the
- * kit, handing the contents back on close — gives the player a free copy of the kit every
- * time they open it and look. An editor for a kit full of diamond is not allowed to be a
- * machine for making diamond.
- */
+/** A screen for laying items out without ever moving one. */
 public final class PaletteMenu implements InventoryHolder {
 
     private final Inventory inventory;
@@ -39,12 +27,7 @@ public final class PaletteMenu implements InventoryHolder {
         this(server, title, rows, rows * 9, onClose);
     }
 
-    /**
-     * A palette that only takes so many items.
-     *
-     * <p>A capacity of one makes it a single slot that replaces rather than fills: choosing
-     * a new icon should not mean taking the old one out first.
-     */
+    /** A palette that only takes so many items. */
     public PaletteMenu(Server server, Component title, int rows, int capacity,
                        BiConsumer<Player, ItemStack[]> onClose) {
         this.inventory = server.createInventory(this, rows * 9, title);
@@ -88,13 +71,7 @@ public final class PaletteMenu implements InventoryHolder {
         }
     }
 
-    /**
-     * A slot in the player's own inventory: a copy goes on.
-     *
-     * <p>A full palette of one replaces what is there. Everywhere else a full palette is
-     * full, and quietly dropping the oldest item to make room would be worse than doing
-     * nothing at all.
-     */
+    /** A slot in the player's own inventory: a copy goes on. */
     void putOn(ItemStack clicked) {
         if (clicked == null || clicked.getType().isAir()) {
             return;
@@ -117,21 +94,14 @@ public final class PaletteMenu implements InventoryHolder {
         return -1;
     }
 
-    /**
-     * Runs the callback exactly once, whatever the server does with the close event.
-     *
-     * <p>Opening an inventory while a close is being handled makes the server close the one
-     * still on screen, which is this one, and the close comes straight back round. Without
-     * this flag that is an endless loop.
-     */
+    /** Runs the callback exactly once, whatever the server does with the close event. */
     void closed(Player player) {
         if (handled) {
             return;
         }
         handled = true;
 
-        // Only the slots that hold items. Handing back the decoration as well would put a
-        // row of glass panes into whatever was being edited.
+        // Only the slots that hold items, not the decoration.
         ItemStack[] contents = new ItemStack[capacity];
         for (int slot = 0; slot < capacity; slot++) {
             contents[slot] = inventory.getItem(slot);

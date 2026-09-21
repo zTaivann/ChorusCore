@@ -14,12 +14,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-/**
- * A read-only screen of clickable icons.
- *
- * <p>Every click is cancelled by {@link MenuListener}, so nothing in a menu can ever be
- * taken out or dropped in. A slot does whatever action was attached to it and nothing else.
- */
+/** A read-only screen of clickable icons. */
 public final class Menu implements InventoryHolder {
 
     private final Inventory inventory;
@@ -46,13 +41,7 @@ public final class Menu implements InventoryHolder {
         setPerClick(slot, item, (player, click) -> action.accept(player));
     }
 
-    /**
-     * For the screens where a right click means something different from a left one.
-     *
-     * <p>Named apart from {@link #set} rather than overloading it: two methods taking
-     * functional interfaces of different arities cannot be told apart by a lambda that does
-     * not spell out its parameter types, and every call site here is one of those.
-     */
+    /** For the screens where a right click means something different from a left one. */
     public void setPerClick(int slot, ItemStack item, BiConsumer<Player, ClickType> action) {
         inventory.setItem(slot, item);
         actions.put(slot, action);

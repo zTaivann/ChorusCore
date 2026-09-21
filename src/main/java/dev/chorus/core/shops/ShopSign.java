@@ -17,9 +17,6 @@ import java.util.Locale;
  *   250            40
  * </pre>
  *
- * <p>The price line may be left off a {@code [Sell]} sign, in which case the item is worth
- * whatever the worth table says it is.
- *
  * @param buying   true for a sign that sells to the player, false for one that buys from them
  * @param amount   how many change hands at once
  * @param material what they are

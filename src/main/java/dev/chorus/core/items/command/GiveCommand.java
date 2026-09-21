@@ -17,12 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * {@code /give [player] <item> [amount]}: hands out items by name.
- *
- * <p>Leaving the player off gives them to whoever ran it, which is how it is used nine times
- * out of ten. Anything that does not fit is dropped at their feet rather than lost.
- */
+/** {@code /give [player] <item> [amount]}: hands out items by name. */
 public final class GiveCommand extends ChorusCommand {
 
     private static final String OTHERS = "chorus.items.give.others";
@@ -43,8 +38,7 @@ public final class GiveCommand extends ChorusCommand {
             return;
         }
 
-        // Either "<item> [amount]" or "<player> <item> [amount]": whichever way round it is
-        // written, the first word that names a material is the item.
+        // The first word that names a material is the item.
         Material first = Material.matchMaterial(args[0]);
         Player target;
         String itemName;

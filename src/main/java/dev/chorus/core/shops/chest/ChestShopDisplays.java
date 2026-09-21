@@ -19,18 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * The item turning slowly above a shop, so you can see what it sells without reading the sign.
- *
- * <p>It is a dropped item with everything that makes a dropped item behave taken away: no
- * gravity, no ageing, no despawning, no picking up, no merging with the one over the shop next
- * door, and no writing to the world file. That last one matters most. An item that is never
- * saved cannot be left behind by a crash, so there is no way for these to build up into a
- * field of floating diamonds that nobody can explain.
- *
- * <p>Because they are never saved they also go when a chunk unloads, and come back when it
- * loads again.
- */
+/** The item turning slowly above a shop, so you can see what it sells without reading the sign. */
 public final class ChestShopDisplays {
 
     /** Roughly a block above the lid, which is where the eye expects it. */
@@ -85,8 +74,7 @@ public final class ChestShopDisplays {
         }
 
         hide(shop.key());
-        // Spawning belongs to whoever owns those blocks, which on Folia is not the thread
-        // that started the plugin or moved the shop.
+        // Spawning belongs to whoever owns those blocks, which on Folia is another thread.
         schedulers.region(where, () -> spawn(shop.key(), where, template));
     }
 
@@ -165,23 +153,12 @@ public final class ChestShopDisplays {
         shown.clear();
     }
 
-    /**
-     * Forgets them without removing them, for shutdown.
-     *
-     * <p>They are never written to the world file, so a server that is stopping leaves none
-     * behind whatever happens here — and reaching into every region on the way down would
-     * only be a pile of errors in the log for no gain.
-     */
+    /** Forgets them without removing them, for shutdown. */
     public void forgetAll() {
         shown.clear();
     }
 
-    /**
-     * Anything left over from a reload that did not shut down cleanly.
-     *
-     * <p>Only items carrying the marker are touched, so a player who happens to have dropped
-     * something on top of a shop keeps it.
-     */
+    /** Anything left over from a reload that did not shut down cleanly. */
     private void sweepStrays(Location where) {
         for (Entity entity : where.getWorld().getNearbyEntities(where, 0.6, 0.6, 0.6)) {
             if (entity instanceof Item && entity.hasMetadata(MARKER)) {

@@ -3,17 +3,7 @@ package dev.chorus.core.warp;
 import dev.chorus.core.command.CommandRules;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * What a single warp costs, who may use it and how it looks.
- *
- * <p>Kept in the database rather than in a config file: warps are made in game with
- * {@code /setwarp}, and a server owner should not have to open a file and restart to say
- * that the one they just made costs money.
- *
- * <p>Every field has a "not set" value that means "use whatever the /warp command block
- * says", so a warp nobody has configured behaves exactly as warps did before any of this
- * existed.
- */
+/** What a single warp costs, who may use it and how it looks. */
 public record WarpDetails(String warp, @Nullable String icon, @Nullable String permission,
                           double price, int cooldownSeconds, @Nullable String description,
                           @Nullable String section, long uses) {
@@ -35,7 +25,7 @@ public record WarpDetails(String warp, @Nullable String icon, @Nullable String p
         return new CommandRules(base.enabled(), base.warmupSeconds(),
                 cooldownSeconds == INHERIT_COOLDOWN ? base.cooldownSeconds() : cooldownSeconds,
                 price == INHERIT_PRICE ? base.price() : price,
-                base.worlds(), base.feedback());
+                base.worlds(), base.feedback(), base.messages());
     }
 
     public WarpDetails withIcon(@Nullable String value) {

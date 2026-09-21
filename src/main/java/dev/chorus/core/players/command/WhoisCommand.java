@@ -122,12 +122,7 @@ public final class WhoisCommand extends ChorusCommand {
         }
     }
 
-    /**
-     * The country, when the server has asked for it.
-     *
-     * <p>Sent as its own line a moment later rather than held up the card, since it means
-     * waiting on a service somewhere else and the rest of the answer is already known.
-     */
+    /** The country, when the server has asked for it. */
     private void country(CommandSender sender, String address) {
         if (!geo.enabled() || address.isEmpty()) {
             return;

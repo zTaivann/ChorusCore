@@ -28,13 +28,7 @@ public record HomeSettings(String defaultName, int defaultLimit, int maxNameLeng
                         Material.LIME_BED, onBadMaterial));
     }
 
-    /**
-     * What setting the given home costs, counting the ones already owned.
-     *
-     * <p>The command's own price is the first one; every home after that adds
-     * {@code price-per-home}, so the tenth home can cost real money while the first stays
-     * free. Moving a home the player already has is never charged the surcharge.
-     */
+    /** What setting the given home costs, counting the ones already owned. */
     public double priceFor(double base, int owned, boolean replacing) {
         if (replacing || pricePerHome <= 0) {
             return base;

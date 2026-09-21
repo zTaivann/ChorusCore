@@ -7,15 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/**
- * A command that acts on the sender, or on someone else when a name is given.
- *
- * <p>Aiming at another player needs the same permission with {@code .others} on the end.
- *
- * <p>{@link #execute} always runs on the thread that owns the target, which on Folia is not
- * the thread the command arrived on when they are standing in another region. Every command
- * of this shape therefore gets that right without having to remember to.
- */
+/** A command that acts on the sender, or on someone else when a name is given. */
 public abstract class TargetedCommand extends ChorusCommand {
 
     private final String othersPermission;
@@ -72,8 +64,6 @@ public abstract class TargetedCommand extends ChorusCommand {
             return List.of();
         }
 
-        // Filtered while iterating rather than after: on a busy server this runs on every
-        // keystroke and there is no reason to build a list of everyone first.
         return onlineNames(sender, args[args.length - 1], true);
     }
 }

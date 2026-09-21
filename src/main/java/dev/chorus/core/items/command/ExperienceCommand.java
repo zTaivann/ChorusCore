@@ -13,10 +13,6 @@ import java.util.Locale;
 /**
  * {@code /exp [show|give|take|set|reset] [player] <amount>}: experience, in points or in
  * levels.
- *
- * <p>An amount ending in {@code L} is levels; anything else is points. Setting a total is
- * done by emptying the bar first, because Bukkit's level and progress are two numbers and
- * writing one without the other leaves a player on a level they have not earned.
  */
 public final class ExperienceCommand extends ChorusCommand {
 
@@ -155,13 +151,7 @@ public final class ExperienceCommand extends ChorusCommand {
         }
     }
 
-    /**
-     * What the bar is really worth.
-     *
-     * <p>{@code getTotalExperience} is the number Minecraft has collected, not the number a
-     * player is carrying: spending levels at an anvil leaves it alone. Counting the levels
-     * back up is the only way to a figure that matches the bar.
-     */
+    /** What the bar is really worth. */
     private static int total(Player player) {
         int level = player.getLevel();
         int points = Math.round(player.getExp() * pointsToNext(level));

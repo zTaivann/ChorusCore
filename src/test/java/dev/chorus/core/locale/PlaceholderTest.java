@@ -12,11 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * The menus once showed a literal {@code %home%} because the value was being put into the
  * finished component rather than into the parse.
- *
- * <p>{@code <gradient>} is what exposed it: it colours a line one character at a time, so the
- * placeholder no longer exists as a single piece of text by the time anything looks for it.
- * These check that it survives the tags that do that, and that a value still cannot smuggle
- * in tags of its own.
  */
 class PlaceholderTest {
 

@@ -16,12 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /sell <hand|all|item> [amount]}: sells to the server at the worth table's prices.
- *
- * <p>{@code all} sells every plain item that has a price, which is what a player coming back
- * from a mine actually wants. Anything renamed, enchanted or damaged is left alone.
- */
+/** {@code /sell <hand|all|item> [amount]}: sells to the server at the worth table's prices. */
 public final class SellCommand extends PlayerCommand {
 
     private final WorthTable worth;

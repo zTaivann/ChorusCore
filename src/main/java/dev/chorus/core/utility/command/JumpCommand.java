@@ -8,12 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 
-/**
- * {@code /jump}: goes to whatever the player is looking at.
- *
- * <p>The ray stops at the first solid block, so looking through a window lands on the
- * window rather than on the hillside behind it.
- */
+/** {@code /jump}: goes to whatever the player is looking at. */
 public final class JumpCommand extends PlayerCommand {
 
     private static final int RANGE = 200;

@@ -33,8 +33,7 @@ public final class MenuItems {
 
         meta.displayName(TextFormat.upright(name));
         meta.lore(lore.stream().map(TextFormat::asLore).toList());
-        // values() rather than named constants: the set of flags has grown over the years
-        // and naming one that a version lacks would fail to link.
+        // values(): naming a flag a version lacks would fail to link.
         meta.addItemFlags(ItemFlag.values());
         item.setItemMeta(meta);
         return item;

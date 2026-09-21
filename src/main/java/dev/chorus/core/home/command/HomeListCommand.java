@@ -93,10 +93,7 @@ public final class HomeListCommand extends PlayerCommand {
                 JoinConfiguration.separator(messages.render("home.list.separator")), entries));
     }
 
-    /**
-     * The click and hover live in code rather than in messages.yml because the home name has
-     * to reach the command as data, not as part of a template someone could reshape.
-     */
+    /** The click and hover are built here so the home name reaches the command as data. */
     private Component entry(Home home) {
         return messages.render("home.list.entry", "home", home.name())
                 .clickEvent(ClickEvent.runCommand("/home " + home.name()))

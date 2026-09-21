@@ -1,0 +1,92 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   C O R E                                                              │
+# │   refusals, /chorus, and the words other lines borrow                  │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Solo las líneas que se traducen. El resto viene de messages/core.yml.
+
+error:
+  no-permission: '%prefix%<red>No tienes permiso para hacer eso.'
+  players-only: '%prefix%<red>Ese comando solo lo puede usar un jugador.'
+  loading: '%prefix%<red>Tus datos todavía se están cargando. Inténtalo en un segundo.'
+  storage: '%prefix%<red>No se pudo guardar el cambio. Avísale a un administrador.'
+  load-failed: '<red>No pudimos cargar tus datos.<newline><gray>Vuelve a intentarlo en unos minutos.'
+  player-not-found: '%prefix%<red>%player% no está conectado.'
+  command-disabled: '%prefix%<red>Ese comando está desactivado en este servidor.'
+  command-world: '%prefix%<red>Ese comando está desactivado en este mundo.'
+  module-disabled: '%prefix%<red>Esa función está desactivada en este servidor.'
+  command-recursion: '%prefix%<red>Ese comando se llama a sí mismo, así que se detuvo. Revisa sus líneas de run-as-console.'
+
+
+core:
+  usage: '%prefix%<gray>ChorusCore <white>%version%</white>. Usa <white>/chorus reload</white> o <white>/chorus status</white>.'
+  reloaded: '%prefix%<green>Configuración recargada.<newline>%prefix%<gray>El almacenamiento y los alias siguen necesitando reiniciar el servidor.'
+  status-storage: '<dark_gray>▪ <gray>Almacenamiento <dark_gray>» <white>%storage%'
+  status-economy: '<dark_gray>▪ <gray>Economía <dark_gray>» <white>%economy%'
+  status-modules: '<dark_gray>▪ <gray>Módulos <dark_gray>» <white>%modules%'
+  prompt-cancel: '%prefix%<dark_gray>▪ <gray>Escribe <white>cancel</white> para dejarlo como está.'
+  prompt-expired: '%prefix%<gray>No escribiste nada, así que nada cambió.'
+  reloaded-module: '%prefix%<green>Se recargó <white>%module%</white>.'
+  reload-unknown: '%prefix%<red>No existe ningún módulo llamado <white>%module%</white>.'
+  confirm-again: '%prefix%<gray>Repite el mismo comando antes de <white>%seconds%s</white> para confirmar.'
+  help-header: '<dark_gray>» <c:brand><bold>COMANDOS</bold></c> <dark_gray>« <gray>%count% <dark_gray>▪ <gray>%page%<dark_gray>/<gray>%pages%'
+  help-more: '%prefix%<gray>Hay más en <white>/commands %search%</white>.'
+  help-modules: '%prefix%<dark_gray>▪ <gray>Acótalo con <white>/commands [módulo]</white> <dark_gray>(<gray>%modules%<dark_gray>)'
+  help-empty: '%prefix%<gray>Aquí no hay nada que puedas usar.'
+  help-no-match: '%prefix%<gray>Nada coincide con <white>%search%</white>.'
+  debug-server: '<dark_gray>▪ <gray>Servidor <dark_gray>» <white>%server% %game% <dark_gray>▪ <gray>Java <white>%java%'
+  debug-platform: '<dark_gray>▪ <gray>Hilos <dark_gray>» <white>%platform% <dark_gray>▪ <gray>Memoria <white>%memory%'
+  debug-storage: '<dark_gray>▪ <gray>Almacenamiento <dark_gray>» <white>%storage% <dark_gray>▪ <gray>Economía <white>%economy%'
+  debug-modules: '<dark_gray>▪ <gray>Encendidos <dark_gray>» <white>%on%<newline><dark_gray>▪ <gray>Apagados <dark_gray>» <white>%off%'
+  debug-commands: '<dark_gray>▪ <gray>Comandos <dark_gray>» <white>%count% <dark_gray>▪ <gray>Conectados <white>%players%'
+  debug-plugins: '<dark_gray>▪ <gray>Otros plugins <dark_gray>» <white>%count% <dark_gray>(<gray>%plugins%<dark_gray>)'
+  debug-none: 'ninguno'
+
+  import-usage: '%prefix%<gray>Usa <white>/chorus import essentials</white> o <white>/chorus import quickshop</white> para ver qué pasaría, y después agrégale <white>run</white>.'
+  import-not-found: '%prefix%<red>No hay ninguna carpeta de Essentials al lado de esta.'
+  import-checking: '%prefix%<gray>Leyendo <white>%folder%</white>. No se va a escribir nada.'
+  import-started: '%prefix%<gray>Importando desde <white>%folder%</white>. Puede tardar un momento.'
+  import-confirm: '%prefix%<red>Esto escribe casas, saldos, warps y correo en Chorus. No se toca nada de la carpeta de Essentials, y lo que Chorus ya tenga se queda igual.'
+  import-confirm-overwrite: '%prefix%<red>Esto va a REEMPLAZAR lo que Chorus ya tiene con lo que tenga Essentials.'
+  import-would: '%prefix%<gray>Se encontraron <white>%players%</white> jugadores. No se escribió nada.'
+  import-done: '%prefix%<green>Se importaron <white>%players%</white> jugadores.'
+  import-counts: '<dark_gray>▪ <gray>Casas <white>%homes%</white> <dark_gray>▪ <gray>Saldos <white>%balances%</white> <dark_gray>▪ <gray>Warps <white>%warps%'
+  import-counts-more: '<dark_gray>▪ <gray>Correo <white>%mail%</white> <dark_gray>▪ <gray>Apodos <white>%nicknames%</white> <dark_gray>▪ <gray>Precios <white>%prices%'
+  import-skipped: '<dark_gray>▪ <gray>Se dejaron intactos porque Chorus ya los tenía <dark_gray>» <white>%skipped%'
+  import-problems-more: '<dark_gray>▪ <red>y %count% más como ese'
+  import-empty: '%prefix%<gray>Esa carpeta no tiene nada que se pueda leer.'
+  import-failed: '%prefix%<red>La importación se detuvo. La consola dice por qué, y no se perdió nada.'
+  import-next: '%prefix%<gray>Todo bien? Corre <white>/chorus import essentials run</white>.'
+  import-restart: '%prefix%<gray>Reinicia el servidor para que se carguen los datos nuevos.'
+  import-shops-not-found: '%prefix%<red>No hay ninguna carpeta de QuickShop al lado de esta.'
+  import-shops-confirm: '%prefix%<red>Esto escribe todas las tiendas de QuickShop en Chorus. La base de QuickShop solo se lee, y un bloque donde Chorus ya tenga una tienda se queda igual.'
+  import-shops-confirm-overwrite: '%prefix%<red>Esto va a REEMPLAZAR cualquier tienda de Chorus que esté en el mismo bloque que una de QuickShop.'
+  import-shops-would: '%prefix%<gray>Se traerían <white>%shops%</white> tiendas desde <white>%source%</white>. No se escribió nada.'
+  import-shops-done: '%prefix%<green>Se trajeron <white>%shops%</white> tiendas desde <white>%source%</white>.'
+  import-shops-counts: '<dark_gray>▪ <gray>Leídas <white>%read%</white> <dark_gray>▪ <gray>Ya estaban <white>%skipped%</white> <dark_gray>▪ <gray>Ilegibles <white>%broken%'
+  import-shops-empty: '%prefix%<gray>Esa carpeta no tiene tiendas que se puedan leer.'
+  import-shops-next: '%prefix%<gray>Todo bien? Corre <white>/chorus import quickshop run</white>.'
+  import-shops-restart: '%prefix%<gray>Reinicia el servidor para que se carguen las tiendas, y recién ahí saca QuickShop.'
+
+  purge-usage: '%prefix%<gray>Usa <white>/chorus purge %min%</white> para ver qué se iría, y después <white>/chorus purge %min% run</white>.'
+  purge-range: '%prefix%<red>Lo mínimo que puede borrar una limpieza son <white>%min%</white> días.'
+  purge-confirm: '%prefix%<red>Esto borra para siempre las casas, el dinero, el correo y los ajustes de todos los que no aparecen hace %days% días.'
+  purge-checking: '%prefix%<gray>Contando jugadores sin aparecer hace <white>%days%</white> días. No se va a borrar nada.'
+  purge-started: '%prefix%<gray>Limpiando jugadores sin aparecer hace <white>%days%</white> días.'
+  purge-would: '%prefix%<gray>Se olvidarían <white>%players%</white> jugadores <dark_gray>(<gray>%rows% filas<dark_gray>)<gray>. No se borró nada.'
+  purge-done: '%prefix%<green>Se olvidaron <white>%players%</white> jugadores <dark_gray>(<gray>%rows% filas<dark_gray>)<green>.'
+  purge-shops: '<dark_gray>▪ <gray>Se dejaron intactos porque tienen una tienda de cofre <dark_gray>» <white>%count%'
+  purge-empty: '%prefix%<gray>Nadie lleva tanto tiempo fuera.'
+  purge-failed: '%prefix%<red>La limpieza se detuvo. La consola dice por qué, y no se borró nada.'
+  purge-next: '%prefix%<gray>Todo bien? Agrégale <white>run</white> al final.'
+
+  status-updates: '<dark_gray>▪ <gray>Actualizaciones <dark_gray>» <white>%updates%'
+  update-available: '%prefix%<gray>Ya salió ChorusCore <white>%latest%</white>. Este servidor tiene la <white>%current%</white>.'
+  update-current: 'al día'
+  update-off: 'sin revisar'
+
+
+cooldown:
+  wait: '%prefix%<red>Espera <white>%time%</white> antes de volver a usar eso.'

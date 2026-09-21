@@ -7,13 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-/**
- * A position that came out of the database.
- *
- * <p>The world is kept twice on purpose: the id survives a rename and the name survives a
- * world that was deleted and generated again. Records implement this for free, since their
- * accessors already match.
- */
+/** A position that came out of the database. */
 public interface StoredLocation {
 
     UUID worldId();

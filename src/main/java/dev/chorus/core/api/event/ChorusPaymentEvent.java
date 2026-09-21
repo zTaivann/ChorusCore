@@ -6,12 +6,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Fired before /pay moves any money.
- *
- * <p>Cancelling it stops the transfer before either side is touched, which is the hook a
- * tax, a log or an anti-fraud addon wants.
- */
+/** Fired before /pay moves any money. */
 public final class ChorusPaymentEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();

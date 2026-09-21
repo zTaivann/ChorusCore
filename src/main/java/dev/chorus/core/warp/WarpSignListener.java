@@ -21,14 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.Optional;
 
-/**
- * Signs that read {@code [Warp]} on the first line and a warp name on the second.
- *
- * <p>Making one needs its own permission, because a sign that teleports is a warp anybody can
- * place in the middle of a survival world. Using one needs nothing beyond whatever the warp
- * itself asks for, and every price, cooldown and permission behaves exactly as it would if
- * the player had typed the command.
- */
+/** Signs that read {@code [Warp]} on the first line and a warp name on the second. */
 public final class WarpSignListener implements org.bukkit.event.Listener {
 
     private static final String CREATE_PERMISSION = "chorus.warp.sign.create";
@@ -129,11 +122,7 @@ public final class WarpSignListener implements org.bukkit.event.Listener {
         });
     }
 
-    /**
-     * Signs grew a back side in 1.20, which is why reading a line without saying which side
-     * is deprecated on newer servers. It still reads the front, which is the one people write
-     * on, and the method that replaced it does not exist on 1.18.
-     */
+    /** Signs grew a back side in 1.20. The front is read, and the newer method is not on 1.18. */
     private @Nullable String warpOn(Block block) {
         if (!(block.getState() instanceof Sign sign)) {
             return null;

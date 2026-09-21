@@ -14,12 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-/**
- * The moments a player can lose everything without asking to.
- *
- * <p>Death is read at the lowest priority, before another plugin has had a chance to empty
- * the drops or keep the inventory. What is copied is what they had when they died.
- */
+/** The moments a player can lose everything without asking to. */
 public final class BackupListener implements Listener {
 
     private final InventoryBackups backups;

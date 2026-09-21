@@ -71,10 +71,6 @@ public final class HomeService implements HomeApi {
     /**
      * Drops data for players who never made it in, which is what happens when a ban or
      * whitelist check refuses the login after this cache was filled.
-     *
-     * <p>An entry has to be seen offline on two consecutive sweeps before it goes. That
-     * second look is what keeps the gap between the login thread loading a player and
-     * that player showing up in the online list from ever costing them their homes.
      */
     void reapOffline(Predicate<UUID> online) {
         for (UUID owner : cache.keySet()) {

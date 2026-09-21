@@ -8,31 +8,10 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 
-/**
- * One trade, start to finish, without ever letting go of the thread.
- *
- * <p>This is the part that must not be got wrong, so the rules it follows are worth stating.
- *
- * <ol>
- *   <li><b>Everything is measured again here.</b> How much stock there is, how much room, how
- *       much money: all read from the live inventories at the moment of the trade, never from
- *       whatever was shown on screen a few seconds earlier.</li>
- *   <li><b>Items move in one direction only.</b> They are taken out of one place and put into
- *       another. Nothing is ever created from a template and handed over while the original
- *       stays where it was, which is the shape every duplication bug has.</li>
- *   <li><b>Every step after the first is reversible, and reversed on failure.</b> If the money
- *       will not move, the items go back where they came from before anybody is told.</li>
- *   <li><b>Nothing waits.</b> No database call, no scheduled task, no callback. From the first
- *       measurement to the last item there is no point at which another player can act.</li>
- * </ol>
- *
- * <p>The one thing that can still go wrong is money disappearing: if a deposit is refused
- * after a withdrawal went through, the amount is lost rather than the items being doubled.
- * That is the right way round, and it is reported so somebody can put it right.
- */
+/** One trade, start to finish, without ever letting go of the thread. */
 public final class ChestShopTrade {
 
-    /** How it went. Each one has a line in messages.yml. */
+    /** How it went. Each one has a line in the messages folder. */
     public enum Result {
         DONE,
         /** The shop has none of the item left. */
@@ -108,8 +87,6 @@ public final class ChestShopTrade {
         double paid = money(shop, delivered);
         if (!shop.unlimited() && !economy.deposit(owner, paid)) {
             // The buyer has their items and has paid; the shop could not take the money.
-            // Reported rather than undone, because undoing it would mean taking the items
-            // back out of a player who already has them.
             return new Trade(Result.FAILED, delivered, paid);
         }
         return new Trade(Result.DONE, delivered, paid);
@@ -159,8 +136,7 @@ public final class ChestShopTrade {
 
         double paid = money(shop, sold);
         if (!economy.deposit(seller, paid)) {
-            // Nothing has left the shop yet in a way the seller can see, so all of it goes
-            // back: the items out of the container and the money back to the owner.
+            // Nothing has left the shop yet, so all of it goes back.
             if (!shop.unlimited()) {
                 take(stock, template, sold);
                 economy.deposit(owner, paid);

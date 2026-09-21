@@ -23,39 +23,14 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 
-/**
- * {@code /locate <structure|biome> <name>}: the nearest one, and how far away it is.
- *
- * <p>The names come from the server rather than a list written here, so a version that adds
- * one offers it. Naming the kind is optional: a bare name is looked for as a structure and
- * then as a biome, which is what most people type.
- *
- * <p>Searching costs real work, and asking for an unexplored structure costs a great deal
- * more, so both the radius and whether unexplored ones count are settings rather than
- * something the player chooses.
- *
- * <p>Biomes are reached through the registry rather than through {@code Biome.values()}.
- * Biome was an enum when this was built against 1.18.2 and is an interface on current
- * versions, so a call compiled against the enum would not link on a modern server.
- */
+/** {@code /locate <structure|biome> <name>}: the nearest one, and how far away it is. */
 public final class LocateCommand extends PlayerCommand {
 
     private static final String STRUCTURE = "structure";
     private static final String BIOME = "biome";
     private static final String TELEPORT_PERMISSION = "chorus.staff.tppos";
 
-    /**
-     * How many samples across a biome search is allowed to take.
-     *
-     * <p>A biome search is noise sampled on the server thread, and there is no background
-     * version of it in the API. Left to itself it scales with the square of the radius: a
-     * 1600 block search took forty-five seconds here and the watchdog stopped the server.
-     *
-     * <p>So the interval between samples is worked out from the radius rather than fixed,
-     * which makes every search cost the same however far it reaches. A wider search steps
-     * over more ground, so a small patch of a biome can be stepped past — that is the trade,
-     * and it is the right way round.
-     */
+    /** How many samples across a biome search is allowed to take. */
     private static final int SAMPLES_ACROSS = 16;
 
     /** Sampling closer together than this buys nothing: biomes are laid out in fours. */
@@ -101,8 +76,7 @@ public final class LocateCommand extends PlayerCommand {
                     ? biome(player, wanted)
                     : structureOr(player, wanted, !named);
         } catch (RuntimeException refused) {
-            // A search reaches well past the region the player is standing in, which Folia
-            // is within its rights to refuse. Better said plainly than as a stack trace.
+            // A search reaches past the player's region, which Folia may refuse.
             messages.send(player, "world.locate-refused");
             return;
         }
@@ -119,16 +93,7 @@ public final class LocateCommand extends PlayerCommand {
         surfaced(player, found.name(), player.getLocation(), found.where());
     }
 
-    /**
-     * Reports the ground rather than the point the search handed back.
-     *
-     * <p>A biome search answers with a height somewhere in the column the biome occupies,
-     * which over an ocean is a dozen blocks above the water. Sending somebody there lands
-     * them in mid-air, or refuses because there is nothing to stand on.
-     *
-     * <p>The chunk is fetched in the background: reading a heightmap out of an unloaded
-     * chunk on the server thread is how a command stalls everybody else.
-     */
+    /** Reports the ground rather than the point the search handed back. */
     private void surfaced(Player player, String kind, Location from, Location found) {
         found.getWorld().getChunkAtAsync(found).whenComplete((chunk, missing) ->
                 schedulers.region(found, () -> {
@@ -153,6 +118,7 @@ public final class LocateCommand extends PlayerCommand {
     }
 
     private @Nullable Found biome(Player player, String wanted) {
+        // Through the registry: Biome was an enum on 1.18 and is an interface now.
         NamespacedKey id = id(wanted);
         Biome biome = id == null ? null : Registry.BIOME.get(id);
         if (biome == null) {
@@ -172,12 +138,7 @@ public final class LocateCommand extends PlayerCommand {
                 .locateNearestStructure(from, type, radius.getAsInt(), unexplored.getAsBoolean());
     }
 
-    /**
-     * The line, with the coordinates on a tooltip and a teleport behind a click.
-     *
-     * <p>Only for somebody who could have typed the teleport themselves. Offering a click
-     * that answers "you are not allowed to do that" is worse than not offering it.
-     */
+    /** The line, with the coordinates on a tooltip and a teleport behind a click. */
     private void report(Player player, String kind, Location from, Location found) {
         Component line = messages.render(player, "world.locate-found",
                 "kind", kind,

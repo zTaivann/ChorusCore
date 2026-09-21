@@ -4,15 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Per player, per command cooldowns.
- *
- * <p>They deliberately survive a disconnect: dropping them on quit would turn every
- * cooldown into a relog away from nothing. A sweep clears the expired ones instead.
- *
- * <p>Concurrent because on Folia two regions tick at the same time, and two players in
- * different regions running priced commands reach this in parallel.
- */
+/** Per player, per command cooldowns. */
 public final class Cooldowns {
 
     private final Map<UUID, Map<String, Long>> expiry = new ConcurrentHashMap<>();

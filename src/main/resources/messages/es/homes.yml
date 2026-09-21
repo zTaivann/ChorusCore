@@ -1,0 +1,36 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   H O M E S                                                            │
+# │   /home  /sethome  /delhome  /homes  /renamehome  /homeicon            │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Solo las líneas que se traducen. El resto viene de messages/homes.yml.
+
+home:
+  none: '%prefix%<gray>Todavía no tienes casas. Crea una con <white>/sethome</white>.'
+  created: '%prefix%<gray>Casa <white>%home%</white> creada.'
+  updated: '%prefix%<gray>Casa <white>%home%</white> movida a donde estás parado.'
+  deleted: '%prefix%<gray>Casa <white>%home%</white> borrada.'
+  teleported: '%prefix%<gray>Bienvenido de vuelta a <white>%home%</white>.'
+  unknown: '%prefix%<red>No tienes ninguna casa llamada <white>%home%</white>.'
+  invalid-name: '%prefix%<red>Nombre inválido. Usa letras, números, <white>-</white> o <white>_</white>, hasta %max% caracteres.'
+  limit-reached: '%prefix%<red>Ya tienes %limit% casas. Borra una con <white>/delhome</white>.'
+  world-missing: '%prefix%<red>El mundo <white>%world%</white> no está cargado ahora mismo.'
+  delete-usage: '%prefix%<gray>Uso: <white>/delhome [nombre]</white>'
+  rename-usage: '%prefix%<gray>Uso: <white>/renamehome [viejo] [nuevo]</white>'
+  renamed: '%prefix%<gray>La casa <white>%home%</white> ahora se llama <white>%name%</white>.'
+  rename-same: '%prefix%<red>Así se llama ya.'
+  rename-taken: '%prefix%<red>Ya tienes una casa llamada <white>%home%</white>.'
+  world-limit-reached: '%prefix%<red>Ya tienes %limit% casas en %world%.'
+  icon-usage: '%prefix%<gray>Uso: <white>/homeicon [casa] [ítem]</white>. Deja el ítem afuera para reiniciarlo.'
+  icon-set: '%prefix%<gray>La casa <white>%home%</white> ahora se muestra como <white>%icon%</white>.'
+  icon-cleared: '%prefix%<gray>La casa <white>%home%</white> vuelve a mostrar el ícono por defecto.'
+  icon-unknown: '%prefix%<red>Esta versión no tiene ningún ítem llamado <white>%icon%</white>.'
+  list:
+    header: '%prefix%<gray>Tus casas <dark_gray>(<white>%count%</white>/%limit%)</dark_gray>'
+    hover: '<gray>Ir a <white>%home%</white><newline><dark_gray>%world% %x%, %y%, %z%</dark_gray>'
+  none-other: '%prefix%<gray>%player% no tiene casas.'
+  teleported-other: '%prefix%<gray>Te llevamos a <white>%home%</white>, una casa de <white>%player%</white>.'
+  overwrite-confirm: '%prefix%<gray>Ya tienes una casa llamada <white>%home%</white>. Esto la mueve aquí.'
+  delete-confirm: '%prefix%<red>Esto borra la casa <white>%home%</white> para siempre.'

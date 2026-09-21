@@ -16,12 +16,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * {@code /restore <player> [list|number]}: an inventory as it was before something wiped it.
- *
- * <p>Works on a player who is not here. What they get back cannot be handed over to somebody
- * who is offline, so it waits in the database and is applied the moment they log in.
- */
+/** {@code /restore <player> [list|number]}: an inventory as it was before something wiped it. */
 public final class RestoreCommand extends ChorusCommand {
 
     /**
@@ -74,12 +69,7 @@ public final class RestoreCommand extends ChorusCommand {
         });
     }
 
-    /**
-     * The newest copies from anybody, for a report that does not name who.
-     *
-     * <p>Somebody says a player lost their things and cannot remember the name. This is the
-     * screen that answers that, and every line names the player to carry on with.
-     */
+    /** The newest copies from anybody, for a report that does not name who. */
     private void recent(CommandSender sender) {
         if (!ready(sender)) {
             return;
@@ -114,8 +104,6 @@ public final class RestoreCommand extends ChorusCommand {
         }
 
         boolean listing = args.length > 1 && args[1].equalsIgnoreCase("list");
-        // No second word opens the screen, which is where somebody can see what they are
-        // about to put back before they put it back.
         int wanted = args.length > 1 ? number(args) : -2;
         if (!listing && wanted == -1) {
             messages.send(sender, "items.restore-usage");
@@ -172,8 +160,7 @@ public final class RestoreCommand extends ChorusCommand {
             return;
         }
 
-        // Putting an inventory back is done to the player, so it happens on the thread that
-        // owns them rather than the one the command arrived on.
+        // Done to the player, so it runs on the thread that owns them.
         onPlayer(target, () -> {
             if (backups.restore(target, snapshot,
                     EnumSet.allOf(InventoryBackups.Part.class), sender.getName()).isEmpty()) {

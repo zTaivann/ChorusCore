@@ -26,12 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
-/**
- * The kits themselves and who has taken what.
- *
- * <p>Uses are read from the database once, while the player is still logging in, and kept in
- * memory from then on, so checking a cooldown never costs a query.
- */
+/** The kits themselves and who has taken what. */
 public final class KitService {
 
     private final KitRepository repository;
@@ -127,12 +122,7 @@ public final class KitService {
         return taken == null ? null : taken.get(kit.name());
     }
 
-    /**
-     * The first requirement this player does not meet, or null when they meet them all.
-     *
-     * <p>The numbers behind them are gathered lazily: a kit with no money requirement never
-     * asks the economy anything, and /kits builds this for every kit on the screen.
-     */
+    /** The first requirement this player does not meet, or null when they meet them all. */
     public @Nullable Requirement unmet(Player player, Kit kit) {
         if (kit.requirements().isEmpty()) {
             return null;
@@ -171,11 +161,7 @@ public final class KitService {
         long now = System.currentTimeMillis();
         UUID owner = player.getUniqueId();
 
-        // Written down before the database rather than after it. Everything that decides
-        // whether a kit may be taken reads this map, and the write is a round trip off the
-        // server thread: a player pressing the button twice in the same second would pass
-        // the check twice and be handed a one-time kit twice over. Put back below if the
-        // write turns out to have failed.
+        // Written down before the database, so two presses in one second cannot both pass.
         KitRepository.Use before = remember(owner, kit.name(), now);
 
         return Queries.<Void>run(() -> {
@@ -212,14 +198,7 @@ public final class KitService {
         }
     }
 
-    /**
-     * Puts the kit where it belongs.
-     *
-     * <p>Armour goes on rather than into the inventory when {@code auto-armor} is on and the
-     * slot is free. Taking off what somebody is already wearing to put the kit's on would be a
-     * good way to lose enchanted diamond, so an occupied slot is left alone and the piece
-     * goes in the inventory as any other item would.
-     */
+    /** Puts the kit where it belongs. */
     private void hand(Player player, Kit kit) {
         PlayerInventory inventory = player.getInventory();
         if (kit.clearInventory()) {
@@ -251,12 +230,7 @@ public final class KitService {
         return true;
     }
 
-    /**
-     * Which armour slot a material belongs in, worked out from the end of its name.
-     *
-     * <p>By suffix rather than by listing every piece: the game has gained whole armour sets
-     * since 1.18, and a list written today would not know about the next one.
-     */
+    /** Which armour slot a material belongs in, worked out from the end of its name. */
     private enum ArmourSlot {
         HELMET, CHESTPLATE, LEGGINGS, BOOTS;
 

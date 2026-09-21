@@ -13,12 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * {@code /time [when] [world|all]}: reads or sets the time of day.
- *
- * <p>Setting it always moves forwards to the next time it will be, so asking for morning in
- * the afternoon does not wind the day back and reset everything that counts from it.
- */
+/** {@code /time [when] [world|all]}: reads or sets the time of day. */
 public final class TimeCommand extends ChorusCommand {
 
     private static final long DAY = 24000L;
@@ -80,7 +75,7 @@ public final class TimeCommand extends ChorusCommand {
         return target <= current ? target + DAY : target;
     }
 
-    /** Minecraft counts from six in the morning, which is why nothing here lines up. */
+    /** Minecraft counts from six in the morning. */
     private static String clock(long ticks) {
         long total = Math.floorMod(ticks + 6000L, DAY);
         long hours = total / 1000;

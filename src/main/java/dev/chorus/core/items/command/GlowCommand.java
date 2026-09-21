@@ -8,13 +8,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-/**
- * Gives the held item the enchanted shimmer without an enchantment behind it.
- *
- * <p>The trick is an enchantment that does nothing on the item it is put on, hidden from the
- * tooltip. Newer servers have a flag for exactly this, but it did not exist in 1.18, and one
- * jar cannot call a method half the versions it runs on have never heard of.
- */
+/** Gives the held item the enchanted shimmer without an enchantment behind it. */
 public final class GlowCommand extends HeldItemCommand {
 
     private static final String MARKER = "lure";
@@ -42,8 +36,7 @@ public final class GlowCommand extends HeldItemCommand {
         }
 
         boolean glowing = meta.hasEnchant(marker) && meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS);
-        // Anything genuinely enchanted already shimmers, and turning the flag on there would
-        // hide the enchantments the player can actually use.
+        // An enchanted item already shimmers, and the flag would hide its enchantments.
         if (!glowing && !meta.getEnchants().isEmpty()) {
             messages.send(player, "items.glow-already-enchanted");
             return;

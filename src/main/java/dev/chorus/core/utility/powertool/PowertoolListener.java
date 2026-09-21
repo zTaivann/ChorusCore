@@ -25,14 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Runs what a player has tied to the item in their hand.
- *
- * <p>The commands are run as that player, so a powertool can never do something they could
- * not have typed. Whoever set it is also checked for the permission at the moment of the
- * click rather than at the moment they set it, so a demoted staff member's wand stops
- * working at once.
- */
+/** Runs what a player has tied to the item in their hand. */
 public final class PowertoolListener implements Listener {
 
     private static final String PERMISSION = "chorus.utility.powertool";
@@ -59,8 +52,6 @@ public final class PowertoolListener implements Listener {
         try {
             powertools.load(event.getUniqueId());
         } catch (SQLException exception) {
-            // Not worth turning away at the door. The player gets in with no powertools,
-            // which is what they had before they set one.
             logger.log(Level.WARNING,
                     "Could not load the powertools of " + event.getName(), exception);
         }

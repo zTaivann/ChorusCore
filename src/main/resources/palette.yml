@@ -1,0 +1,51 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   P A L E T T E                                                        │
+# │   the colours every line is written in                                 │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# <c:accent> in a message or on a screen becomes whatever accent says here.
+# </c> closes it again.
+#
+# A value is a whole opening tag, so a name can be a colour, a gradient, or a
+# colour and a weight together. A name may be written in terms of another:
+#
+#   accent: '<color:#c9a227>'
+#   heading: '<gradient:#6b3fb5:#9b6fd4>'
+#   shout: '<c:bad><bold>'
+#
+# A name that is not here is left alone, so <c:red> still means red.
+#
+# /chorus reload picks up a change here.
+
+# ── The frame ────────────────────────────────────────────────────────────
+frame: '<color:#1a1a1a>'
+muted: '<color:#333333>'
+
+# ── Meaning ──────────────────────────────────────────────────────────────
+accent: '<color:#c9a227>'
+good: '<color:#3f9e4d>'
+bad: '<color:#b03a3a>'
+
+# ── The name of the plugin ───────────────────────────────────────────────
+brand: '<gradient:#a06bff:#e0c3fc>'
+
+# ── Titles at the top of a screen ────────────────────────────────────────
+screen-homes: '<gradient:#6b3fb5:#9b6fd4>'
+screen-warps: '<gradient:#1f8f8c:#3fb8b4>'
+screen-kits: '<gradient:#b8761f:#d9a04a>'
+screen-backups: '<gradient:#8f4fd6:#b47ceb>'
+screen-disposal: '<gradient:#8a4a2f:#b8724a>'
+
+# ── Headings in chat ─────────────────────────────────────────────────────
+heading-info: '<gradient:#6bb6ff:#c3e0fc>'      # /whois /mail /itemdb /recipe
+heading-money: '<gradient:#ffd76b:#fff3c3>'     # /baltop /paylog
+heading-staff: '<gradient:#ff8a8a:#ffd0d0>'     # /note /stafflog
+heading-server: '<gradient:#6bffb6:#c3fce0>'    # /tps /worlds
+heading-kits: '<gradient:#ffb347:#ffe0a3>'      # the kit editor
+heading-warps: '<gradient:#3ddad7:#a8f0ee>'     # /warpinfo /warpset
+
+# ── Shop signs ───────────────────────────────────────────────────────────
+sign-owner: '<color:#1f7a3f>'
+sign-price: '<color:#8a5a1f>'
