@@ -6,7 +6,9 @@ import dev.chorus.core.economy.Economy;
 import dev.chorus.core.kits.rules.KitAction;
 import dev.chorus.core.kits.rules.Requirement;
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.players.Playtime;
+import dev.chorus.core.storage.LoginData;
 import dev.chorus.core.storage.Queries;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -27,7 +29,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 /** The kits themselves and who has taken what. */
-public final class KitService {
+public final class KitService implements LoginData.Part {
 
     private final KitRepository repository;
     private final InventoryBackups backups;
@@ -35,19 +37,21 @@ public final class KitService {
     private final Economy economy;
     private final Executor worker;
     private final Executor mainThread;
+    private final Schedulers schedulers;
     private final Map<UUID, Map<String, KitRepository.Use>> uses = new ConcurrentHashMap<>();
 
     private volatile Map<String, Kit> kits = Map.of();
     private volatile String firstJoinKit = "";
 
     KitService(KitRepository repository, InventoryBackups backups, Messages messages,
-               Economy economy, Executor worker, Executor mainThread) {
+               Economy economy, Executor worker, Executor mainThread, Schedulers schedulers) {
         this.repository = repository;
         this.backups = backups;
         this.messages = messages;
         this.economy = economy;
         this.worker = worker;
         this.mainThread = mainThread;
+        this.schedulers = schedulers;
     }
 
     void apply(Map<String, Kit> loaded, String firstJoin) {
@@ -72,11 +76,12 @@ public final class KitService {
         return firstJoinKit.isEmpty() ? null : kits.get(firstJoinKit);
     }
 
-    /** Blocking. Called from the login thread before the player is let in. */
+    @Override
     public void load(UUID owner) throws SQLException {
-        uses.put(owner, new ConcurrentHashMap<>(repository.findUses(owner)));
+        uses.put(owner, new ConcurrentHashMap<>(Queries.await(() -> repository.findUses(owner), worker)));
     }
 
+    @Override
     public void unload(UUID owner) {
         uses.remove(owner);
     }
@@ -172,8 +177,10 @@ public final class KitService {
                 forget(owner, kit.name(), before);
                 return;
             }
-            hand(player, kit);
-            KitAction.runAll(kit.claimActions(), player, messages, kit.name());
+            schedulers.withEntity(player, () -> {
+                hand(player, kit);
+                KitAction.runAll(kit.claimActions(), player, messages, kit.name(), schedulers);
+            });
         });
     }
 

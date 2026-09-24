@@ -257,10 +257,14 @@ class MessagesTest {
         return everything.toString();
     }
 
+    /** The config package holds paths, which are shaped exactly like keys and are not. */
+    private static final String PATHS_NOT_KEYS = Path.of("chorus", "core", "config").toString();
+
     private static Set<String> keysUsedInSources() throws IOException {
         Set<String> keys = new TreeSet<>();
         try (Stream<Path> files = Files.walk(Resources.SOURCES)) {
-            for (Path file : files.filter(path -> path.toString().endsWith(".java")).toList()) {
+            for (Path file : files.filter(path -> path.toString().endsWith(".java"))
+                    .filter(path -> !path.toString().contains(PATHS_NOT_KEYS)).toList()) {
                 Matcher matcher = MESSAGE_KEY.matcher(Files.readString(file, StandardCharsets.UTF_8));
                 while (matcher.find()) {
                     keys.add(matcher.group(1));

@@ -1,5 +1,6 @@
 package dev.chorus.core.items;
 
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.locale.TextFormat;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -83,8 +84,8 @@ public final class ItemAttributes {
 
         if (!lore.isEmpty()) {
             meta.lore(lore.stream()
-                    .map(line -> allowFormatting ? TextFormat.forLore(line)
-                            : TextFormat.asLore(Component.text(line)))
+                    .map(line -> TextFormat.asLore(allowFormatting
+                            ? TextFormat.parsePlayer(line) : Component.text(line)))
                     .toList());
         }
         if (touched || !lore.isEmpty()) {
@@ -97,9 +98,8 @@ public final class ItemAttributes {
             return false;
         }
         String text = spaces(value);
-        meta.displayName(allowFormatting
-                ? TextFormat.forItem(text)
-                : TextFormat.upright(Component.text(text)));
+        meta.displayName(TextFormat.upright(allowFormatting
+                ? TextFormat.parsePlayer(text) : Component.text(text)));
         return true;
     }
 
@@ -125,13 +125,9 @@ public final class ItemAttributes {
             return false;
         }
 
-        int level = 1;
-        if (colon >= 0) {
-            try {
-                level = Integer.parseInt(value.substring(colon + 1));
-            } catch (NumberFormatException notANumber) {
-                return false;
-            }
+        int level = colon < 0 ? 1 : Numbers.integer(value.substring(colon + 1), Integer.MIN_VALUE);
+        if (level == Integer.MIN_VALUE) {
+            return false;
         }
         if (level <= 0) {
             meta.removeEnchant(enchantment);
@@ -175,14 +171,13 @@ public final class ItemAttributes {
         if (!(meta instanceof Damageable damageable) || stack.getType().getMaxDurability() <= 0) {
             return false;
         }
-        try {
-            int left = Integer.parseInt(value);
-            int max = stack.getType().getMaxDurability();
-            damageable.setDamage(Math.max(0, Math.min(max, max - left)));
-            return true;
-        } catch (NumberFormatException notANumber) {
+        int left = Numbers.integer(value, -1);
+        if (left < 0) {
             return false;
         }
+        int max = stack.getType().getMaxDurability();
+        damageable.setDamage(Math.max(0, max - Math.min(max, left)));
+        return true;
     }
 
     private static boolean colour(ItemMeta meta, String value) {
@@ -214,16 +209,12 @@ public final class ItemAttributes {
     }
 
     private static boolean amount(ItemStack stack, String value) {
-        try {
-            int amount = Integer.parseInt(value);
-            if (amount <= 0) {
-                return false;
-            }
-            stack.setAmount(Math.min(amount, stack.getType().getMaxStackSize()));
-            return true;
-        } catch (NumberFormatException notANumber) {
+        int amount = Numbers.integer(value, 0);
+        if (amount <= 0) {
             return false;
         }
+        stack.setAmount(Math.min(amount, stack.getType().getMaxStackSize()));
+        return true;
     }
 
     /** {@code 255,0,0} or {@code #ff0000}. */

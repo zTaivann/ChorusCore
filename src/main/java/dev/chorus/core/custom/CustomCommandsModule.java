@@ -77,7 +77,7 @@ public final class CustomCommandsModule implements ChorusModule {
             }
 
             CustomCommand command = new CustomCommand(definition, plugin.messages(),
-                    plugin.cooldowns(), plugin.getServer());
+                    plugin.cooldowns(), plugin.getServer(), plugin.schedulers());
             map.register(fallbackPrefix, command);
             registered.add(command);
         }

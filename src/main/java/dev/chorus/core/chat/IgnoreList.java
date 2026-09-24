@@ -1,5 +1,8 @@
 package dev.chorus.core.chat;
 
+import dev.chorus.core.storage.LoginData;
+import dev.chorus.core.storage.Queries;
+
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
@@ -10,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Who each player has asked not to hear from. */
-public final class IgnoreList {
+public final class IgnoreList implements LoginData.Part {
 
     private static final String BYPASS_PERMISSION = "chorus.chat.ignore.bypass";
 
@@ -25,12 +28,14 @@ public final class IgnoreList {
         this.logger = logger;
     }
 
-    /** Blocking. Called from the login thread, before the player is let in. */
+    @Override
     public void load(UUID owner) throws SQLException {
-        ignored.put(owner, ConcurrentHashMap.newKeySet());
-        ignored.get(owner).addAll(repository.findFor(owner));
+        Set<UUID> loaded = ConcurrentHashMap.newKeySet();
+        loaded.addAll(Queries.await(() -> repository.findFor(owner), worker));
+        ignored.put(owner, loaded);
     }
 
+    @Override
     public void unload(UUID owner) {
         ignored.remove(owner);
     }

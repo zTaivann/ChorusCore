@@ -1,15 +1,14 @@
 package dev.chorus.core.players;
 
 import dev.chorus.core.locale.TextFormat;
+import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.storage.Queries;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,16 +27,18 @@ public final class PlayerProfiles {
     private final PlayerProfileRepository repository;
     private final Executor worker;
     private final Executor mainThread;
+    private final Schedulers schedulers;
     private final Logger logger;
 
     private final Map<UUID, String> nicknames = new ConcurrentHashMap<>();
     private final Map<UUID, String> addresses = new ConcurrentHashMap<>();
 
     public PlayerProfiles(PlayerProfileRepository repository, Executor worker, Executor mainThread,
-                          Logger logger) {
+                          Schedulers schedulers, Logger logger) {
         this.repository = repository;
         this.worker = worker;
         this.mainThread = mainThread;
+        this.schedulers = schedulers;
         this.logger = logger;
     }
 
@@ -54,15 +55,14 @@ public final class PlayerProfiles {
                 repository.seen(id, name, address, now);
                 PlayerProfile profile = repository.find(id);
                 String nickname = profile == null ? null : profile.nickname();
-                mainThread.execute(() -> {
-                    if (nickname == null || nickname.isEmpty()) {
-                        nicknames.remove(id);
-                        return;
-                    }
-                    nicknames.put(id, nickname);
-                    Player online = player.getServer().getPlayer(id);
-                    if (online != null) {
-                        show(online, nickname);
+                if (nickname == null || nickname.isEmpty()) {
+                    nicknames.remove(id);
+                    return;
+                }
+                nicknames.put(id, nickname);
+                schedulers.entity(player, () -> {
+                    if (player.isOnline()) {
+                        show(player, nickname);
                     }
                 });
             } catch (SQLException exception) {
@@ -100,13 +100,13 @@ public final class PlayerProfiles {
     /** Sets or clears a nickname, showing it at once and saving it behind the scenes. */
     public void nickname(Player player, @Nullable String nickname) {
         UUID id = player.getUniqueId();
-        if (nickname == null || nickname.isEmpty()) {
+        boolean clearing = nickname == null || nickname.isEmpty();
+        if (clearing) {
             nicknames.remove(id);
-            show(player, player.getName());
         } else {
             nicknames.put(id, nickname);
-            show(player, nickname);
         }
+        schedulers.withEntity(player, () -> show(player, clearing ? player.getName() : nickname));
 
         worker.execute(() -> {
             try {
@@ -171,34 +171,13 @@ public final class PlayerProfiles {
         return socket.getAddress().getHostAddress();
     }
 
-    /** Names for tab completion: everyone online, then anyone who has been here before. */
-    public List<String> knownNames(Player asker, String prefix, int limit) {
-        List<String> names = new ArrayList<>();
-        String typed = prefix.toLowerCase(Locale.ROOT);
-        for (Player online : asker.getServer().getOnlinePlayers()) {
-            if (asker.canSee(online) && online.getName().toLowerCase(Locale.ROOT).startsWith(typed)) {
-                names.add(online.getName());
-            }
-        }
-        try {
-            for (String stored : repository.namesLike(prefix, limit)) {
-                if (!names.contains(stored)) {
-                    names.add(stored);
-                }
-            }
-        } catch (SQLException ignored) {
-            // Tab completion is not worth a stack trace; what is online is enough.
-        }
-        return names;
-    }
-
     public void clear() {
         nicknames.clear();
         addresses.clear();
     }
 
     private static void show(Player player, String name) {
-        Component rendered = TextFormat.parse(name);
+        Component rendered = TextFormat.parsePlayer(name);
         player.displayName(rendered);
         player.playerListName(rendered);
     }

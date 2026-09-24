@@ -3,6 +3,7 @@ package dev.chorus.core.economy.command;
 import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.economy.Balances;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.players.PlayerProfiles;
@@ -158,16 +159,7 @@ public final class EcoCommand extends ChorusCommand {
     }
 
     private static double parseAmount(String raw) {
-        double amount;
-        try {
-            amount = Double.parseDouble(raw.replace(',', '.'));
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
-        if (!Double.isFinite(amount) || amount < 0) {
-            return -1;
-        }
-        return Math.round(amount * 100.0) / 100.0;
+        return Numbers.cents(Numbers.money(raw));
     }
 
     @Override

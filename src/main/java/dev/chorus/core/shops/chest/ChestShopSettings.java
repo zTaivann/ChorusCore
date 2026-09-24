@@ -1,8 +1,8 @@
 package dev.chorus.core.shops.chest;
 
+import dev.chorus.core.command.PermissionLimits;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 
 /**
  * What a server allows its chest shops to do.
@@ -35,18 +35,6 @@ public record ChestShopSettings(boolean enabled, int defaultLimit, double creati
 
     /** How many shops this player may have. */
     public int limitFor(Player player) {
-        int limit = defaultLimit;
-        for (PermissionAttachmentInfo permission : player.getEffectivePermissions()) {
-            String node = permission.getPermission();
-            if (!permission.getValue() || !node.startsWith(LIMIT_PREFIX)) {
-                continue;
-            }
-            try {
-                limit = Math.max(limit, Integer.parseInt(node.substring(LIMIT_PREFIX.length())));
-            } catch (NumberFormatException notALimit) {
-                // A wildcard carries no number and cannot raise the cap.
-            }
-        }
-        return limit;
+        return PermissionLimits.highest(player, LIMIT_PREFIX, defaultLimit);
     }
 }

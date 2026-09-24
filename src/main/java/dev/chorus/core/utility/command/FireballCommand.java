@@ -1,9 +1,10 @@
 package dev.chorus.core.utility.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.utility.UtilitySettings;
 import dev.chorus.core.utility.UtilityService;
+import dev.chorus.core.utility.UtilitySettings;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Arrow;
@@ -72,12 +73,8 @@ public final class FireballCommand extends PlayerCommand {
     }
 
     private static double speed(String raw) {
-        try {
-            double value = Double.parseDouble(raw);
-            return Double.isFinite(value) && value > 0 ? Math.min(MAX_SPEED, value) : -1;
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        double value = Numbers.decimal(raw.replace(',', '.'), -1);
+        return value > 0 ? Math.min(MAX_SPEED, value) : -1;
     }
 
     private static Map<String, Class<? extends Projectile>> kinds() {

@@ -38,9 +38,9 @@ class FoliaCallTest {
 
     @Test
     void theListCoversEveryOneTheBridgeUses() {
-        // Ten scheduler methods and the two that hand them over. A bridge that grows a
-        // lookup without growing this list is a bridge with a hole in it.
-        assertEquals(12, FoliaCall.values().length);
+        // Ten scheduler methods, the two that hand them over and the two thread checks. A
+        // bridge that grows a lookup without growing this list is a bridge with a hole in it.
+        assertEquals(14, FoliaCall.values().length);
     }
 
     @Test

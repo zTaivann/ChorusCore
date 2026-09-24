@@ -2,11 +2,13 @@ package dev.chorus.core.utility.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.utility.UtilityService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -52,17 +54,17 @@ public final class SpeedCommand extends ChorusCommand {
         }
 
         Player target = resolve(sender, args, next + 1);
-        if (target == null) {
+        if (target == null || !ready(sender)) {
             return;
         }
-        if (flying == null) {
-            // No mode given, so follow whichever one they are actually using.
-            flying = target.isFlying() || target.getAllowFlight();
-        }
-        if (!ready(sender)) {
-            return;
-        }
+        Boolean chosen = flying;
+        onPlayer(target, () -> apply(sender, target, chosen, amount, maximum));
+    }
 
+    private void apply(CommandSender sender, Player target, @Nullable Boolean chosen,
+                       double amount, double maximum) {
+        // No mode given, so follow whichever one they are actually using.
+        boolean flying = chosen != null ? chosen : target.isFlying() || target.getAllowFlight();
         float scaled = scale(amount, maximum, flying ? VANILLA_FLY : VANILLA_WALK);
         if (flying) {
             target.setFlySpeed(scaled);
@@ -128,11 +130,7 @@ public final class SpeedCommand extends ChorusCommand {
     }
 
     private static double parse(String raw) {
-        try {
-            return Double.parseDouble(raw.replace(',', '.'));
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        return Numbers.decimal(raw.replace(',', '.'), -1);
     }
 
     private static String trim(double value) {

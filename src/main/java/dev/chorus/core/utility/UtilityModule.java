@@ -111,8 +111,8 @@ public final class UtilityModule implements ChorusModule {
             throw new IllegalStateException("The powertools table could not be created", exception);
         }
         powertools = new Powertools(powertoolStore, plugin.worker(), plugin.getLogger());
-        plugin.register(new PowertoolListener(powertools, plugin.flags(), plugin.messages(),
-                plugin.getLogger()));
+        plugin.loginData().add("powertools", powertools, false);
+        plugin.register(new PowertoolListener(powertools, plugin.flags(), plugin.messages()));
 
         motdText = new ServerText(plugin, "motd.txt");
         infoText = new ServerText(plugin, "info.txt");

@@ -22,7 +22,8 @@ public interface ChorusModule {
 
     void enable();
 
-    void disable();
+    default void disable() {
+    }
 
     default void reload() {
     }

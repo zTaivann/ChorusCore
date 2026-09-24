@@ -2,6 +2,7 @@ package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.items.ItemAttributes;
 import dev.chorus.core.items.ItemRestrictions;
 import dev.chorus.core.items.ItemService;
@@ -135,12 +136,8 @@ public final class GiveCommand extends ChorusCommand {
     }
 
     private static int amount(String raw) {
-        try {
-            int value = Integer.parseInt(raw);
-            return value <= 0 ? -1 : Math.min(MAX_AMOUNT, value);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        int value = Numbers.integer(raw, -1);
+        return value <= 0 ? -1 : Math.min(MAX_AMOUNT, value);
     }
 
     @Override

@@ -3,7 +3,9 @@ package dev.chorus.core.config;
 import org.bukkit.plugin.Plugin;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Every config file the plugin has opened, so that a reload can refresh them all without
@@ -24,5 +26,19 @@ public final class ConfigFiles {
 
     public void reloadAll() {
         opened.values().forEach(ConfigFile::reload);
+    }
+
+    /** Only the open files whose path passes. */
+    public void reload(Predicate<String> which) {
+        opened.forEach((path, file) -> {
+            if (which.test(path)) {
+                file.reload();
+            }
+        });
+    }
+
+    /** Every file that has been opened, by its path inside the plugin folder. */
+    public List<String> paths() {
+        return List.copyOf(opened.keySet());
     }
 }

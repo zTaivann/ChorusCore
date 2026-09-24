@@ -1,5 +1,6 @@
 package dev.chorus.core.teleport;
 
+import dev.chorus.core.command.Numbers;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.Nullable;
@@ -8,6 +9,9 @@ import org.jetbrains.annotations.Nullable;
 public final class Coordinates {
 
     private static final char RELATIVE = '~';
+
+    /** Where the world ends, as vanilla's own /tp has it. */
+    private static final double EDGE = 30_000_000;
 
     private Coordinates() {
     }
@@ -45,22 +49,14 @@ public final class Coordinates {
         if (text.isEmpty()) {
             return null;
         }
+        double value;
         if (text.charAt(0) != RELATIVE) {
-            return number(text);
+            value = Numbers.decimal(text, Double.NaN);
+        } else if (text.length() == 1) {
+            value = relativeTo;
+        } else {
+            value = relativeTo + Numbers.decimal(text.substring(1), Double.NaN);
         }
-        if (text.length() == 1) {
-            return relativeTo;
-        }
-        Double offset = number(text.substring(1));
-        return offset == null ? null : relativeTo + offset;
-    }
-
-    private static @Nullable Double number(String text) {
-        try {
-            double value = Double.parseDouble(text);
-            return Double.isFinite(value) ? value : null;
-        } catch (NumberFormatException notANumber) {
-            return null;
-        }
+        return Math.abs(value) <= EDGE ? value : null;
     }
 }

@@ -1,6 +1,7 @@
 package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.items.SignClipboard;
 import dev.chorus.core.locale.TextFormat;
@@ -82,7 +83,7 @@ public final class EditSignCommand extends PlayerCommand {
         if (text.length() > MAX_LENGTH) {
             text = text.substring(0, MAX_LENGTH);
         }
-        sign.line(line, TextFormat.parse(text));
+        sign.line(line, TextFormat.parsePlayer(text));
         sign.update(true, false);
 
         settle(player);
@@ -147,12 +148,8 @@ public final class EditSignCommand extends PlayerCommand {
 
     /** Counted from one on screen, from zero in the block. -1 for anything else. */
     private static int line(String raw) {
-        try {
-            int typed = Integer.parseInt(raw);
-            return typed < 1 || typed > LINES ? -1 : typed - 1;
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        int typed = Numbers.integer(raw, -1);
+        return typed < 1 || typed > LINES ? -1 : typed - 1;
     }
 
     @Override

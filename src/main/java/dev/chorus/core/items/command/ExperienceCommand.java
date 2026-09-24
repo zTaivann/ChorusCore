@@ -2,6 +2,7 @@ package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -178,12 +179,7 @@ public final class ExperienceCommand extends ChorusCommand {
         if (digits.endsWith("l")) {
             digits = digits.substring(0, digits.length() - 1);
         }
-        try {
-            int value = Integer.parseInt(digits);
-            return value < 0 ? -1 : value;
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        return Math.max(-1, Numbers.integer(digits, -1));
     }
 
     @Override

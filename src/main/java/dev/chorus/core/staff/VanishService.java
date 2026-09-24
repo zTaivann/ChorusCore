@@ -1,5 +1,6 @@
 package dev.chorus.core.staff;
 
+import dev.chorus.core.platform.Schedulers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -7,9 +8,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /** Who is hidden from whom. */
@@ -18,10 +19,12 @@ public final class VanishService implements Listener {
     private static final String SEE_PERMISSION = "chorus.staff.vanish.see";
 
     private final Plugin plugin;
-    private final Set<UUID> vanished = new HashSet<>();
+    private final Schedulers schedulers;
+    private final Set<UUID> vanished = ConcurrentHashMap.newKeySet();
 
-    VanishService(Plugin plugin) {
+    VanishService(Plugin plugin, Schedulers schedulers) {
         this.plugin = plugin;
+        this.schedulers = schedulers;
     }
 
     public boolean isVanished(UUID playerId) {
@@ -69,10 +72,11 @@ public final class VanishService implements Listener {
         });
     }
 
+    /** Each viewer on the thread that owns them. */
     private void forEachOther(Player player, Consumer<Player> action) {
         for (Player viewer : plugin.getServer().getOnlinePlayers()) {
             if (!viewer.equals(player)) {
-                action.accept(viewer);
+                schedulers.withEntity(viewer, () -> action.accept(viewer));
             }
         }
     }

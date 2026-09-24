@@ -2,11 +2,12 @@ package dev.chorus.core.home;
 
 import dev.chorus.core.api.HomeApi;
 import dev.chorus.core.api.event.ChorusHomeSaveEvent;
+import dev.chorus.core.command.PermissionLimits;
 import dev.chorus.core.location.Names;
+import dev.chorus.core.storage.LoginData;
 import dev.chorus.core.storage.Queries;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -14,20 +15,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.function.Predicate;
 
 /**
  * Keeps the homes of everyone online in memory so that reading them costs nothing, and
  * pushes every change to the database before the cache is touched. Writing first means a
  * player is never told a home was saved when it was not.
  */
-public final class HomeService implements HomeApi {
+public final class HomeService implements HomeApi, LoginData.Part {
 
     private static final String LIMIT_PREFIX = "chorus.home.limit.";
     private static final String UNLIMITED_PERMISSION = "chorus.home.unlimited";
@@ -36,7 +35,6 @@ public final class HomeService implements HomeApi {
     private final Executor worker;
     private final Executor mainThread;
     private final Map<UUID, Map<String, Home>> cache = new ConcurrentHashMap<>();
-    private final Set<UUID> seenOffline = ConcurrentHashMap.newKeySet();
 
     private volatile HomeSettings settings;
 
@@ -55,38 +53,22 @@ public final class HomeService implements HomeApi {
         this.settings = updated;
     }
 
-    /** Blocking. Called from the login thread before the player is let in. */
+    @Override
     public void load(UUID owner) throws SQLException {
         Map<String, Home> homes = new ConcurrentHashMap<>();
-        for (Home home : repository.findByOwner(owner)) {
+        for (Home home : Queries.await(() -> repository.findByOwner(owner), worker)) {
             homes.put(home.name(), home);
         }
         cache.put(owner, homes);
     }
 
+    @Override
     public void unload(UUID owner) {
         cache.remove(owner);
     }
 
-    /**
-     * Drops data for players who never made it in, which is what happens when a ban or
-     * whitelist check refuses the login after this cache was filled.
-     */
-    void reapOffline(Predicate<UUID> online) {
-        for (UUID owner : cache.keySet()) {
-            if (online.test(owner)) {
-                seenOffline.remove(owner);
-            } else if (!seenOffline.add(owner)) {
-                cache.remove(owner);
-                seenOffline.remove(owner);
-            }
-        }
-        seenOffline.retainAll(cache.keySet());
-    }
-
     void clear() {
         cache.clear();
-        seenOffline.clear();
     }
 
     public boolean isLoaded(UUID owner) {
@@ -179,28 +161,11 @@ public final class HomeService implements HomeApi {
         return Names.isValid(name, settings.maxNameLength());
     }
 
-    /**
-     * Highest {@code chorus.home.limit.<n>} the player holds, falling back to the value in
-     * the config. Nodes that are not a number are simply ignored, so unrelated permissions
-     * under the same tree never break the count.
-     */
+    /** Highest {@code chorus.home.limit.<n>} the player holds, or the one in the config. */
     public int limit(Player player) {
         if (player.hasPermission(UNLIMITED_PERMISSION)) {
             return Integer.MAX_VALUE;
         }
-
-        int limit = settings.defaultLimit();
-        for (PermissionAttachmentInfo held : player.getEffectivePermissions()) {
-            String node = held.getPermission();
-            if (!held.getValue() || !node.startsWith(LIMIT_PREFIX)) {
-                continue;
-            }
-            try {
-                limit = Math.max(limit, Integer.parseInt(node.substring(LIMIT_PREFIX.length())));
-            } catch (NumberFormatException ignored) {
-                // Not a limit node.
-            }
-        }
-        return limit;
+        return PermissionLimits.highest(player, LIMIT_PREFIX, settings.defaultLimit());
     }
 }

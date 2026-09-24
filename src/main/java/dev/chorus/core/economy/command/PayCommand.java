@@ -3,6 +3,7 @@ package dev.chorus.core.economy.command;
 import dev.chorus.core.api.event.ChorusPaymentEvent;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Confirmations;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.economy.EconomyService;
@@ -126,18 +127,9 @@ public final class PayCommand extends PlayerCommand {
         messages.send(target, "economy.pay-received", "player", player.getName(), "amount", formatted);
     }
 
-    /** Returns zero for anything that is not a sane, positive amount of money. */
+    /** Zero for anything that is not a positive amount of money. */
     private static double parseAmount(String raw) {
-        double amount;
-        try {
-            amount = Double.parseDouble(raw.replace(',', '.'));
-        } catch (NumberFormatException notANumber) {
-            return 0;
-        }
-        if (!Double.isFinite(amount) || amount <= 0) {
-            return 0;
-        }
-        return Math.round(amount * 100.0) / 100.0;
+        return Math.max(0, Numbers.cents(Numbers.money(raw)));
     }
 
     @Override

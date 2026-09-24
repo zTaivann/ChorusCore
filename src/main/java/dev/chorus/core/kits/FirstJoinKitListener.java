@@ -5,35 +5,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class KitDataListener implements Listener {
+/** Hands the first-join kit to somebody who has never played here before. */
+final class FirstJoinKitListener implements Listener {
 
     private final KitService kits;
     private final Messages messages;
     private final Logger logger;
 
-    KitDataListener(KitService kits, Messages messages, Logger logger) {
+    FirstJoinKitListener(KitService kits, Messages messages, Logger logger) {
         this.kits = kits;
         this.messages = messages;
         this.logger = logger;
-    }
-
-    /** Loaded before the player is in, so a cooldown is never briefly wrong. */
-    @EventHandler
-    public void onPreLogin(AsyncPlayerPreLoginEvent event) {
-        try {
-            kits.load(event.getUniqueId());
-        } catch (SQLException exception) {
-            logger.log(Level.SEVERE, "Could not load the kit history of " + event.getName(), exception);
-            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, messages.render("error.load-failed"));
-        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -50,10 +37,5 @@ final class KitDataListener implements Listener {
             }
             messages.send(player, "kits.received", "kit", kit.name());
         });
-    }
-
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        kits.unload(event.getPlayer().getUniqueId());
     }
 }

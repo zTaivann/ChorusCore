@@ -44,9 +44,9 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
         this.permission = permission;
     }
 
-    /** Runs work that touches another player on the thread that is allowed to touch them. */
+    /** Runs work that touches a player on the thread that owns them, at once when this is it. */
     protected final void onPlayer(Entity who, Runnable action) {
-        schedulers.entity(who, action);
+        schedulers.withEntity(who, action);
     }
 
     /** The same, for work that touches blocks or spawns something at a place. */
@@ -100,7 +100,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     protected final void settle(CommandSender sender, String key, CommandRules against) {
         if (sender instanceof Player player) {
             guard.charge(player, key, against);
-            against.feedback().play(player);
+            schedulers.withEntity(player, () -> against.feedback().play(player));
         }
     }
 

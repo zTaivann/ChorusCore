@@ -1,6 +1,7 @@
 package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -61,8 +62,8 @@ public final class PotionCommand extends HeldItemCommand {
             return;
         }
 
-        int level = args.length > 1 ? number(args[1], 1) : 1;
-        int seconds = args.length > 2 ? number(args[2], DEFAULT_SECONDS) : DEFAULT_SECONDS;
+        int level = args.length > 1 ? Numbers.integer(args[1], 0) : 1;
+        int seconds = args.length > 2 ? Numbers.integer(args[2], 0) : DEFAULT_SECONDS;
         if (level < 1 || seconds < 1) {
             messages.send(player, "items.potion-usage");
             return;
@@ -137,13 +138,6 @@ public final class PotionCommand extends HeldItemCommand {
         return type.getName().toLowerCase(Locale.ROOT);
     }
 
-    private static int number(String raw, int fallback) {
-        try {
-            return Integer.parseInt(raw);
-        } catch (NumberFormatException notANumber) {
-            return fallback;
-        }
-    }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

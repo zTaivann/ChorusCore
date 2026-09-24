@@ -3,7 +3,7 @@ package dev.chorus.core.warp;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,7 +16,8 @@ public final class WarpDetailsService {
     private final Logger logger;
 
     /** Warp names are already lower case by the time they get here, but a warp is a name. */
-    private final Map<String, WarpDetails> cache = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private final Map<String, WarpDetails> cache =
+            new ConcurrentSkipListMap<>(String.CASE_INSENSITIVE_ORDER);
 
     WarpDetailsService(WarpDetailsRepository repository, Executor worker, Logger logger) {
         this.repository = repository;

@@ -101,7 +101,7 @@ public final class KitCommand extends PlayerCommand {
     }
 
     private void refuse(Player player, Kit kit) {
-        KitAction.runAll(kit.failActions(), player, messages, kit.name());
+        KitAction.runAll(kit.failActions(), player, messages, kit.name(), schedulers);
     }
 
     @Override

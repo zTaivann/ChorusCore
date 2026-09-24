@@ -3,18 +3,17 @@ package dev.chorus.core.chat;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Who last spoke to whom, and who is watching. */
 public final class PrivateMessages {
 
-    private final Map<UUID, UUID> sentTo = new HashMap<>();
-    private final Map<UUID, UUID> heardFrom = new HashMap<>();
-    private final Set<UUID> spies = new HashSet<>();
+    private final Map<UUID, UUID> sentTo = new ConcurrentHashMap<>();
+    private final Map<UUID, UUID> heardFrom = new ConcurrentHashMap<>();
+    private final Set<UUID> spies = ConcurrentHashMap.newKeySet();
 
     private volatile ChatSettings settings;
 

@@ -1,6 +1,8 @@
 package dev.chorus.core.staff;
 
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -9,13 +11,11 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Holds a player still while staff talk to them. */
 public final class FreezeService implements Listener {
@@ -25,7 +25,7 @@ public final class FreezeService implements Listener {
     private final Plugin plugin;
     private final Messages messages;
     private final Schedulers schedulers;
-    private final Set<UUID> frozen = new HashSet<>();
+    private final Set<UUID> frozen = ConcurrentHashMap.newKeySet();
 
     private ChorusTask reminder;
 

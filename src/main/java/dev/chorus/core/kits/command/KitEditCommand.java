@@ -2,6 +2,7 @@ package dev.chorus.core.kits.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Durations;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.kits.Kit;
@@ -277,15 +278,11 @@ public final class KitEditCommand extends PlayerCommand {
     }
 
     private static double number(String value) {
-        return Double.parseDouble(value.replace(',', '.'));
+        return Numbers.money(value);
     }
 
     private static boolean isNumber(String value) {
-        try {
-            return number(value) >= 0;
-        } catch (NumberFormatException notANumber) {
-            return false;
-        }
+        return number(value) >= 0;
     }
 
     @Override

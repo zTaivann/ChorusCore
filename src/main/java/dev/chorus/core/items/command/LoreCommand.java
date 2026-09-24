@@ -1,6 +1,7 @@
 package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.items.ItemService;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
@@ -109,12 +110,7 @@ public final class LoreCommand extends HeldItemCommand {
 
     /** Lines are one-based for the player and zero-based here. Returns -1 when it is not a line. */
     private int lineNumber(Player player, List<Component> lore, String raw) {
-        int line;
-        try {
-            line = Integer.parseInt(raw) - 1;
-        } catch (NumberFormatException notANumber) {
-            line = -1;
-        }
+        int line = Numbers.integer(raw, 0) - 1;
         if (line < 0 || line >= lore.size()) {
             messages.send(player, "items.lore-no-line", "lines", String.valueOf(lore.size()));
             return -1;

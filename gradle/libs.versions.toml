@@ -1,6 +1,6 @@
 [versions]
 paper = "1.18.2-R0.1-SNAPSHOT"
-paper-modern = "26.2.build.121-stable"
+paper-modern = "26.2.build.127-stable"
 hikari = "6.3.0"
 sqlite = "3.49.1.0"
 mariadb = "3.5.3"

@@ -1,6 +1,8 @@
 package dev.chorus.core.players;
 
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -11,15 +13,12 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /** Tracks who is away. */
@@ -30,9 +29,9 @@ public final class AfkService implements Listener {
     private final Plugin plugin;
     private final Messages messages;
     private final Schedulers schedulers;
-    private final Map<UUID, Long> lastActivity = new HashMap<>();
-    private final Map<UUID, String> reasons = new HashMap<>();
-    private final Set<UUID> away = new HashSet<>();
+    private final Map<UUID, Long> lastActivity = new ConcurrentHashMap<>();
+    private final Map<UUID, String> reasons = new ConcurrentHashMap<>();
+    private final Set<UUID> away = ConcurrentHashMap.newKeySet();
 
     private volatile PlayerSettings settings;
     private ChorusTask sweeper;
@@ -166,7 +165,8 @@ public final class AfkService implements Listener {
 
             long idle = now - entry.getValue();
             if (current.kicks() && idle >= kickAfter && away.contains(entry.getKey())) {
-                player.kick(messages.render("players.afk-kicked"));
+                schedulers.withEntity(player,
+                        () -> player.kick(messages.render("players.afk-kicked")));
                 continue;
             }
             if (current.autoAfk() && idle >= afkAfter && away.add(entry.getKey())) {

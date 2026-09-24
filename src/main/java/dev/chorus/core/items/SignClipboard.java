@@ -7,15 +7,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** What each player last copied off a sign. Goes when they log out. */
 public final class SignClipboard implements Listener {
 
-    private final Map<UUID, List<Component>> lines = new HashMap<>();
+    private final Map<UUID, List<Component>> lines = new ConcurrentHashMap<>();
 
     public void put(Player player, List<Component> copied) {
         lines.put(player.getUniqueId(), List.copyOf(copied));

@@ -1,6 +1,8 @@
 package dev.chorus.core.utility;
 
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,15 +13,13 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.Plugin;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Keeps every open /invsee and /ecsee window in step with the player it is showing. */
 public final class MirrorService implements Listener {
@@ -28,7 +28,7 @@ public final class MirrorService implements Listener {
     private final Schedulers schedulers;
     private final Messages messages;
     private final UtilityService utility;
-    private final Map<UUID, InventoryMirror> open = new HashMap<>();
+    private final Map<UUID, InventoryMirror> open = new ConcurrentHashMap<>();
 
     private ChorusTask refresher;
 
@@ -47,11 +47,15 @@ public final class MirrorService implements Listener {
 
         InventoryMirror mirror = new InventoryMirror(plugin.getServer(), target, kind, editable,
                 title, utility.settings().invsee().filler());
-        mirror.refresh(target, infoName(target), infoLore(target));
-
-        open.put(viewer.getUniqueId(), mirror);
-        viewer.openInventory(mirror.getInventory());
-        startRefreshing();
+        // Copied on the target's thread, shown on the viewer's: on Folia they may differ.
+        schedulers.withEntity(target, () -> {
+            mirror.refresh(target, infoName(target), infoLore(target));
+            schedulers.withEntity(viewer, () -> {
+                open.put(viewer.getUniqueId(), mirror);
+                viewer.openInventory(mirror.getInventory());
+                startRefreshing();
+            });
+        });
     }
 
     void shutdown() {
@@ -64,7 +68,7 @@ public final class MirrorService implements Listener {
         if (open.isEmpty()) {
             return;
         }
-        InventoryMirror mirror = mirrorOf(event.getView().getTopInventory().getHolder());
+        InventoryMirror mirror = mirrorOf(event.getView().getTopInventory().getHolder(false));
         if (mirror == null) {
             return;
         }
@@ -75,6 +79,7 @@ public final class MirrorService implements Listener {
             return;
         }
         // Shift-clicking from the player's own inventory also lands in the window.
+        mirror.markEdited();
         scheduleWriteBack(mirror);
     }
 
@@ -83,7 +88,7 @@ public final class MirrorService implements Listener {
         if (open.isEmpty()) {
             return;
         }
-        InventoryMirror mirror = mirrorOf(event.getView().getTopInventory().getHolder());
+        InventoryMirror mirror = mirrorOf(event.getView().getTopInventory().getHolder(false));
         if (mirror == null) {
             return;
         }
@@ -95,6 +100,7 @@ public final class MirrorService implements Listener {
                 return;
             }
         }
+        mirror.markEdited();
         scheduleWriteBack(mirror);
     }
 
@@ -122,7 +128,7 @@ public final class MirrorService implements Listener {
                 }
             }
         });
-        watchers.forEach(Player::closeInventory);
+        watchers.forEach(viewer -> schedulers.withEntity(viewer, viewer::closeInventory));
         stopRefreshingIfIdle();
     }
 
@@ -135,7 +141,7 @@ public final class MirrorService implements Listener {
         schedulers.entity(target, () -> mirror.writeBack(target));
     }
 
-    private void startRefreshing() {
+    private synchronized void startRefreshing() {
         int period = utility.settings().invsee().refreshTicks();
         if (refresher != null || period <= 0) {
             return;
@@ -143,23 +149,20 @@ public final class MirrorService implements Listener {
         refresher = schedulers.globalTimer(this::refreshAll, period, period);
     }
 
-    private void stopRefreshingIfIdle() {
+    private synchronized void stopRefreshingIfIdle() {
         if (open.isEmpty()) {
             stopRefreshing();
         }
     }
 
-    private void stopRefreshing() {
+    private synchronized void stopRefreshing() {
         if (refresher != null) {
             refresher.cancel();
             refresher = null;
         }
     }
 
-    /**
-     * The timer belongs to no one place, so each player is read on the thread that owns
-     * them rather than on the one the timer ticks on.
-     */
+    /** Each player is read on the thread that owns them, not on the timer's. */
     private void refreshAll() {
         open.values().forEach(mirror -> {
             Player target = plugin.getServer().getPlayer(mirror.targetId());

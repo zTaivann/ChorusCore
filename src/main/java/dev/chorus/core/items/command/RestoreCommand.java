@@ -6,6 +6,7 @@ import dev.chorus.core.backup.InventorySnapshot;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Durations;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.players.PlayerProfiles;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -127,7 +128,7 @@ public final class RestoreCommand extends ChorusCommand {
             Player target = sender.getServer().getPlayer(owner);
             if (wanted == -2) {
                 if (sender instanceof Player viewer && target != null) {
-                    menu.openList(viewer, target, found);
+                    onPlayer(viewer, () -> menu.openList(viewer, target, found));
                 } else {
                     list(sender, name, found);
                 }
@@ -195,12 +196,8 @@ public final class RestoreCommand extends ChorusCommand {
         if (args.length < 2) {
             return 0;
         }
-        try {
-            int typed = Integer.parseInt(args[1]);
-            return typed < 1 ? -1 : typed - 1;
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        int typed = Numbers.integer(args[1], 0);
+        return typed < 1 ? -1 : typed - 1;
     }
 
     @Override

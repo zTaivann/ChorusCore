@@ -37,7 +37,7 @@ public final class ItemService {
 
     private Component typed(Player author, String raw) {
         return author.hasPermission(FORMAT_PERMISSION)
-                ? TextFormat.parse(raw)
+                ? TextFormat.parsePlayer(raw)
                 : Component.text(raw);
     }
 }

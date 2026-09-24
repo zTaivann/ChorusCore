@@ -22,8 +22,6 @@ public final class SqlPlayerProfileRepository implements PlayerProfileRepository
     private static final String SELECT_SHARING =
             "SELECT name FROM chorus_players WHERE address = ? AND address <> '' AND player <> ? "
                     + "ORDER BY last_seen DESC LIMIT 20";
-    private static final String SELECT_NAMES =
-            "SELECT name FROM chorus_players WHERE lower_name LIKE ? ORDER BY last_seen DESC LIMIT ?";
     private static final String UPDATE_LEFT =
             "UPDATE chorus_players SET last_seen = ?, world = ?, x = ?, y = ?, z = ?, yaw = ?, "
                     + "pitch = ? WHERE player = ?";
@@ -130,22 +128,6 @@ public final class SqlPlayerProfileRepository implements PlayerProfileRepository
         }
     }
 
-    @Override
-    public List<String> namesLike(String prefix, int limit) throws SQLException {
-        try (Connection connection = storage.connection();
-             PreparedStatement statement = connection.prepareStatement(SELECT_NAMES)) {
-            statement.setString(1, prefix.toLowerCase(Locale.ROOT) + "%");
-            statement.setInt(2, limit);
-            try (ResultSet rows = statement.executeQuery()) {
-                List<String> names = new ArrayList<>();
-                while (rows.next()) {
-                    names.add(rows.getString("name"));
-                }
-                return names;
-            }
-        }
-    }
-
     /** A nickname is matched on its letters, so colour codes never hide one from /realname. */
     static String plain(String nickname) {
         return nickname.replaceAll("(?i)[&§][0-9a-fk-or]", "").toLowerCase(Locale.ROOT);
@@ -201,7 +183,9 @@ public final class SqlPlayerProfileRepository implements PlayerProfileRepository
                         pitch          REAL    NOT NULL DEFAULT 0
                     )""",
                     "CREATE INDEX IF NOT EXISTS chorus_players_name ON chorus_players (lower_name)",
-                    "CREATE INDEX IF NOT EXISTS chorus_players_address ON chorus_players (address)");
+                    "CREATE INDEX IF NOT EXISTS chorus_players_address ON chorus_players (address)",
+                    "CREATE INDEX IF NOT EXISTS chorus_players_nickname "
+                            + "ON chorus_players (lower_nickname)");
             case MYSQL -> List.of("""
                     CREATE TABLE IF NOT EXISTS chorus_players (
                         player         CHAR(36)     NOT NULL PRIMARY KEY,
@@ -220,7 +204,8 @@ public final class SqlPlayerProfileRepository implements PlayerProfileRepository
                         pitch          FLOAT        NOT NULL DEFAULT 0,
                         INDEX chorus_players_name (lower_name),
                         INDEX chorus_players_address (address)
-                    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4""");
+                    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4""",
+                    "CREATE INDEX chorus_players_nickname ON chorus_players (lower_nickname)");
         };
     }
 }

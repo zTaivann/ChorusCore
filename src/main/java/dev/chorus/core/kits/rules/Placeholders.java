@@ -1,5 +1,6 @@
 package dev.chorus.core.kits.rules;
 
+import dev.chorus.core.papi.PlaceholderValues;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -10,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 /** Fills {@code %placeholders%} in a line, through PlaceholderAPI when it is installed. */
 public final class Placeholders {
 
-    private static final String PLUGIN = "PlaceholderAPI";
+    private static final String PLUGIN = PlaceholderValues.PLUGIN;
 
     /** Written the way a person reads a date, not the way a machine sorts one. */
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy");

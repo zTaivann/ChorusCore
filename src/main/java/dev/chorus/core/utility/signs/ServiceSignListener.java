@@ -1,5 +1,7 @@
 package dev.chorus.core.utility.signs;
 
+import dev.chorus.core.block.Signs;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.locale.Messages;
 import net.kyori.adventure.text.Component;
@@ -44,10 +46,8 @@ public final class ServiceSignListener implements Listener {
     }
 
     public boolean isServiceSign(Block block) {
-        if (!(block.getState() instanceof Sign sign)) {
-            return false;
-        }
-        return ServiceSign.of(plain(sign.line(0))) != null;
+        Sign sign = Signs.at(block);
+        return sign != null && ServiceSign.of(plain(sign.line(0))) != null;
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -77,8 +77,11 @@ public final class ServiceSignListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
         if (!enabled || event.getAction() != Action.RIGHT_CLICK_BLOCK
-                || event.getClickedBlock() == null
-                || !(event.getClickedBlock().getState() instanceof Sign sign)) {
+                || event.getClickedBlock() == null) {
+            return;
+        }
+        Sign sign = Signs.at(event.getClickedBlock());
+        if (sign == null) {
             return;
         }
         ServiceSign kind = ServiceSign.of(plain(sign.line(0)));
@@ -155,25 +158,13 @@ public final class ServiceSignListener implements Listener {
     }
 
     private static int amount(String raw, int fallback) {
-        try {
-            int typed = Integer.parseInt(raw);
-            return typed <= 0 ? fallback : Math.min(typed, fallback);
-        } catch (NumberFormatException notANumber) {
-            return fallback;
-        }
+        int typed = Numbers.integer(raw, -1);
+        return typed <= 0 ? fallback : Math.min(typed, fallback);
     }
 
     /** Zero when the last line is not a price, which is how a free sign is written. */
     private static double price(String raw) {
-        if (raw.isEmpty()) {
-            return 0;
-        }
-        try {
-            double value = Double.parseDouble(raw.replace(',', '.').replace("$", ""));
-            return Double.isFinite(value) && value > 0 ? value : 0;
-        } catch (NumberFormatException notANumber) {
-            return 0;
-        }
+        return Math.max(0, Numbers.money(raw));
     }
 
     private static String plain(Component line) {

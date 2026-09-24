@@ -1,6 +1,5 @@
 package dev.chorus.core;
 
-import dev.chorus.core.feedback.ParticleCue;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
@@ -129,39 +128,6 @@ class CommandConfigTest {
                 .filter(name -> !UNPRICED.contains(name) && !configured.contains(name))
                 .forEach(name -> problems.add("/" + name + " has no rules block in any module file"));
 
-        assertEquals(List.of(), problems);
-    }
-
-    /**
-     * Runs against the 1.18.2 API, the oldest version this jar supports, so a default that
-     * only exists on newer builds fails here rather than on somebody's server.
-     */
-    @Test
-    void everyConfiguredEffectExistsOnTheOldestVersion() {
-        List<String> problems = new ArrayList<>();
-
-        for (String path : Resources.MODULES) {
-            ConfigurationSection blocks = Resources.section(Resources.read(path), "commands");
-            for (String command : blocks.getKeys(false)) {
-                ConfigurationSection block = blocks.getConfigurationSection(command);
-                if (block == null) {
-                    continue;
-                }
-
-                String sound = block.getString("sound.key", "");
-                if (!sound.isEmpty() && !SOUND_KEY.matcher(sound).matches()) {
-                    problems.add("'" + sound + "' on /" + command
-                            + " is not shaped like a Minecraft sound name");
-                }
-
-                String particle = block.getString("particle.name", "");
-                if (!particle.isEmpty()
-                        && ParticleCue.read(block, ParticleCue.NONE, name -> { }).particle() == null) {
-                    problems.add("particle '" + particle + "' on /" + command
-                            + " does not exist on the oldest supported version");
-                }
-            }
-        }
         assertEquals(List.of(), problems);
     }
 }

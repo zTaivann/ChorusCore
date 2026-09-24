@@ -124,7 +124,7 @@ public final class BackupMenu {
                 messages.send(viewer, "items.restore-gone");
                 return;
             }
-            openInventory(viewer, subject, snapshot);
+            schedulers.withEntity(viewer, () -> openInventory(viewer, subject, snapshot));
         });
     }
 
@@ -255,13 +255,14 @@ public final class BackupMenu {
     }
 
     private void back(Player viewer, Player subject) {
-        backups.find(subject.getUniqueId()).whenComplete((found, failure) -> {
-            if (failure != null || found.isEmpty()) {
-                viewer.closeInventory();
-                return;
-            }
-            openList(viewer, subject, found);
-        });
+        backups.find(subject.getUniqueId()).whenComplete((found, failure) ->
+                schedulers.withEntity(viewer, () -> {
+                    if (failure != null || found.isEmpty()) {
+                        viewer.closeInventory();
+                        return;
+                    }
+                    openList(viewer, subject, found);
+                }));
     }
 
     private List<Component> lore(InventorySnapshot snapshot) {

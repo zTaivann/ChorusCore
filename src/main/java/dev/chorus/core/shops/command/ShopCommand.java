@@ -2,6 +2,7 @@ package dev.chorus.core.shops.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Confirmations;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.shops.chest.ChestShop;
@@ -210,14 +211,7 @@ public final class ShopCommand extends PlayerCommand {
     }
 
     private static double price(String raw) {
-        try {
-            double value = Double.parseDouble(raw.replace(',', '.'));
-            return Double.isFinite(value) && value >= 0
-                    ? Math.round(value * 100.0) / 100.0
-                    : -1;
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        return Numbers.cents(Numbers.money(raw));
     }
 
     @Override

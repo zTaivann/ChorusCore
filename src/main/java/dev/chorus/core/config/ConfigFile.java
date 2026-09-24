@@ -4,6 +4,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +19,7 @@ public final class ConfigFile {
     private final Plugin plugin;
     private final String path;
 
-    private YamlConfiguration data;
+    private volatile YamlConfiguration data;
 
     private ConfigFile(Plugin plugin, String path) {
         this.plugin = plugin;
@@ -66,6 +67,19 @@ public final class ConfigFile {
 
     public YamlConfiguration data() {
         return data;
+    }
+
+    /** The copy of a file that ships inside the jar, or null when there is none. */
+    public static @Nullable YamlConfiguration bundled(Plugin plugin, String path) {
+        try (InputStream inside = plugin.getResource(path)) {
+            if (inside == null) {
+                return null;
+            }
+            return YamlConfiguration.loadConfiguration(
+                    new InputStreamReader(inside, StandardCharsets.UTF_8));
+        } catch (IOException unreadable) {
+            return null;
+        }
     }
 
     /** Never null, so callers do not need a branch for a section an admin deleted. */

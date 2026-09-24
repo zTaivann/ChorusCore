@@ -18,7 +18,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Locale;
-import java.util.concurrent.Executor;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,12 +44,12 @@ public final class UpdateCheck implements Listener {
     private final Plugin plugin;
     private final Messages messages;
     private final Schedulers schedulers;
-    private final Executor worker;
     private final String running;
+    private final HttpClient http = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
 
     private volatile boolean enabled;
     private volatile boolean notifyStaff = true;
-    private volatile Source source = Source.MODRINTH;
+    private volatile Source source = Source.SPIGOT;
     private volatile String project = "";
     private volatile String url = "";
 
@@ -58,11 +58,10 @@ public final class UpdateCheck implements Listener {
 
     private ChorusTask task = ChorusTask.NONE;
 
-    public UpdateCheck(Plugin plugin, Messages messages, Schedulers schedulers, Executor worker) {
+    public UpdateCheck(Plugin plugin, Messages messages, Schedulers schedulers) {
         this.plugin = plugin;
         this.messages = messages;
         this.schedulers = schedulers;
-        this.worker = worker;
         this.running = plugin.getDescription().getVersion();
     }
 
@@ -71,7 +70,7 @@ public final class UpdateCheck implements Listener {
         notifyStaff = updates.getBoolean("notify-staff", true);
         project = updates.getString("project", "").trim();
         url = updates.getString("url", "").trim();
-        source = parseSource(updates.getString("source", "modrinth"));
+        source = parseSource(updates.getString("source", "spigot"));
         if (!enabled) {
             newer = "";
         }
@@ -97,13 +96,12 @@ public final class UpdateCheck implements Listener {
         return enabled;
     }
 
-    /** One round, off the server thread. */
+    /** One round, on the HTTP client's own threads. */
     public void check() {
         if (!enabled) {
             return;
         }
-        worker.execute(() -> {
-            String latest = ask();
+        ask().thenAccept(latest -> {
             if (latest.isEmpty() || !Versions.isNewer(latest, running)) {
                 return;
             }
@@ -122,35 +120,32 @@ public final class UpdateCheck implements Listener {
                 "current", running, "latest", newer);
     }
 
-    private String ask() {
+    private CompletableFuture<String> ask() {
         String endpoint = endpoint();
         if (endpoint.isEmpty()) {
-            return "";
+            return CompletableFuture.completedFuture("");
         }
 
+        HttpRequest request;
         try {
-            HttpClient http = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
-            HttpRequest request = HttpRequest.newBuilder()
+            request = HttpRequest.newBuilder()
                     .uri(URI.create(endpoint))
                     .timeout(TIMEOUT)
                     .header("User-Agent", "ChorusCore/" + running)
                     .header("Accept", "application/json")
                     .GET()
                     .build();
-
-            HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
-                return "";
-            }
-            return read(response.body());
-        } catch (InterruptedException interrupted) {
-            Thread.currentThread().interrupt();
-            return "";
-        } catch (Exception unreachable) {
-            plugin.getLogger().log(Level.FINE, "The update check did not get an answer",
-                    unreachable);
-            return "";
+        } catch (IllegalArgumentException badAddress) {
+            return CompletableFuture.completedFuture("");
         }
+
+        return http.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> response.statusCode() == 200 ? read(response.body()) : "")
+                .exceptionally(unreachable -> {
+                    plugin.getLogger().log(Level.FINE, "The update check did not get an answer",
+                            unreachable);
+                    return "";
+                });
     }
 
     private String read(String body) {
@@ -196,7 +191,7 @@ public final class UpdateCheck implements Listener {
         try {
             return Source.valueOf(name.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException unknown) {
-            return Source.MODRINTH;
+            return Source.SPIGOT;
         }
     }
 }

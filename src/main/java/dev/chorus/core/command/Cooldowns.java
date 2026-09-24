@@ -27,13 +27,21 @@ public final class Cooldowns {
     }
 
     public void start(UUID player, String command, int seconds, long now) {
-        expiry.computeIfAbsent(player, key -> new ConcurrentHashMap<>())
-                .put(command, now + seconds * 1000L);
+        expiry.compute(player, (id, owned) -> {
+            Map<String, Long> updated = owned == null ? new ConcurrentHashMap<>() : owned;
+            updated.put(command, now + seconds * 1000L);
+            return updated;
+        });
     }
 
+    /** Emptied and dropped per player as one step, so a cooldown started meanwhile survives. */
     public void sweep(long now) {
-        expiry.values().forEach(owned -> owned.values().removeIf(until -> until <= now));
-        expiry.values().removeIf(Map::isEmpty);
+        for (UUID player : expiry.keySet()) {
+            expiry.computeIfPresent(player, (id, owned) -> {
+                owned.values().removeIf(until -> until <= now);
+                return owned.isEmpty() ? null : owned;
+            });
+        }
     }
 
     public void clear() {

@@ -7,9 +7,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** The second press on anything that cannot be taken back. */
 public final class Confirmations implements Listener {
@@ -17,7 +17,7 @@ public final class Confirmations implements Listener {
     private static final String BYPASS = "chorus.bypass.confirm";
 
     private final Messages messages;
-    private final Map<UUID, Pending> pending = new HashMap<>();
+    private final Map<UUID, Pending> pending = new ConcurrentHashMap<>();
 
     private volatile int seconds;
 

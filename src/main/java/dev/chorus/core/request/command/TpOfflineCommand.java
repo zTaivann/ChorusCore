@@ -61,7 +61,7 @@ public final class TpOfflineCommand extends ChorusCommand {
                 messages.send(player, "request.offline-nowhere", "player", profile.name());
                 return;
             }
-            go(player, where.get(), profile.name(), profile.lastSeen());
+            onPlayer(player, () -> go(player, where.get(), profile.name(), profile.lastSeen()));
         });
     }
 

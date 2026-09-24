@@ -80,10 +80,6 @@ public final class EconomyModule implements ChorusModule {
     }
 
     @Override
-    public void disable() {
-    }
-
-    @Override
     public void reload() {
         if (service == null) {
             return;

@@ -1,6 +1,7 @@
 package dev.chorus.core.shops.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.shops.ShopService;
@@ -132,12 +133,8 @@ public final class SellCommand extends PlayerCommand {
     }
 
     private static int amount(String raw, int carrying) {
-        try {
-            int value = Integer.parseInt(raw);
-            return value <= 0 ? -1 : Math.min(value, carrying);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        int value = Numbers.integer(raw, 0);
+        return value <= 0 ? -1 : Math.min(value, carrying);
     }
 
     @Override

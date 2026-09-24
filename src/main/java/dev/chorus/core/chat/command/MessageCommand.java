@@ -2,8 +2,8 @@ package dev.chorus.core.chat.command;
 
 import dev.chorus.core.chat.IgnoreList;
 import dev.chorus.core.chat.PrivateMessages;
-import dev.chorus.core.flags.PlayerFlagService;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.flags.PlayerFlagService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

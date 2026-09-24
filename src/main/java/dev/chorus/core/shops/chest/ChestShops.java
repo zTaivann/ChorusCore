@@ -9,10 +9,11 @@ import org.jetbrains.annotations.Nullable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,8 +25,9 @@ public final class ChestShops {
     private final Executor worker;
     private final Logger logger;
 
-    private final Map<String, ChestShop> byBlock = new HashMap<>();
-    private final Map<UUID, Integer> counts = new HashMap<>();
+    private final Map<String, ChestShop> byBlock = new ConcurrentHashMap<>();
+    private final Map<String, Set<String>> byChunk = new ConcurrentHashMap<>();
+    private final Map<UUID, Integer> counts = new ConcurrentHashMap<>();
 
     public ChestShops(ChestShopRepository repository, Executor worker, Logger logger) {
         this.repository = repository;
@@ -35,16 +37,18 @@ public final class ChestShops {
 
     /** Blocking, once, at startup. */
     public void load() throws SQLException {
-        byBlock.clear();
-        counts.clear();
+        clear();
         for (ChestShop shop : repository.all()) {
-            byBlock.put(shop.key(), shop);
-            counts.merge(shop.owner(), 1, Integer::sum);
+            add(shop);
         }
     }
 
     public int size() {
         return byBlock.size();
+    }
+
+    public boolean isEmpty() {
+        return byBlock.isEmpty();
     }
 
     public int ownedBy(UUID player) {
@@ -66,8 +70,27 @@ public final class ChestShops {
         return owned;
     }
 
+    /** Every shop standing in one chunk. */
+    public List<ChestShop> in(String world, int chunkX, int chunkZ) {
+        Set<String> keys = byChunk.get(chunkKey(world, chunkX, chunkZ));
+        if (keys == null || keys.isEmpty()) {
+            return List.of();
+        }
+        List<ChestShop> found = new ArrayList<>(keys.size());
+        for (String key : keys) {
+            ChestShop shop = byBlock.get(key);
+            if (shop != null) {
+                found.add(shop);
+            }
+        }
+        return found;
+    }
+
     /** The shop at a block, whichever part of it was touched. */
     public @Nullable ChestShop at(Block block) {
+        if (byBlock.isEmpty()) {
+            return null;
+        }
         ChestShop direct = byBlock.get(ChestShop.key(block));
         if (direct != null) {
             return direct;
@@ -80,10 +103,7 @@ public final class ChestShops {
                 return onHolder;
             }
             Block holderHalf = ShopContainers.otherHalf(holder);
-            if (holderHalf != null) {
-                return byBlock.get(ChestShop.key(holderHalf));
-            }
-            return null;
+            return holderHalf == null ? null : byBlock.get(ChestShop.key(holderHalf));
         }
 
         Block half = ShopContainers.otherHalf(block);
@@ -105,16 +125,17 @@ public final class ChestShops {
                 container.getWorld().getName(), container.getX(), container.getY(),
                 container.getZ(), InventoryCodec.encode(new ItemStack[] {item}), price,
                 selling, unlimited, System.currentTimeMillis());
-
-        byBlock.put(shop.key(), shop);
-        counts.merge(shop.owner(), 1, Integer::sum);
+        add(shop);
 
         worker.execute(() -> {
             try {
                 ChestShop saved = repository.save(shop);
-                // The row matters for nothing but the logs, so it is not waited on.
-                byBlock.computeIfPresent(saved.key(),
-                        (key, current) -> current.id() == 0 ? saved : current);
+                ChestShop now = byBlock.computeIfPresent(shop.key(), (key, current) ->
+                        isSameShop(current, shop) ? current.withId(saved.id()) : current);
+                // Taken down before its row existed, so the row goes as well.
+                if (now == null || !isSameShop(now, shop)) {
+                    repository.delete(saved.id());
+                }
             } catch (SQLException exception) {
                 logger.log(Level.WARNING, "Could not save the shop of " + owner.getName(), exception);
             }
@@ -123,10 +144,15 @@ public final class ChestShops {
     }
 
     public void replace(ChestShop shop) {
-        byBlock.put(shop.key(), shop);
+        byBlock.computeIfPresent(shop.key(), (key, current) -> shop.withId(current.id()));
         worker.execute(() -> {
+            // The latest state by the time the storage thread gets here, with its row.
+            ChestShop current = byBlock.get(shop.key());
+            if (current == null || current.id() == 0) {
+                return;
+            }
             try {
-                repository.update(shop);
+                repository.update(current);
             } catch (SQLException exception) {
                 logger.log(Level.WARNING, "Could not update the shop at " + shop.key(), exception);
             }
@@ -134,14 +160,15 @@ public final class ChestShops {
     }
 
     public void remove(ChestShop shop) {
-        if (byBlock.remove(shop.key()) == null) {
+        ChestShop removed = byBlock.remove(shop.key());
+        if (removed == null) {
             return;
         }
-        counts.computeIfPresent(shop.owner(), (owner, count) -> count <= 1 ? null : count - 1);
+        forgetPlace(removed);
+        counts.computeIfPresent(removed.owner(), (owner, count) -> count <= 1 ? null : count - 1);
 
-        long id = shop.id();
+        long id = removed.id();
         if (id == 0) {
-            // Saved a moment ago and not yet given a row.
             return;
         }
         worker.execute(() -> {
@@ -155,6 +182,31 @@ public final class ChestShops {
 
     public void clear() {
         byBlock.clear();
+        byChunk.clear();
         counts.clear();
+    }
+
+    private void add(ChestShop shop) {
+        byBlock.put(shop.key(), shop);
+        byChunk.computeIfAbsent(chunkKey(shop.world(), shop.x() >> 4, shop.z() >> 4),
+                chunk -> ConcurrentHashMap.newKeySet()).add(shop.key());
+        counts.merge(shop.owner(), 1, Integer::sum);
+    }
+
+    private void forgetPlace(ChestShop shop) {
+        byChunk.computeIfPresent(chunkKey(shop.world(), shop.x() >> 4, shop.z() >> 4),
+                (chunk, keys) -> {
+                    keys.remove(shop.key());
+                    return keys.isEmpty() ? null : keys;
+                });
+    }
+
+    /** The same shop at a later moment, as opposed to another one made on the same block. */
+    private static boolean isSameShop(ChestShop one, ChestShop other) {
+        return one.createdAt() == other.createdAt() && one.owner().equals(other.owner());
+    }
+
+    private static String chunkKey(String world, int chunkX, int chunkZ) {
+        return world + ':' + chunkX + ':' + chunkZ;
     }
 }

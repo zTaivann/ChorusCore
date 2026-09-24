@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -30,6 +31,9 @@ public final class Balances {
     private volatile Currency currency;
     private volatile List<Ranked> ranking = List.of();
     private volatile long rankedAt;
+
+    /** Players whose balance has changed since it was last written. */
+    private final Set<UUID> unsaved = ConcurrentHashMap.newKeySet();
 
     /** Bumped by every change, so a ranking built over one is known to be out of date. */
     private final AtomicLong changes = new AtomicLong();
@@ -66,18 +70,20 @@ public final class Balances {
 
     /** Opens an account at the starting balance if this player has never had one. */
     public void open(UUID player, String name) {
-        Entry existing = accounts.get(player);
-        if (existing != null) {
-            if (!existing.name.equals(name)) {
-                accounts.put(player, new Entry(name, existing.balance));
-                write(player, name, existing.balance);
+        boolean[] changed = new boolean[1];
+        accounts.compute(player, (id, existing) -> {
+            if (existing != null && existing.name.equals(name)) {
+                return existing;
             }
-            return;
+            changed[0] = true;
+            return new Entry(name, existing == null
+                    ? currency.clamp(currency.startingBalance())
+                    : existing.balance);
+        });
+        if (changed[0]) {
+            write(player);
+            changes.incrementAndGet();
         }
-        double opening = currency.clamp(currency.startingBalance());
-        accounts.put(player, new Entry(name, opening));
-        write(player, name, opening);
-        changes.incrementAndGet();
     }
 
     public boolean exists(UUID player) {
@@ -142,7 +148,7 @@ public final class Balances {
         if (written[0] == null) {
             return false;
         }
-        write(id, written[0].name, written[0].balance);
+        write(id);
         changes.incrementAndGet();
         return true;
     }
@@ -198,14 +204,24 @@ public final class Balances {
         return ranking;
     }
 
-    private void write(UUID player, String name, double balance) {
-        worker.execute(() -> {
-            try {
-                repository.save(player, name, balance);
-            } catch (SQLException exception) {
-                logger.log(Level.WARNING, "Could not save the balance of " + name, exception);
-            }
-        });
+    /** Many changes before the storage thread gets round to it become one write of the last. */
+    private void write(UUID player) {
+        if (unsaved.add(player)) {
+            worker.execute(() -> flush(player));
+        }
+    }
+
+    private void flush(UUID player) {
+        unsaved.remove(player);
+        Entry entry = accounts.get(player);
+        if (entry == null) {
+            return;
+        }
+        try {
+            repository.save(player, entry.name, entry.balance);
+        } catch (SQLException exception) {
+            logger.log(Level.WARNING, "Could not save the balance of " + entry.name, exception);
+        }
     }
 
     public record Ranked(UUID player, String name, double balance) {

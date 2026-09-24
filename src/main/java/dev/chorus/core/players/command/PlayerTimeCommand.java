@@ -1,6 +1,7 @@
 package dev.chorus.core.players.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -71,11 +72,7 @@ public final class PlayerTimeCommand extends PersonalViewCommand {
     }
 
     private static Long parseTicks(String value) {
-        try {
-            long ticks = Long.parseLong(value);
-            return ticks >= 0 && ticks < 24000 ? ticks : null;
-        } catch (NumberFormatException notANumber) {
-            return null;
-        }
+        long ticks = Numbers.whole(value, -1);
+        return ticks >= 0 && ticks < 24000 ? ticks : null;
     }
 }

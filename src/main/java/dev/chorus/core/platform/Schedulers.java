@@ -11,7 +11,10 @@ import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
-/** Runs work on the thread that is allowed to touch what it is about to touch. */
+/**
+ * Runs work on the thread that is allowed to touch what it is about to touch. One-off work
+ * asked for once the plugin is off is dropped, since Bukkit would refuse it.
+ */
 public final class Schedulers {
 
     private final Plugin plugin;
@@ -28,6 +31,9 @@ public final class Schedulers {
 
     /** The server as a whole: pruning, sweeps, anything belonging to no one place. */
     public void global(Runnable task) {
+        if (!plugin.isEnabled()) {
+            return;
+        }
         if (folia == null) {
             plugin.getServer().getScheduler().runTask(plugin, task);
             return;
@@ -52,8 +58,36 @@ public final class Schedulers {
         return folia.runGlobalRate(task, delay, period);
     }
 
+    /** Runs now when this is already the server-wide thread, and on it otherwise. */
+    public void withGlobal(Runnable task) {
+        boolean here = folia == null ? plugin.getServer().isPrimaryThread() : folia.onGlobal();
+        if (here) {
+            task.run();
+            return;
+        }
+        global(task);
+    }
+
+    /**
+     * Runs now when this thread already owns the entity, and on the thread that does
+     * otherwise. {@link #entity} always waits a tick, which some callers rely on.
+     */
+    public void withEntity(Entity entity, Runnable task) {
+        boolean owned = folia == null
+                ? plugin.getServer().isPrimaryThread()
+                : folia.owns(entity);
+        if (owned) {
+            task.run();
+            return;
+        }
+        entity(entity, task);
+    }
+
     /** Work on one player or mob, which on Folia follows them from region to region. */
     public void entity(Entity entity, Runnable task) {
+        if (!plugin.isEnabled()) {
+            return;
+        }
         if (folia == null) {
             plugin.getServer().getScheduler().runTask(plugin, task);
             return;
@@ -80,6 +114,9 @@ public final class Schedulers {
 
     /** Work on the blocks at a place, which may be a region this thread does not own. */
     public void region(Location where, Runnable task) {
+        if (!plugin.isEnabled()) {
+            return;
+        }
         if (folia == null) {
             plugin.getServer().getScheduler().runTask(plugin, task);
             return;
@@ -124,6 +161,8 @@ public final class Schedulers {
         private final Method entityDelayed;
         private final Method entityRate;
         private final Method cancel;
+        private final Method ownsEntity;
+        private final Method globalThread;
 
         private Folia(Plugin plugin, ClassLoader api) throws ReflectiveOperationException {
             this.plugin = plugin;
@@ -138,6 +177,8 @@ public final class Schedulers {
             this.entityDelayed = FoliaCall.ENTITY_DELAYED.on(api);
             this.entityRate = FoliaCall.ENTITY_RATE.on(api);
             this.cancel = FoliaCall.TASK_CANCEL.on(api);
+            this.ownsEntity = FoliaCall.OWNS_ENTITY.on(api);
+            this.globalThread = FoliaCall.GLOBAL_THREAD.on(api);
 
             this.global = FoliaCall.SERVER_GLOBAL.on(api).invoke(plugin.getServer());
             this.regional = FoliaCall.SERVER_REGION.on(api).invoke(plugin.getServer());
@@ -196,6 +237,14 @@ public final class Schedulers {
                 return ChorusTask.NONE;
             }
             return handle(call(entityRate, scheduler, plugin, consume(job), null, delay, period));
+        }
+
+        boolean owns(Entity entity) {
+            return Boolean.TRUE.equals(call(ownsEntity, plugin.getServer(), entity));
+        }
+
+        boolean onGlobal() {
+            return Boolean.TRUE.equals(call(globalThread, plugin.getServer()));
         }
 
         void cancelAll() {

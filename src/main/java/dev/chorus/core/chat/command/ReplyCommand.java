@@ -2,9 +2,9 @@ package dev.chorus.core.chat.command;
 
 import dev.chorus.core.chat.IgnoreList;
 import dev.chorus.core.chat.PrivateMessages;
+import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.flags.PlayerFlag;
 import dev.chorus.core.flags.PlayerFlagService;
-import dev.chorus.core.command.CommandSupport;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;

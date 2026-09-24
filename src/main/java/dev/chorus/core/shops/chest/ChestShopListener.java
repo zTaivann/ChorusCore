@@ -1,5 +1,7 @@
 package dev.chorus.core.shops.chest;
 
+import dev.chorus.core.block.Signs;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.menu.ChatPrompts;
@@ -10,7 +12,6 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,8 +23,6 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
@@ -31,8 +30,11 @@ import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -183,7 +185,7 @@ public final class ChestShopListener implements Listener {
     }
 
     private static void takeDown(Block sign) {
-        if (sign.getState() instanceof Sign) {
+        if (Signs.isSign(sign)) {
             sign.breakNaturally();
         }
     }
@@ -204,7 +206,7 @@ public final class ChestShopListener implements Listener {
 
         Player player = event.getPlayer();
         boolean owner = shop.isOwner(player.getUniqueId()) || player.hasPermission(ADMIN_PERMISSION);
-        boolean onSign = clicked.getState() instanceof Sign;
+        boolean onSign = Signs.isSign(clicked);
 
         if (owner && !onSign) {
             // Their own chest. Opening it is how stock gets in and out.
@@ -457,7 +459,7 @@ public final class ChestShopListener implements Listener {
     /** A hopper under a shop would empty it without anybody paying for anything. */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMoveItem(InventoryMoveItemEvent event) {
-        if (!settings.protectHoppers()) {
+        if (!settings.protectHoppers() || shops.isEmpty()) {
             return;
         }
         if (isShopInventory(event.getSource()) || isShopInventory(event.getDestination())) {
@@ -545,6 +547,10 @@ public final class ChestShopListener implements Listener {
     }
 
     private boolean isShopInventory(Inventory inventory) {
+        InventoryType type = inventory.getType();
+        if (type != InventoryType.CHEST && type != InventoryType.BARREL) {
+            return false;
+        }
         Location where = inventory.getLocation();
         return where != null && shops.at(where.getBlock()) != null;
     }
@@ -569,26 +575,12 @@ public final class ChestShopListener implements Listener {
         if (typed.equalsIgnoreCase("all") || typed.equals("*")) {
             return most;
         }
-        try {
-            return Integer.parseInt(typed);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        return Numbers.integer(typed, -1);
     }
 
     /** Negative when the line is not a price, which is how "ask me" is said. */
     private static double price(String raw) {
-        if (raw.isEmpty()) {
-            return -1;
-        }
-        try {
-            double value = Double.parseDouble(raw.replace(',', '.').replace("$", ""));
-            return Double.isFinite(value) && value >= 0
-                    ? Math.round(value * 100.0) / 100.0
-                    : -1;
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        return Numbers.cents(Numbers.money(raw));
     }
 
     private static String plain(Component line) {

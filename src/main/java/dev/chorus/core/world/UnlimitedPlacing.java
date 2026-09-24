@@ -11,15 +11,15 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** The blocks a player may place without using them up. */
 public final class UnlimitedPlacing implements Listener {
 
-    private final Map<UUID, Set<Material>> allowed = new HashMap<>();
+    private final Map<UUID, Set<Material>> allowed = new ConcurrentHashMap<>();
 
     /** @return whether the material is now unlimited for this player. */
     public boolean toggle(Player player, Material material) {

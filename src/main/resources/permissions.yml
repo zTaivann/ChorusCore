@@ -1,0 +1,239 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   P E R M I S S I O N S                                                │
+# │   every node the plugin checks                                         │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Read in game with /chorus permissions, which marks the ones you hold.
+#
+# Nothing is read from this file at startup. Every node is checked in code; this is
+# the list, so a permissions plugin can be set up without reading the wiki.
+
+core:
+  - chorus.admin
+  - chorus.db
+  - chorus.help
+  - chorus.updates
+
+bypass:
+  - chorus.bypass.confirm
+  - chorus.bypass.cooldown
+  - chorus.bypass.price
+  - chorus.bypass.restrictions
+  - chorus.bypass.worlds
+
+homes:
+  - chorus.home.delete
+  - chorus.home.icon
+  - chorus.home.list
+  - chorus.home.others
+  - chorus.home.rename
+  - chorus.home.set
+  - chorus.home.unlimited
+  - chorus.home.use
+
+warps:
+  - chorus.warp.delete
+  - chorus.warp.info
+  - chorus.warp.info.full
+  - chorus.warp.list
+  - chorus.warp.set
+  - chorus.warp.sign.create
+  - chorus.warp.sign.use
+  - chorus.warp.use
+  - chorus.warp.use.others
+
+spawn:
+  - chorus.spawn.set
+  - chorus.spawn.use
+  - chorus.spawn.world
+
+teleport:
+  - chorus.back.ondeath
+  - chorus.back.use
+  - chorus.teleport.instant
+  - chorus.tpa.accept
+  - chorus.tpa.all
+  - chorus.tpa.auto
+  - chorus.tpa.deny
+  - chorus.tpa.here
+  - chorus.tpa.offline
+  - chorus.tpa.toggle
+  - chorus.tpa.toggle.bypass
+  - chorus.tpa.use
+
+chat:
+  - chorus.chat.ignore
+  - chorus.chat.ignore.bypass
+  - chorus.chat.msg
+  - chorus.chat.reply
+  - chorus.chat.spy
+  - chorus.chat.toggle
+  - chorus.mail.all
+  - chorus.mail.read.others
+  - chorus.mail.send
+  - chorus.mail.use
+
+economy:
+  - chorus.economy.admin
+  - chorus.economy.balance
+  - chorus.economy.balance.others
+  - chorus.economy.baltop
+  - chorus.economy.pay
+  - chorus.economy.paylog
+  - chorus.economy.paylog.others
+  - chorus.economy.toggle
+
+items:
+  - chorus.items.book
+  - chorus.items.book.author
+  - chorus.items.clearinventory
+  - chorus.items.condense
+  - chorus.items.editsign
+  - chorus.items.enchant
+  - chorus.items.enchant.unsafe
+  - chorus.items.exp
+  - chorus.items.exp.others
+  - chorus.items.firework
+  - chorus.items.format
+  - chorus.items.give
+  - chorus.items.give.others
+  - chorus.items.glow
+  - chorus.items.hat
+  - chorus.items.itemdb
+  - chorus.items.itemname
+  - chorus.items.lore
+  - chorus.items.more
+  - chorus.items.potion
+  - chorus.items.potion.unsafe
+  - chorus.items.recipe
+  - chorus.items.restore
+  - chorus.items.restore.view
+  - chorus.items.skull
+  - chorus.items.skull.others
+  - chorus.items.stack
+  - chorus.items.unbreakable
+
+kits:
+  - chorus.kits.edit
+  - chorus.kits.list
+  - chorus.kits.reset
+  - chorus.kits.use
+
+players:
+  - chorus.players.afk
+  - chorus.players.list
+  - chorus.players.nick
+  - chorus.players.nick.colour
+  - chorus.players.nick.others
+  - chorus.players.playtime
+  - chorus.players.playtime.others
+  - chorus.players.ptime
+  - chorus.players.pweather
+  - chorus.players.realname
+  - chorus.players.seen
+  - chorus.players.seen.address
+  - chorus.players.whois
+  - chorus.players.whois.ip
+
+shops:
+  - chorus.shops.admin
+  - chorus.shops.chest.admin
+  - chorus.shops.chest.create
+  - chorus.shops.chest.unlimited
+  - chorus.shops.chest.use
+  - chorus.shops.create
+  - chorus.shops.sell
+  - chorus.shops.use
+  - chorus.shops.worth
+
+staff:
+  - chorus.staff.freeze
+  - chorus.staff.freeze.exempt
+  - chorus.staff.gamemode
+  - chorus.staff.gamemode.others
+  - chorus.staff.lockdown
+  - chorus.staff.lockdown.bypass
+  - chorus.staff.log
+  - chorus.staff.note
+  - chorus.staff.note.clear
+  - chorus.staff.sudo
+  - chorus.staff.sudo.exempt
+  - chorus.staff.tempfly
+  - chorus.staff.tp
+  - chorus.staff.tpall
+  - chorus.staff.tphere
+  - chorus.staff.tppos
+  - chorus.staff.vanish
+  - chorus.staff.vanish.see
+
+utility:
+  - chorus.utility.anvil
+  - chorus.utility.bottom
+  - chorus.utility.break
+  - chorus.utility.burn
+  - chorus.utility.cartography
+  - chorus.utility.compass
+  - chorus.utility.craft
+  - chorus.utility.depth
+  - chorus.utility.ecsee
+  - chorus.utility.ecsee.edit
+  - chorus.utility.enchanting
+  - chorus.utility.enderchest
+  - chorus.utility.ext
+  - chorus.utility.feed
+  - chorus.utility.fireball
+  - chorus.utility.fix
+  - chorus.utility.fix.all
+  - chorus.utility.fly
+  - chorus.utility.getpos
+  - chorus.utility.god
+  - chorus.utility.grindstone
+  - chorus.utility.heal
+  - chorus.utility.info
+  - chorus.utility.invsee
+  - chorus.utility.invsee.edit
+  - chorus.utility.invsee.exempt
+  - chorus.utility.jump
+  - chorus.utility.loom
+  - chorus.utility.motd
+  - chorus.utility.near
+  - chorus.utility.near.exempt
+  - chorus.utility.ping
+  - chorus.utility.powertool
+  - chorus.utility.rest
+  - chorus.utility.smite
+  - chorus.utility.smithingtable
+  - chorus.utility.speed
+  - chorus.utility.speed.others
+  - chorus.utility.stonecutter
+  - chorus.utility.suicide
+  - chorus.utility.top
+  - chorus.utility.tps
+  - chorus.utility.trash
+
+world:
+  - chorus.world.go
+  - chorus.world.locate
+  - chorus.world.spawner
+  - chorus.world.spawnmob
+  - chorus.world.spawnmob.others
+  - chorus.world.sweep
+  - chorus.world.time
+  - chorus.world.tree
+  - chorus.world.unlimited
+  - chorus.world.weather
+
+# One node per home, kit, warp, world or sign, so these cannot be listed.
+families:
+  - chorus.home.limit.<number>
+  - chorus.items.enchant.<enchantment>
+  - chorus.items.give.item.<material>
+  - chorus.kit.<kit>
+  - chorus.shops.chest.limit.<number>
+  - chorus.signs.create.<kind>
+  - chorus.signs.use.<kind>
+  - chorus.staff.gamemode.<mode>
+  - chorus.warp.use.<warp>
+  - chorus.world.go.<world>

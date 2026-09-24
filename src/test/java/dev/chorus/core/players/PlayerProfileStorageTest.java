@@ -119,14 +119,4 @@ class PlayerProfileStorageTest {
 
         assertTrue(repository.sharing("", first).isEmpty());
     }
-
-    @Test
-    void namesForCompletionComeBackNewestFirst() throws SQLException {
-        repository.seen(UUID.randomUUID(), "Notch", "", 1000);
-        repository.seen(UUID.randomUUID(), "Notchy", "", 2000);
-        repository.seen(UUID.randomUUID(), "Somebody", "", 3000);
-
-        List<String> found = repository.namesLike("not", 10);
-        assertEquals(List.of("Notchy", "Notch"), found);
-    }
 }

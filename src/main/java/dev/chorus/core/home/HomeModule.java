@@ -13,20 +13,15 @@ import dev.chorus.core.home.command.HomeListCommand;
 import dev.chorus.core.home.command.RenameHomeCommand;
 import dev.chorus.core.home.command.SetHomeCommand;
 import dev.chorus.core.teleport.TeleportService;
-import org.bukkit.entity.Player;
-import dev.chorus.core.platform.ChorusTask;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class HomeModule implements ChorusModule {
 
     private static final String CONFIG = "modules/homes.yml";
-    private static final long REAP_INTERVAL_TICKS = 20L * 60 * 5;
 
     private final ChorusPlugin plugin;
     private final CommandSupport support;
@@ -35,7 +30,6 @@ public final class HomeModule implements ChorusModule {
 
     private ConfigFile config;
     private HomeService homes;
-    private ChorusTask reaper;
 
     public HomeModule(ChorusPlugin plugin, CommandSupport support, TeleportService teleports) {
         this.plugin = plugin;
@@ -73,8 +67,9 @@ public final class HomeModule implements ChorusModule {
                 readSettings());
         plugin.provide(homes);
 
+        plugin.loginData().add("homes", homes, true);
+
         Logger logger = plugin.getLogger();
-        plugin.register(new HomeDataListener(homes, plugin.messages(), logger));
 
         commands.add(plugin.register(new HomeCommand(support, homes, teleports)));
         commands.add(plugin.register(
@@ -85,19 +80,10 @@ public final class HomeModule implements ChorusModule {
         commands.add(plugin.register(new RenameHomeCommand(support, homes, logger)));
         commands.add(plugin.register(new HomeIconCommand(support, homes, logger)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
-
-        reaper = plugin.schedulers().globalTimer(
-                () -> homes.reapOffline(owner -> plugin.getServer().getPlayer(owner) != null),
-                REAP_INTERVAL_TICKS, REAP_INTERVAL_TICKS);
-
-        loadPlayersAlreadyOnline();
     }
 
     @Override
     public void disable() {
-        if (reaper != null) {
-            reaper.cancel();
-        }
         if (homes != null) {
             homes.clear();
         }
@@ -112,25 +98,6 @@ public final class HomeModule implements ChorusModule {
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 
-    /** Covers the case of the plugin being enabled on a server that is already running. */
-    private void loadPlayersAlreadyOnline() {
-        List<UUID> online = plugin.getServer().getOnlinePlayers().stream()
-                .map(Player::getUniqueId)
-                .toList();
-        if (online.isEmpty()) {
-            return;
-        }
-
-        plugin.worker().execute(() -> {
-            for (UUID playerId : online) {
-                try {
-                    homes.load(playerId);
-                } catch (SQLException exception) {
-                    plugin.getLogger().log(Level.SEVERE, "Could not load the homes of " + playerId, exception);
-                }
-            }
-        });
-    }
 
     private HomeSettings readSettings() {
         return HomeSettings.read(config.section("homes"),

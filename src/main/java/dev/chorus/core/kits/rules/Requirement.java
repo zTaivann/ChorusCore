@@ -1,5 +1,6 @@
 package dev.chorus.core.kits.rules;
 
+import dev.chorus.core.command.Numbers;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,13 +79,9 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
         boolean hasClaimed(String kit);
     }
 
+    /** A requirement nobody can meet is safer than one everybody passes by accident. */
     private static double number(String raw) {
-        try {
-            return Double.parseDouble(raw.replace(',', '.'));
-        } catch (NumberFormatException notANumber) {
-            // A requirement nobody can meet is safer than one everybody passes by accident.
-            return Double.MAX_VALUE;
-        }
+        return Numbers.decimal(raw.replace(',', '.'), Double.MAX_VALUE);
     }
 
     private static @Nullable String text(@Nullable Object value) {

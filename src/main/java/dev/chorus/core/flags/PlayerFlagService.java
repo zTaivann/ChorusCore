@@ -1,5 +1,8 @@
 package dev.chorus.core.flags;
 
+import dev.chorus.core.storage.LoginData;
+import dev.chorus.core.storage.Queries;
+
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +16,7 @@ import java.util.logging.Logger;
  * The per-player switches, held in memory for everyone online and written through to the
  * database as they change.
  */
-public final class PlayerFlagService {
+public final class PlayerFlagService implements LoginData.Part {
 
     private final PlayerFlagRepository repository;
     private final Executor worker;
@@ -26,13 +29,14 @@ public final class PlayerFlagService {
         this.logger = logger;
     }
 
-    /** Blocking. Called from the login thread before the player is let in. */
+    @Override
     public void load(UUID player) throws SQLException {
         Set<String> flags = ConcurrentHashMap.newKeySet();
-        flags.addAll(repository.findSet(player));
+        flags.addAll(Queries.await(() -> repository.findSet(player), worker));
         cache.put(player, flags);
     }
 
+    @Override
     public void unload(UUID player) {
         cache.remove(player);
     }

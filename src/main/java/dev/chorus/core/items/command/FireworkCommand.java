@@ -1,6 +1,7 @@
 package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.items.ItemAttributes;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -82,13 +83,7 @@ public final class FireworkCommand extends HeldItemCommand {
             messages.send(player, "items.firework-usage");
             return;
         }
-        int power;
-        try {
-            power = Integer.parseInt(args[1]);
-        } catch (NumberFormatException notANumber) {
-            messages.send(player, "items.firework-usage");
-            return;
-        }
+        int power = Numbers.integer(args[1], -1);
         if (power < 0 || power > MAX_POWER) {
             messages.send(player, "items.firework-power-range", "max", String.valueOf(MAX_POWER));
             return;
@@ -105,15 +100,12 @@ public final class FireworkCommand extends HeldItemCommand {
 
     /** Launches copies of the held rocket without using it up. */
     private void fire(Player player, ItemStack item, String[] args) {
-        int amount = 1;
-        if (args.length > 1) {
-            try {
-                amount = Math.max(1, Math.min(MAX_FIRE, Integer.parseInt(args[1])));
-            } catch (NumberFormatException notANumber) {
-                messages.send(player, "items.firework-usage");
-                return;
-            }
+        int amount = args.length > 1 ? Numbers.integer(args[1], 0) : 1;
+        if (amount < 1) {
+            messages.send(player, "items.firework-usage");
+            return;
         }
+        amount = Math.min(MAX_FIRE, amount);
         if (!ready(player)) {
             return;
         }

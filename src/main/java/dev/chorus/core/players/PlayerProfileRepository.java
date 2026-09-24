@@ -26,7 +26,4 @@ public interface PlayerProfileRepository {
 
     /** Everyone else who has connected from the same address. */
     List<String> sharing(String address, UUID except) throws SQLException;
-
-    /** Names for tab completion, newest first. */
-    List<String> namesLike(String prefix, int limit) throws SQLException;
 }

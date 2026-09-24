@@ -74,10 +74,6 @@ public final class SpawnModule implements ChorusModule {
     }
 
     @Override
-    public void disable() {
-    }
-
-    @Override
     public void reload() {
         if (spawn == null) {
             return;

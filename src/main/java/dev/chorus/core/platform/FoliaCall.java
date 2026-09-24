@@ -25,7 +25,13 @@ enum FoliaCall {
     TASK_CANCEL(Api.TASK, "cancel"),
 
     SERVER_GLOBAL(Api.SERVER, "getGlobalRegionScheduler"),
-    SERVER_REGION(Api.SERVER, "getRegionScheduler");
+    SERVER_REGION(Api.SERVER, "getRegionScheduler"),
+
+    /** Whether the calling thread owns an entity, so work already there can run at once. */
+    OWNS_ENTITY(Api.SERVER, "isOwnedByCurrentRegion", Api.ENTITY_TYPE),
+
+    /** Whether the calling thread is the global one, the only one a console command may run on. */
+    GLOBAL_THREAD(Api.SERVER, "isGlobalTickThread");
 
     /** The names, in a class of their own because an enum may not look forward at its own. */
     static final class Api {

@@ -1,6 +1,8 @@
 package dev.chorus.core.menu;
 
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.platform.Schedulers;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -10,14 +12,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /** Asks a player for a value in chat, and takes the answer without letting it become a message. */
@@ -31,17 +30,14 @@ public final class ChatPrompts implements Listener {
 
     private final Plugin plugin;
     private final Messages messages;
-    private final Executor mainThread;
     private final Schedulers schedulers;
     private final Map<UUID, Prompt> waiting = new ConcurrentHashMap<>();
 
     private ChorusTask sweeper;
 
-    public ChatPrompts(Plugin plugin, Messages messages, Executor mainThread,
-                       Schedulers schedulers) {
+    public ChatPrompts(Plugin plugin, Messages messages, Schedulers schedulers) {
         this.plugin = plugin;
         this.messages = messages;
-        this.mainThread = mainThread;
         this.schedulers = schedulers;
     }
 
@@ -61,7 +57,7 @@ public final class ChatPrompts implements Listener {
      * Closes whatever the player is looking at and waits for them to type.
      *
      * @param ask     the line telling them what to write, ready to send
-     * @param answer  given the typed line, on the server thread
+     * @param answer  given the typed line, on the player's own thread
      * @param aborted run instead when they change their mind or run out of time
      */
     public void ask(Player player, Component ask, Consumer<String> answer, Runnable aborted) {
@@ -73,22 +69,18 @@ public final class ChatPrompts implements Listener {
         messages.send(player, "core.prompt-cancel");
     }
 
-    /**
-     * Runs before anything else so the line never reaches a chat plugin, and never reaches
-     * the other players either. Somebody typing a permission node into a prompt has not said
-     * anything to anyone.
-     */
+    /** First of all listeners, so an answer never reaches a chat plugin or another player. */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onChat(AsyncChatEvent event) {
-        // The answer arrives on the chat thread; prompts are set up on the server one.
-        Prompt prompt = waiting.remove(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        Prompt prompt = waiting.remove(player.getUniqueId());
         if (prompt == null) {
             return;
         }
         event.setCancelled(true);
 
         String typed = PLAIN.serialize(event.message()).trim();
-        mainThread.execute(() -> {
+        schedulers.entity(player, () -> {
             if (typed.equalsIgnoreCase(CANCEL)) {
                 prompt.aborted().run();
                 return;
@@ -102,7 +94,6 @@ public final class ChatPrompts implements Listener {
         waiting.remove(event.getPlayer().getUniqueId());
     }
 
-    /** Nobody should be silently swallowing a player's chat an hour after they forgot. */
     private void dropExpired() {
         long now = System.currentTimeMillis();
         waiting.entrySet().removeIf(entry -> {
@@ -117,7 +108,6 @@ public final class ChatPrompts implements Listener {
         });
     }
 
-    /** Lower-cased once here rather than at every call site. */
     public static String normalise(String typed) {
         return typed.toLowerCase(Locale.ROOT);
     }

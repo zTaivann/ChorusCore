@@ -152,11 +152,13 @@ updates:
   #   hangar    a project on hangar.papermc.io
   #   spigot    a resource on spigotmc.org, by its number
   #   plain     a page of your own that answers with nothing but a version
-  source: modrinth
+  #
+  # A site with no public version endpoint, BuiltByBit among them, needs plain.
+  source: spigot
 
   # The project on that site. For spigot this is the number in the resource
   # URL. Leave it empty to switch the check off without setting check: false.
-  project: choruscore
+  project: '138794'
 
   # Only read when source is plain.
   url: ''

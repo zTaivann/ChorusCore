@@ -2,8 +2,8 @@ package dev.chorus.core.utility.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.utility.UtilitySettings;
 import dev.chorus.core.utility.UtilityService;
+import dev.chorus.core.utility.UtilitySettings;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

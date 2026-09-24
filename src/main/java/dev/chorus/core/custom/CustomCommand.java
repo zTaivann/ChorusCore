@@ -3,6 +3,7 @@ package dev.chorus.core.custom;
 import dev.chorus.core.command.Cooldowns;
 import dev.chorus.core.command.Durations;
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.Schedulers;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.Server;
@@ -28,14 +29,17 @@ public final class CustomCommand extends Command {
     private final Messages messages;
     private final Cooldowns cooldowns;
     private final Server server;
+    private final Schedulers schedulers;
 
-    CustomCommand(CustomDefinition definition, Messages messages, Cooldowns cooldowns, Server server) {
+    CustomCommand(CustomDefinition definition, Messages messages, Cooldowns cooldowns, Server server,
+                  Schedulers schedulers) {
         super(definition.name(), definition.description(), "/" + definition.name(),
                 new ArrayList<>(definition.aliases()));
         this.definition = definition;
         this.messages = messages;
         this.cooldowns = cooldowns;
         this.server = server;
+        this.schedulers = schedulers;
     }
 
     CustomDefinition definition() {
@@ -62,10 +66,17 @@ public final class CustomCommand extends Command {
             definition.playerCommands().forEach(
                     command -> player.performCommand(command.replace("%player%", who)));
         }
+        if (!definition.consoleCommands().isEmpty()) {
+            schedulers.withGlobal(() -> asConsole(sender, who));
+        }
+        return true;
+    }
+
+    private void asConsole(CommandSender sender, String who) {
         if (!running.add(definition.name())) {
             // A command among its own run-as-console lines would call itself for ever.
             messages.send(sender, "error.command-recursion");
-            return true;
+            return;
         }
         try {
             definition.consoleCommands().forEach(command -> server.dispatchCommand(
@@ -73,7 +84,6 @@ public final class CustomCommand extends Command {
         } finally {
             running.remove(definition.name());
         }
-        return true;
     }
 
     private boolean onCooldown(CommandSender sender) {

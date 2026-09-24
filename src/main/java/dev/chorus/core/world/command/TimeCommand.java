@@ -2,6 +2,7 @@ package dev.chorus.core.world.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -89,12 +90,8 @@ public final class TimeCommand extends ChorusCommand {
         if (named != null) {
             return named;
         }
-        try {
-            long ticks = Long.parseLong(raw.toLowerCase(Locale.ROOT).replace("ticks", ""));
-            return ticks < 0 ? -1 : Math.floorMod(ticks, DAY);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        long ticks = Numbers.whole(raw.toLowerCase(Locale.ROOT).replace("ticks", ""), -1);
+        return ticks < 0 ? -1 : Math.floorMod(ticks, DAY);
     }
 
     private static List<World> worlds(CommandSender sender, String name) {

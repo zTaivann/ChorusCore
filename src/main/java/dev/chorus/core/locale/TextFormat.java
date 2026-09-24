@@ -4,6 +4,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -12,6 +14,16 @@ import java.util.Locale;
 public final class TextFormat {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
+
+    /**
+     * Colours and weights only. A click, a hover or a selector in text a player wrote would
+     * act on whoever reads it, and on a sign a click runs with the server's permissions.
+     */
+    private static final MiniMessage STYLING = MiniMessage.builder()
+            .tags(TagResolver.resolver(StandardTags.color(), StandardTags.decorations(),
+                    StandardTags.gradient(), StandardTags.rainbow(), StandardTags.transition(),
+                    StandardTags.reset()))
+            .build();
 
     /** Indexed by the digit or letter after the marker, in the order the game numbers them. */
     private static final String[] COLOURS = {
@@ -93,6 +105,11 @@ public final class TextFormat {
     /** A line of text in either format, ready to send. */
     public static Component parse(String raw) {
         return MINI_MESSAGE.deserialize(toTags(raw));
+    }
+
+    /** A line of text a player wrote: its colours and weights are read, nothing else is. */
+    public static Component parsePlayer(String raw) {
+        return STYLING.deserialize(toTags(raw));
     }
 
     /** The same for something written on an item. */

@@ -151,6 +151,35 @@ class TextFormatTest {
         assertTrue(PLAIN.serialize(TextFormat.parse("&kobf")).contains("obf"));
     }
 
+    @Test
+    void aPlayerMayColourTheirText() {
+        assertEquals(NamedTextColor.RED, colourOf(TextFormat.parsePlayer("<red>Hi")));
+        assertEquals(NamedTextColor.RED, colourOf(TextFormat.parsePlayer("&cHi")));
+    }
+
+    /** A sign or a nickname must not run a command for whoever clicks it. */
+    @Test
+    void aPlayerCannotAddAClickOrAHover() {
+        String raw = "<click:run_command:'/op me'><hover:show_text:'x'>Hi";
+        assertTrue(hasEvent(TextFormat.parse(raw)), "the admin parser does read them");
+
+        Component written = TextFormat.parsePlayer(raw);
+        assertFalse(hasEvent(written));
+        assertTrue(PLAIN.serialize(written).contains("<click:run_command"));
+    }
+
+    private static boolean hasEvent(Component text) {
+        if (text.clickEvent() != null || text.hoverEvent() != null) {
+            return true;
+        }
+        for (Component child : text.children()) {
+            if (hasEvent(child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** The deepest piece of text, which is where the last style applied ends up. */
     private static Component lastOf(Component text) {
         Component last = text;

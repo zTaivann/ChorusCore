@@ -1,34 +1,34 @@
 package dev.chorus.core.items;
 
 import dev.chorus.core.ChorusModule;
-import dev.chorus.core.backup.BackupMenu;
 import dev.chorus.core.ChorusPlugin;
+import dev.chorus.core.backup.BackupMenu;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
+import dev.chorus.core.items.SignClipboard;
+import dev.chorus.core.items.command.BookCommand;
 import dev.chorus.core.items.command.ClearInventoryCommand;
 import dev.chorus.core.items.command.CondenseCommand;
-import dev.chorus.core.items.command.EnchantCommand;
-import dev.chorus.core.items.command.BookCommand;
 import dev.chorus.core.items.command.EditSignCommand;
+import dev.chorus.core.items.command.EnchantCommand;
 import dev.chorus.core.items.command.ExperienceCommand;
 import dev.chorus.core.items.command.FireworkCommand;
 import dev.chorus.core.items.command.GiveCommand;
 import dev.chorus.core.items.command.GlowCommand;
-import dev.chorus.core.items.command.ItemDbCommand;
 import dev.chorus.core.items.command.HatCommand;
+import dev.chorus.core.items.command.ItemDbCommand;
 import dev.chorus.core.items.command.ItemNameCommand;
 import dev.chorus.core.items.command.LoreCommand;
 import dev.chorus.core.items.command.MoreCommand;
-import dev.chorus.core.items.command.RestoreCommand;
-import dev.chorus.core.menu.MenuSettings;
 import dev.chorus.core.items.command.PotionCommand;
 import dev.chorus.core.items.command.RecipeCommand;
-import dev.chorus.core.items.SignClipboard;
+import dev.chorus.core.items.command.RestoreCommand;
 import dev.chorus.core.items.command.SkullCommand;
 import dev.chorus.core.items.command.StackCommand;
 import dev.chorus.core.items.command.UnbreakableCommand;
+import dev.chorus.core.menu.MenuSettings;
 
 import org.bukkit.Material;
 
@@ -104,10 +104,6 @@ public final class ItemsModule implements ChorusModule {
                         plugin.schedulers()),
                 plugin.profiles())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
-    }
-
-    @Override
-    public void disable() {
     }
 
     @Override

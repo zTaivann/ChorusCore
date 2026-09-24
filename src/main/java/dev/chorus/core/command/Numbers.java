@@ -32,4 +32,34 @@ public final class Numbers {
             return fallback;
         }
     }
+
+    /**
+     * An amount of money the way people write one: {@code 5}, {@code 5.50}, {@code 5,50},
+     * {@code $5} or {@code 5€}. Negative when it is not an amount at all.
+     */
+    public static double money(String raw) {
+        if (raw == null) {
+            return -1;
+        }
+        int start = 0;
+        int end = raw.length();
+        while (start < end && !isPartOfNumber(raw.charAt(start))) {
+            start++;
+        }
+        while (end > start && !isPartOfNumber(raw.charAt(end - 1))) {
+            end--;
+        }
+        double value = decimal(raw.substring(start, end).replace(',', '.'), -1);
+        return value >= 0 ? value : -1;
+    }
+
+    /** Rounded to hundredths, which is how prices and payments have always been kept. */
+    public static double cents(double amount) {
+        return Math.round(amount * 100.0) / 100.0;
+    }
+
+    private static boolean isPartOfNumber(char character) {
+        return (character >= '0' && character <= '9')
+                || character == '.' || character == ',' || character == '-';
+    }
 }

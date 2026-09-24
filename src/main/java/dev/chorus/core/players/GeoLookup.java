@@ -2,15 +2,20 @@ package dev.chorus.core.players;
 
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
+import java.util.regex.Pattern;
 
 /** Which country an address is in, for {@code /whois}. */
 public final class GeoLookup {
@@ -18,17 +23,14 @@ public final class GeoLookup {
     private static final String DEFAULT_ENDPOINT = "https://ipapi.co/%address%/country_name/";
     private static final int MAX_LENGTH = 64;
     private static final Duration TIMEOUT = Duration.ofSeconds(4);
+    private static final Pattern LITERAL =
+            Pattern.compile("[0-9.]+|[0-9a-fA-F:.%]*:[0-9a-fA-F:.%]*");
 
-    private final Executor worker;
     private final Map<String, String> known = new ConcurrentHashMap<>();
 
     private volatile boolean enabled;
     private volatile String endpoint = DEFAULT_ENDPOINT;
     private volatile HttpClient client;
-
-    public GeoLookup(Executor worker) {
-        this.worker = worker;
-    }
 
     public void apply(ConfigurationSection players) {
         ConfigurationSection geo = players.getConfigurationSection("geoip");
@@ -43,9 +45,10 @@ public final class GeoLookup {
         return enabled;
     }
 
-    /** The country for an address. */
+    /** The country for an address, asked on the HTTP client's own threads. */
     public CompletableFuture<String> countryOf(String address) {
-        if (!enabled || address.isEmpty() || isLocal(address)) {
+        HttpClient http = client;
+        if (!enabled || http == null || address.isEmpty() || isLocal(address)) {
             return CompletableFuture.completedFuture("");
         }
         String cached = known.get(address);
@@ -53,43 +56,32 @@ public final class GeoLookup {
             return CompletableFuture.completedFuture(cached);
         }
 
-        CompletableFuture<String> answer = new CompletableFuture<>();
-        worker.execute(() -> answer.complete(ask(address)));
-        return answer;
-    }
-
-    public void clear() {
-        known.clear();
-    }
-
-    private String ask(String address) {
-        HttpClient http = client;
-        if (http == null) {
-            return "";
-        }
+        HttpRequest request;
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(endpoint.replace("%address%", address)))
+            request = HttpRequest.newBuilder()
+                    .uri(URI.create(endpoint.replace("%address%",
+                            URLEncoder.encode(address, StandardCharsets.UTF_8))))
                     .timeout(TIMEOUT)
                     .header("User-Agent", "ChorusCore")
                     .GET()
                     .build();
-
-            HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
-                return "";
-            }
-            String country = clean(response.body());
-            if (!country.isEmpty()) {
-                known.put(address, country);
-            }
-            return country;
-        } catch (InterruptedException interrupted) {
-            Thread.currentThread().interrupt();
-            return "";
-        } catch (Exception unreachable) {
-            return "";
+        } catch (IllegalArgumentException badEndpoint) {
+            return CompletableFuture.completedFuture("");
         }
+
+        return http.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    String country = response.statusCode() == 200 ? clean(response.body()) : "";
+                    if (!country.isEmpty()) {
+                        known.put(address, country);
+                    }
+                    return country;
+                })
+                .exceptionally(unreachable -> "");
+    }
+
+    public void clear() {
+        known.clear();
     }
 
     /** One line of plain text, with anything that is not a country name thrown away. */
@@ -107,11 +99,20 @@ public final class GeoLookup {
 
     /** Nobody outside can tell you where a private address is, so nothing is sent for one. */
     private static boolean isLocal(String address) {
-        return address.startsWith("127.")
-                || address.startsWith("10.")
-                || address.startsWith("192.168.")
-                || address.startsWith("172.16.")
-                || address.startsWith("::1")
-                || address.equals("localhost");
+        // Anything that is not written as an address is never sent, and never looked up.
+        if (!LITERAL.matcher(address).matches()) {
+            return true;
+        }
+        String lower = address.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("fc") || lower.startsWith("fd")) {
+            return true;
+        }
+        try {
+            InetAddress parsed = InetAddress.getByName(address);
+            return parsed.isLoopbackAddress() || parsed.isSiteLocalAddress()
+                    || parsed.isLinkLocalAddress() || parsed.isAnyLocalAddress();
+        } catch (UnknownHostException | SecurityException unreadable) {
+            return true;
+        }
     }
 }

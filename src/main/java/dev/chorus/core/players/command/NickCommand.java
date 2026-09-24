@@ -73,12 +73,14 @@ public final class NickCommand extends ChorusCommand {
             return;
         }
 
-        if (TextFormat.hasLegacy(wanted) && !sender.hasPermission(COLOUR)) {
-            messages.send(sender, "players.nick-no-colour");
+        // Without the permission a nickname is its letters and nothing else: no codes, no tags.
+        if (!sender.hasPermission(COLOUR) && !ALLOWED.matcher(wanted).matches()) {
+            messages.send(sender, TextFormat.hasLegacy(wanted) || wanted.contains("<")
+                    ? "players.nick-no-colour" : "players.nick-invalid");
             return;
         }
 
-        String letters = PLAIN.serialize(TextFormat.parse(wanted));
+        String letters = PLAIN.serialize(TextFormat.parsePlayer(wanted));
         if (!ALLOWED.matcher(letters).matches()) {
             messages.send(sender, "players.nick-invalid");
             return;

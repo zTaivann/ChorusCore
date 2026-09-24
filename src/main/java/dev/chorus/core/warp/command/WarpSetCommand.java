@@ -2,6 +2,7 @@ package dev.chorus.core.warp.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.location.NamedLocation;
 import dev.chorus.core.location.Names;
 import dev.chorus.core.warp.WarpDetails;
@@ -121,29 +122,19 @@ public final class WarpSetCommand extends ChorusCommand {
         if (clearing) {
             return current.withPrice(WarpDetails.INHERIT_PRICE);
         }
-        double amount;
-        try {
-            amount = Double.parseDouble(value.replace(',', '.'));
-        } catch (NumberFormatException notANumber) {
-            amount = -1;
-        }
-        if (!Double.isFinite(amount) || amount < 0) {
+        double amount = Numbers.money(value);
+        if (amount < 0) {
             messages.send(sender, "warp.settings-bad-number", "value", value);
             return null;
         }
-        return current.withPrice(Math.round(amount * 100.0) / 100.0);
+        return current.withPrice(Numbers.cents(amount));
     }
 
     private WarpDetails cooldown(CommandSender sender, WarpDetails current, String value, boolean clearing) {
         if (clearing) {
             return current.withCooldown(WarpDetails.INHERIT_COOLDOWN);
         }
-        int seconds;
-        try {
-            seconds = Integer.parseInt(value);
-        } catch (NumberFormatException notANumber) {
-            seconds = -1;
-        }
+        int seconds = Numbers.integer(value, -1);
         if (seconds < 0) {
             messages.send(sender, "warp.settings-bad-number", "value", value);
             return null;

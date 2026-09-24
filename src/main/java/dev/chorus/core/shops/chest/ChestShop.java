@@ -49,6 +49,11 @@ public record ChestShop(long id, UUID owner, String ownerName, String world, int
         return decoded == null || decoded.length == 0 ? null : decoded[0];
     }
 
+    public ChestShop withId(long saved) {
+        return new ChestShop(saved, owner, ownerName, world, x, y, z, item, price, selling,
+                unlimited, createdAt);
+    }
+
     public ChestShop withPrice(double updated) {
         return new ChestShop(id, owner, ownerName, world, x, y, z, item, updated, selling,
                 unlimited, createdAt);

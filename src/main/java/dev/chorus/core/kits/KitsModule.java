@@ -14,14 +14,11 @@ import dev.chorus.core.kits.menu.KitEditMenu;
 import dev.chorus.core.kits.menu.KitMenuSettings;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
-import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Level;
 
 public final class KitsModule implements ChorusModule {
 
@@ -67,10 +64,11 @@ public final class KitsModule implements ChorusModule {
         }
 
         kits = new KitService(repository, plugin.backups(), plugin.messages(),
-                plugin.economy(), plugin.worker(), plugin.mainThread());
+                plugin.economy(), plugin.worker(), plugin.mainThread(), plugin.schedulers());
         load();
 
-        plugin.register(new KitDataListener(kits, plugin.messages(), plugin.getLogger()));
+        plugin.loginData().add("kit history", kits, true);
+        plugin.register(new FirstJoinKitListener(kits, plugin.messages(), plugin.getLogger()));
         commands.add(plugin.register(new KitCommand(support, kits, plugin.getLogger())));
         commands.add(plugin.register(new KitListCommand(support, kits, () -> settings)));
         commands.add(plugin.register(new KitResetCommand(support, kits)));
@@ -81,8 +79,6 @@ public final class KitsModule implements ChorusModule {
         commands.add(plugin.register(
                 new KitEditCommand(support, kits, editor, menu, plugin.economy())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
-
-        loadPlayersAlreadyOnline();
     }
 
     @Override
@@ -118,26 +114,5 @@ public final class KitsModule implements ChorusModule {
 
     private void warn(String problem) {
         plugin.getLogger().warning(CONFIG + ": " + problem);
-    }
-
-    /** Covers the case of the plugin being enabled on a server that is already running. */
-    private void loadPlayersAlreadyOnline() {
-        List<UUID> online = plugin.getServer().getOnlinePlayers().stream()
-                .map(Player::getUniqueId)
-                .toList();
-        if (online.isEmpty()) {
-            return;
-        }
-
-        plugin.worker().execute(() -> {
-            for (UUID playerId : online) {
-                try {
-                    kits.load(playerId);
-                } catch (SQLException exception) {
-                    plugin.getLogger().log(Level.SEVERE,
-                            "Could not load the kit history of " + playerId, exception);
-                }
-            }
-        });
     }
 }

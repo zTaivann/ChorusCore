@@ -12,6 +12,8 @@ public interface MailRepository {
 
     List<Mail> inbox(UUID recipient) throws SQLException;
 
+    int count(UUID recipient) throws SQLException;
+
     int unread(UUID recipient) throws SQLException;
 
     void markRead(UUID recipient) throws SQLException;

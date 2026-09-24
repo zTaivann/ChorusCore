@@ -1,6 +1,7 @@
 package dev.chorus.core.world.command;
 
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
@@ -73,12 +74,8 @@ public final class SpawnerCommand extends PlayerCommand {
     }
 
     private static int delay(String raw) {
-        try {
-            int ticks = Integer.parseInt(raw);
-            return ticks < 0 ? -1 : Math.min(MAX_DELAY, ticks);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        int ticks = Numbers.integer(raw, -1);
+        return ticks < 0 ? -1 : Math.min(MAX_DELAY, ticks);
     }
 
     @Override

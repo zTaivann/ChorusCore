@@ -66,7 +66,7 @@ public final class MailService {
     public CompletableFuture<Boolean> send(UUID recipient, String sender, String body) {
         long now = System.currentTimeMillis();
         return Queries.run(() -> {
-            if (repository.inbox(recipient).size() >= inboxSize) {
+            if (repository.count(recipient) >= inboxSize) {
                 return false;
             }
             repository.send(recipient, sender, body, now);

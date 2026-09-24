@@ -1,5 +1,6 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.config.ConfigFile;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -190,8 +191,9 @@ public final class KitEditor {
 
     private static Object parse(String setting, String value) {
         return switch (setting) {
-            case "cooldown", "maxclaims" -> (int) Double.parseDouble(value.replace(',', '.'));
-            case "price" -> Double.parseDouble(value.replace(',', '.'));
+            case "cooldown", "maxclaims" -> (int) Math.min(Integer.MAX_VALUE,
+                    Math.max(0, Numbers.money(value)));
+            case "price" -> Math.max(0, Numbers.money(value));
             case "onetime", "autoarmor", "clearinventory", "placeholders" ->
                     Boolean.parseBoolean(value);
             case "lore" -> List.of(value.split("\\|"));

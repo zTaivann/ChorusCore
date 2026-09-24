@@ -1,5 +1,6 @@
 package dev.chorus.core.backup;
 
+import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.storage.Queries;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -27,6 +28,7 @@ public final class InventoryBackups {
     private final BackupRepository repository;
     private final Executor worker;
     private final Executor mainThread;
+    private final Schedulers schedulers;
     private final Logger logger;
 
     private volatile boolean enabled = true;
@@ -35,10 +37,11 @@ public final class InventoryBackups {
     private volatile Set<BackupReason> reasons = EnumSet.allOf(BackupReason.class);
 
     public InventoryBackups(BackupRepository repository, Executor worker, Executor mainThread,
-                            Logger logger) {
+                            Schedulers schedulers, Logger logger) {
         this.repository = repository;
         this.worker = worker;
         this.mainThread = mainThread;
+        this.schedulers = schedulers;
         this.logger = logger;
     }
 
@@ -214,20 +217,28 @@ public final class InventoryBackups {
      * @param told runs with what was put back, so the caller can say so.
      */
     public void applyWaiting(Player player, BiConsumer<Set<Part>, String> told) {
-        Queries.run(() -> repository.takeWaiting(player.getUniqueId()), worker, mainThread)
+        UUID owner = player.getUniqueId();
+        Queries.run(() -> repository.takeWaiting(owner), worker, mainThread)
                 .whenComplete((waiting, failure) -> {
-                    if (failure != null || waiting == null || !player.isOnline()) {
+                    if (failure != null || waiting == null) {
                         return;
                     }
                     find(waiting.snapshot()).whenComplete((snapshot, missing) -> {
-                        if (missing != null || snapshot == null || !player.isOnline()) {
+                        if (missing != null || snapshot == null) {
                             return;
                         }
-                        Set<Part> done = restore(player, snapshot, parts(waiting.parts()),
-                                waiting.actor());
-                        if (!done.isEmpty()) {
-                            told.accept(done, waiting.actor());
+                        Set<Part> parts = parts(waiting.parts());
+                        if (!player.isOnline()) {
+                            // Taken off the queue for somebody who has left again: it goes back on.
+                            queue(owner, snapshot.id(), parts, waiting.actor());
+                            return;
                         }
+                        schedulers.withEntity(player, () -> {
+                            Set<Part> done = restore(player, snapshot, parts, waiting.actor());
+                            if (!done.isEmpty()) {
+                                told.accept(done, waiting.actor());
+                            }
+                        });
                     });
                 });
     }

@@ -50,12 +50,12 @@ public record MenuSettings(boolean enabled, int rows, Material icon, @Nullable M
         return size() - 1;
     }
 
-    /** Only drawn on a screen that was opened from another one. */
     /** The free spot on the navigation row, for a screen with a control of its own. */
     public int controlSlot() {
         return size() - 3;
     }
 
+    /** Only drawn on a screen that was opened from another one. */
     public int backSlot() {
         return size() - 7;
     }

@@ -46,6 +46,9 @@ public final class InventoryMirror implements InventoryHolder {
     private final ItemStack filler;
     private final Inventory inventory;
 
+    /** Set by an edit until it has been written back, so a refresh in between cannot undo it. */
+    private volatile boolean edited;
+
     InventoryMirror(Server server, Player target, Kind kind, boolean editable,
                     Component title, Material fillerMaterial) {
         this.targetId = target.getUniqueId();
@@ -79,6 +82,9 @@ public final class InventoryMirror implements InventoryHolder {
 
     /** Copies the player's current contents into the window, leaving untouched slots alone. */
     public void refresh(Player target, Component infoName, List<Component> infoLore) {
+        if (edited) {
+            return;
+        }
         if (kind == Kind.ENDER_CHEST) {
             copyInto(target.getEnderChest().getContents(), kind.storageStart, 27);
         } else {
@@ -100,11 +106,16 @@ public final class InventoryMirror implements InventoryHolder {
         set(INFO, head(target, infoName, infoLore));
     }
 
+    public void markEdited() {
+        edited = true;
+    }
+
     /** Pushes whatever is in the window back onto the player. */
     public void writeBack(Player target) {
         if (!editable) {
             return;
         }
+        edited = false;
         if (kind == Kind.ENDER_CHEST) {
             Inventory ender = target.getEnderChest();
             for (int index = 0; index < 27; index++) {

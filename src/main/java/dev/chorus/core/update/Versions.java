@@ -1,5 +1,7 @@
 package dev.chorus.core.update;
 
+import dev.chorus.core.command.Numbers;
+
 /** Compares two version strings the way people read them. */
 public final class Versions {
 
@@ -62,13 +64,6 @@ public final class Versions {
 
     /** A part that is missing or not a number counts as zero. */
     private static int number(String[] parts, int index) {
-        if (index >= parts.length) {
-            return 0;
-        }
-        try {
-            return Integer.parseInt(parts[index]);
-        } catch (NumberFormatException notANumber) {
-            return 0;
-        }
+        return index < parts.length ? Numbers.integer(parts[index], 0) : 0;
     }
 }

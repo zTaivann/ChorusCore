@@ -71,7 +71,7 @@ public final class StaffModule implements ChorusModule {
     @Override
     public void enable() {
         config = plugin.configs().get(CONFIG);
-        vanish = new VanishService(plugin);
+        vanish = new VanishService(plugin, plugin.schedulers());
         freezes = new FreezeService(plugin, plugin.messages(), plugin.schedulers());
         flights = new TempFlyService(plugin.messages(), plugin.schedulers());
         lockdown = new LockdownService(plugin.messages());

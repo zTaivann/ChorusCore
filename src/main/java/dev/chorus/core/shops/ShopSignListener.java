@@ -1,5 +1,6 @@
 package dev.chorus.core.shops;
 
+import dev.chorus.core.block.Signs;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.locale.Messages;
@@ -177,10 +178,9 @@ public final class ShopSignListener implements Listener {
 
     /** Signs grew a back side in 1.20. The front is read, and the newer method is not on 1.18. */
     private static @Nullable ShopSign shopOn(Block block) {
-        if (!(block.getState() instanceof Sign sign)) {
-            return null;
-        }
-        return ShopSign.read(sign.line(0), sign.line(1), sign.line(2), sign.line(3));
+        Sign sign = Signs.at(block);
+        return sign == null ? null
+                : ShopSign.read(sign.line(0), sign.line(1), sign.line(2), sign.line(3));
     }
 
     private static @Nullable String header(Component line) {

@@ -1,5 +1,6 @@
 package dev.chorus.core.kits.rules;
 
+import dev.chorus.core.command.Numbers;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -71,10 +72,7 @@ final class Comparisons {
 
     /** A currency sign is dropped, since a balance placeholder often carries one. */
     private static @Nullable Double number(String raw) {
-        try {
-            return Double.valueOf(raw.replace(',', '.').replace("$", ""));
-        } catch (NumberFormatException notANumber) {
-            return null;
-        }
+        double value = Numbers.decimal(raw.replace(',', '.').replace("$", ""), Double.NaN);
+        return Double.isNaN(value) ? null : value;
     }
 }

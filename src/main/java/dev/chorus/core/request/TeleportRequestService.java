@@ -13,13 +13,14 @@ import java.util.function.Predicate;
 
 /**
  * The open /tpa requests, kept per target and in the order they arrived so that a bare
- * /tpaccept answers the most recent one.
+ * /tpaccept answers the most recent one. Locked throughout, since a sender, a target and the
+ * expiry sweep may each be on another thread.
  */
 public final class TeleportRequestService {
 
     private final Map<UUID, LinkedHashMap<UUID, TeleportRequest>> byTarget = new HashMap<>();
 
-    private int timeoutSeconds;
+    private volatile int timeoutSeconds;
 
     TeleportRequestService(int timeoutSeconds) {
         this.timeoutSeconds = timeoutSeconds;
@@ -34,7 +35,7 @@ public final class TeleportRequestService {
     }
 
     /** @return false when the sender already has a request waiting for that target. */
-    public boolean add(TeleportRequest request) {
+    public synchronized boolean add(TeleportRequest request) {
         LinkedHashMap<UUID, TeleportRequest> waiting =
                 byTarget.computeIfAbsent(request.target(), target -> new LinkedHashMap<>());
         if (waiting.containsKey(request.sender())) {
@@ -44,12 +45,12 @@ public final class TeleportRequestService {
         return true;
     }
 
-    public List<TeleportRequest> incoming(UUID target) {
+    public synchronized List<TeleportRequest> incoming(UUID target) {
         LinkedHashMap<UUID, TeleportRequest> waiting = byTarget.get(target);
         return waiting == null ? List.of() : List.copyOf(waiting.values());
     }
 
-    public @Nullable TeleportRequest removeLatest(UUID target) {
+    public synchronized @Nullable TeleportRequest removeLatest(UUID target) {
         LinkedHashMap<UUID, TeleportRequest> waiting = byTarget.get(target);
         if (waiting == null || waiting.isEmpty()) {
             return null;
@@ -62,7 +63,7 @@ public final class TeleportRequestService {
         return remove(target, newest);
     }
 
-    public @Nullable TeleportRequest remove(UUID target, UUID sender) {
+    public synchronized @Nullable TeleportRequest remove(UUID target, UUID sender) {
         LinkedHashMap<UUID, TeleportRequest> waiting = byTarget.get(target);
         if (waiting == null) {
             return null;
@@ -74,7 +75,7 @@ public final class TeleportRequestService {
         return removed;
     }
 
-    public List<TeleportRequest> removeAllSentBy(UUID sender) {
+    public synchronized List<TeleportRequest> removeAllSentBy(UUID sender) {
         List<TeleportRequest> removed = new ArrayList<>();
         prune(request -> {
             if (!request.sender().equals(sender)) {
@@ -87,12 +88,12 @@ public final class TeleportRequestService {
     }
 
     /** Everything involving this player, in either direction. Used when they disconnect. */
-    public void forget(UUID playerId) {
+    public synchronized void forget(UUID playerId) {
         byTarget.remove(playerId);
         prune(request -> request.sender().equals(playerId));
     }
 
-    public List<TeleportRequest> removeExpired(long now) {
+    public synchronized List<TeleportRequest> removeExpired(long now) {
         List<TeleportRequest> expired = new ArrayList<>();
         prune(request -> {
             if (!request.hasExpired(now)) {
@@ -104,11 +105,11 @@ public final class TeleportRequestService {
         return expired;
     }
 
-    public boolean isEmpty() {
+    public synchronized boolean isEmpty() {
         return byTarget.isEmpty();
     }
 
-    void clear() {
+    synchronized void clear() {
         byTarget.clear();
     }
 

@@ -4,7 +4,6 @@ import dev.chorus.core.platform.Schedulers;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
@@ -13,11 +12,10 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** The item turning slowly above a shop, so you can see what it sells without reading the sign. */
 public final class ChestShopDisplays {
@@ -31,7 +29,7 @@ public final class ChestShopDisplays {
     private final Schedulers schedulers;
 
     /** Where each one is as well as which one it is, since removing it needs both. */
-    private final Map<String, Shown> shown = new HashMap<>();
+    private final Map<String, Shown> shown = new ConcurrentHashMap<>();
 
     private volatile boolean enabled = true;
 
@@ -57,9 +55,9 @@ public final class ChestShopDisplays {
         }
     }
 
-    /** True for the floating item of a shop, and nothing else. */
+    /** True for the floating item of a shop. Gravity first: nearly no other item has it off. */
     public boolean isDisplay(Entity entity) {
-        return entity instanceof Item && entity.hasMetadata(MARKER);
+        return entity instanceof Item item && !item.hasGravity() && item.hasMetadata(MARKER);
     }
 
     /** Puts one above a shop, replacing whatever was there. */
@@ -69,7 +67,7 @@ public final class ChestShopDisplays {
         }
         Location where = displayPoint(shop);
         ItemStack template = shop.template();
-        if (where == null || template == null || !where.getChunk().isLoaded()) {
+        if (where == null || template == null || !isLoaded(where)) {
             return;
         }
 
@@ -79,7 +77,7 @@ public final class ChestShopDisplays {
     }
 
     private void spawn(String key, Location where, ItemStack template) {
-        if (!enabled || !where.getChunk().isLoaded()) {
+        if (!enabled || !isLoaded(where)) {
             return;
         }
         sweepStrays(where);
@@ -124,20 +122,20 @@ public final class ChestShopDisplays {
         if (!enabled) {
             return;
         }
-        for (ChestShop shop : shopsIn(chunk)) {
+        for (ChestShop shop : in(chunk)) {
             show(shop);
         }
     }
 
     /** The server takes the entities with the chunk, so only the record has to go. */
     public void forgetIn(Chunk chunk) {
-        for (ChestShop shop : shopsIn(chunk)) {
+        for (ChestShop shop : in(chunk)) {
             shown.remove(shop.key());
         }
     }
 
     public void showEverything() {
-        if (!enabled) {
+        if (!enabled || shops.isEmpty()) {
             return;
         }
         for (World world : plugin.getServer().getWorlds()) {
@@ -149,8 +147,9 @@ public final class ChestShopDisplays {
 
     /** Takes them all away, for when the setting is switched off while the server is up. */
     public void clear() {
-        List.copyOf(shown.values()).forEach(this::remove);
-        shown.clear();
+        for (String key : List.copyOf(shown.keySet())) {
+            hide(key);
+        }
     }
 
     /** Forgets them without removing them, for shutdown. */
@@ -158,40 +157,30 @@ public final class ChestShopDisplays {
         shown.clear();
     }
 
+    /** Every shop standing in a chunk, for whoever has to walk them all. */
+    public List<ChestShop> in(Chunk chunk) {
+        if (shops.isEmpty()) {
+            return List.of();
+        }
+        return shops.in(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
+    }
+
     /** Anything left over from a reload that did not shut down cleanly. */
     private void sweepStrays(Location where) {
         for (Entity entity : where.getWorld().getNearbyEntities(where, 0.6, 0.6, 0.6)) {
-            if (entity instanceof Item && entity.hasMetadata(MARKER)) {
+            if (isDisplay(entity)) {
                 entity.remove();
             }
         }
     }
 
-    /** Every shop standing in a chunk, for whoever has to walk them all. */
-    public List<ChestShop> in(Chunk chunk) {
-        return shopsIn(chunk);
-    }
-
-    private List<ChestShop> shopsIn(Chunk chunk) {
-        List<ChestShop> found = new ArrayList<>();
-        String world = chunk.getWorld().getName();
-
-        for (ChestShop shop : shops.all()) {
-            if (shop.world().equals(world)
-                    && shop.x() >> 4 == chunk.getX()
-                    && shop.z() >> 4 == chunk.getZ()) {
-                found.add(shop);
-            }
-        }
-        return found;
-    }
-
+    /** Worked out from the numbers, so looking at an unloaded shop never loads its chunk. */
     private static @Nullable Location displayPoint(ChestShop shop) {
         Location where = shop.location();
-        if (where == null) {
-            return null;
-        }
-        Block block = where.getBlock();
-        return block.getLocation().add(0.5, HEIGHT, 0.5);
+        return where == null ? null : where.add(0.5, HEIGHT, 0.5);
+    }
+
+    private static boolean isLoaded(Location where) {
+        return where.getWorld().isChunkLoaded(where.getBlockX() >> 4, where.getBlockZ() >> 4);
     }
 }

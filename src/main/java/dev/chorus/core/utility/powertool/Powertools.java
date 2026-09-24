@@ -1,5 +1,7 @@
 package dev.chorus.core.utility.powertool;
 
+import dev.chorus.core.storage.LoginData;
+import dev.chorus.core.storage.Queries;
 import org.bukkit.Material;
 
 import java.sql.SQLException;
@@ -15,7 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** The commands players have tied to the items they are holding. */
-public final class Powertools {
+public final class Powertools implements LoginData.Part {
 
     /** Enough for a wand that does several things, few enough that a typo cannot run twenty. */
     public static final int MAX_COMMANDS = 5;
@@ -32,10 +34,11 @@ public final class Powertools {
         this.logger = logger;
     }
 
-    /** Blocking. Called from the login thread before the player is let in. */
+    @Override
     public void load(UUID player) throws SQLException {
         Map<Material, List<String>> bound = new HashMap<>();
-        for (Map.Entry<String, List<String>> row : repository.findAll(player).entrySet()) {
+        Map<String, List<String>> rows = Queries.await(() -> repository.findAll(player), worker);
+        for (Map.Entry<String, List<String>> row : rows.entrySet()) {
             Material material = Material.matchMaterial(row.getKey());
             if (material != null) {
                 bound.put(material, row.getValue());
@@ -44,6 +47,7 @@ public final class Powertools {
         cache.put(player, bound);
     }
 
+    @Override
     public void unload(UUID player) {
         cache.remove(player);
     }

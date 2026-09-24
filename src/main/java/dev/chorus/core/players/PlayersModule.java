@@ -61,7 +61,7 @@ public final class PlayersModule implements ChorusModule {
         config = plugin.configs().get(CONFIG);
         afk = new AfkService(plugin, plugin.messages(), plugin.schedulers(),
                 PlayerSettings.read(config.section("players")));
-        geo = new GeoLookup(plugin.worker());
+        geo = new GeoLookup();
         geo.apply(config.section("players"));
         plugin.register(afk);
         afk.start();

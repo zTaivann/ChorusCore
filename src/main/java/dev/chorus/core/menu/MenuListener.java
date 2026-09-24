@@ -12,7 +12,7 @@ public final class MenuListener implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        InventoryHolder holder = event.getView().getTopInventory().getHolder();
+        InventoryHolder holder = event.getView().getTopInventory().getHolder(false);
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
@@ -41,7 +41,7 @@ public final class MenuListener implements Listener {
 
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
-        InventoryHolder holder = event.getView().getTopInventory().getHolder();
+        InventoryHolder holder = event.getView().getTopInventory().getHolder(false);
         if (holder instanceof Menu || holder instanceof PaletteMenu) {
             event.setCancelled(true);
         }
@@ -50,7 +50,7 @@ public final class MenuListener implements Listener {
     /** A palette keeps whatever was left on it. */
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
-        if (event.getView().getTopInventory().getHolder() instanceof PaletteMenu palette
+        if (event.getView().getTopInventory().getHolder(false) instanceof PaletteMenu palette
                 && event.getPlayer() instanceof Player player) {
             palette.closed(player);
         }

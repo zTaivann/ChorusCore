@@ -21,15 +21,16 @@ import dev.chorus.core.command.Cooldowns;
 import dev.chorus.core.command.DisabledCommand;
 import dev.chorus.core.command.HelpCommand;
 import dev.chorus.core.command.RootCommand;
+import dev.chorus.core.config.ConfigCheck;
 import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.config.ConfigFiles;
+import dev.chorus.core.config.ConfigProblem;
 import dev.chorus.core.custom.CustomCommandsModule;
 import dev.chorus.core.economy.Balances;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.economy.EconomyModule;
 import dev.chorus.core.economy.EconomySetup;
 import dev.chorus.core.economy.NoEconomy;
-import dev.chorus.core.flags.PlayerFlagListener;
 import dev.chorus.core.flags.PlayerFlagService;
 import dev.chorus.core.flags.SqlPlayerFlagRepository;
 import dev.chorus.core.home.HomeModule;
@@ -39,6 +40,7 @@ import dev.chorus.core.locale.Messages;
 import dev.chorus.core.menu.ChatPrompts;
 import dev.chorus.core.menu.MenuListener;
 import dev.chorus.core.papi.ChorusExpansion;
+import dev.chorus.core.papi.PlaceholderValues;
 import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.players.PlayerProfileListener;
 import dev.chorus.core.players.PlayerProfiles;
@@ -48,6 +50,8 @@ import dev.chorus.core.request.TeleportRequestModule;
 import dev.chorus.core.shops.ShopsModule;
 import dev.chorus.core.spawn.SpawnModule;
 import dev.chorus.core.staff.StaffModule;
+import dev.chorus.core.storage.LoginData;
+import dev.chorus.core.storage.Queries;
 import dev.chorus.core.storage.SqlStorage;
 import dev.chorus.core.storage.Storage;
 import dev.chorus.core.storage.StorageOptions;
@@ -79,9 +83,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 public final class ChorusPlugin extends JavaPlugin {
@@ -105,6 +107,7 @@ public final class ChorusPlugin extends JavaPlugin {
     private ConfigFiles configs;
     private Schedulers schedulers;
     private Executor mainThread;
+    private LoginData loginData;
     private ExecutorService worker;
     private Messages messages;
     private EconomySetup economySetup;
@@ -119,6 +122,7 @@ public final class ChorusPlugin extends JavaPlugin {
     private CommandSupport support;
     private ChorusServices services;
     private UpdateCheck updates;
+    private PlaceholderValues placeholders;
     private Metrics metrics;
 
     @Override
@@ -136,12 +140,9 @@ public final class ChorusPlugin extends JavaPlugin {
             return;
         }
 
-        mainThread = task -> {
-            if (isEnabled()) {
-                schedulers.global(task);
-            }
-        };
-        worker = Executors.newFixedThreadPool(2, storageThreadFactory());
+        mainThread = schedulers::global;
+        // One thread, so every write reaches the database in the order it was made.
+        worker = Executors.newSingleThreadExecutor(Queries.storageThreads());
         messages = Messages.load(this, configs);
         messages.apply(core.section("language"));
 
@@ -170,13 +171,15 @@ public final class ChorusPlugin extends JavaPlugin {
             return;
         }
         flags = new PlayerFlagService(flagStore, worker, getLogger());
-        register(new PlayerFlagListener(flags, messages, getLogger()));
+        loginData = new LoginData(messages, getLogger());
+        loginData.add("settings", flags, true);
+        register(loginData);
 
         SqlPlayerProfileRepository profileStore = new SqlPlayerProfileRepository(storage);
         if (!open(profileStore::createTables, "player")) {
             return;
         }
-        profiles = new PlayerProfiles(profileStore, worker, mainThread, getLogger());
+        profiles = new PlayerProfiles(profileStore, worker, mainThread, schedulers, getLogger());
         register(new PlayerProfileListener(profiles));
 
         SqlAuditRepository auditStore = new SqlAuditRepository(storage);
@@ -191,18 +194,18 @@ public final class ChorusPlugin extends JavaPlugin {
         if (!open(backupStore::createTables, "inventory backup")) {
             return;
         }
-        backups = new InventoryBackups(backupStore, worker, mainThread, getLogger());
+        backups = new InventoryBackups(backupStore, worker, mainThread, schedulers, getLogger());
         backups.prune();
         register(new BackupListener(backups, messages));
 
-        teleports = new TeleportService(this, messages, mainThread, schedulers,
+        teleports = new TeleportService(this, messages, schedulers,
                 TeleportSettings.read(configs.get(TELEPORT_CONFIG).section("teleport")));
         register(teleports);
         register(new MenuListener());
-        prompts = new ChatPrompts(this, messages, mainThread, schedulers);
+        prompts = new ChatPrompts(this, messages, schedulers);
         register(prompts);
         prompts.start();
-        updates = new UpdateCheck(this, messages, schedulers, worker);
+        updates = new UpdateCheck(this, messages, schedulers);
         updates.apply(core.section("updates"));
         register(updates);
 
@@ -235,6 +238,7 @@ public final class ChorusPlugin extends JavaPlugin {
 
         getServer().getServicesManager().register(ChorusApi.class, services, this, ServicePriority.Normal);
         hookPlaceholders(staff, players);
+        loginData.loadOnline(getServer().getOnlinePlayers(), worker);
 
         CommandOverrides overrides = new CommandOverrides(
                 CommandAliases.apply(this, configs.get("aliases.yml"), commandNames(), switchedOff));
@@ -246,7 +250,40 @@ public final class ChorusPlugin extends JavaPlugin {
 
         updates.start();
         startMetrics(core);
+        checkConfig();
         announce(core, System.currentTimeMillis() - started);
+    }
+
+    /**
+     * What in the config will not work, said once at startup.
+     *
+     * <p>Worlds are left out here: a world another plugin makes has not been made yet.
+     * {@code /chorus check} runs the same check with them included.
+     */
+    private void checkConfig() {
+        List<ConfigProblem> problems = ConfigCheck.run(this, getServer(), optionFiles(), false);
+        if (problems.isEmpty()) {
+            return;
+        }
+        getLogger().warning(problems.size() + " problem"
+                + (problems.size() == 1 ? "" : "s") + " in the configuration:");
+        int number = 1;
+        for (ConfigProblem problem : problems) {
+            getLogger().warning("  " + number++ + ". " + problem.describe());
+        }
+    }
+
+    /** The files that hold options, which are the ones a typo can break. */
+    public List<String> optionFiles() {
+        return configs.paths().stream()
+                .filter(path -> path.equals("config.yml") || path.equals("aliases.yml")
+                        || path.startsWith("modules/"))
+                .sorted()
+                .toList();
+    }
+
+    public PlaceholderValues placeholders() {
+        return placeholders;
     }
 
     /** The console at the end of a start that worked, so it can say what was found. */
@@ -266,8 +303,8 @@ public final class ChorusPlugin extends JavaPlugin {
         } else {
             console.connected("Economy", economy().status());
         }
-        if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            console.connected("Placeholders", "PlaceholderAPI");
+        if (getServer().getPluginManager().isPluginEnabled(PlaceholderValues.PLUGIN)) {
+            console.connected("Placeholders", PlaceholderValues.PLUGIN);
         } else {
             console.absent("Placeholders", "PlaceholderAPI not installed");
         }
@@ -316,6 +353,9 @@ public final class ChorusPlugin extends JavaPlugin {
         if (prompts != null) {
             prompts.shutdown();
         }
+        if (loginData != null) {
+            loginData.clear();
+        }
         if (flags != null) {
             flags.clearAll();
         }
@@ -356,6 +396,7 @@ public final class ChorusPlugin extends JavaPlugin {
             return false;
         }
         configs.get(found.configPath()).reload();
+        configs.reload(Messages::owns);
         messages.reload();
         found.reload();
         return true;
@@ -367,6 +408,10 @@ public final class ChorusPlugin extends JavaPlugin {
 
     public ConfigFiles configs() {
         return configs;
+    }
+
+    public LoginData loginData() {
+        return loginData;
     }
 
     public Messages messages() {
@@ -540,11 +585,12 @@ public final class ChorusPlugin extends JavaPlugin {
     }
 
     private void hookPlaceholders(StaffModule staff, PlayersModule players) {
-        if (!getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+        placeholders = new PlaceholderValues(services, players.afk(), staff.vanish());
+        if (!getServer().getPluginManager().isPluginEnabled(PlaceholderValues.PLUGIN)) {
             return;
         }
         try {
-            new ChorusExpansion(services, players.afk(), staff.vanish()).register();
+            new ChorusExpansion(services, placeholders).register();
             getLogger().info("Registered the %chorus_...% placeholders with PlaceholderAPI.");
         } catch (LinkageError | RuntimeException exception) {
             getLogger().log(Level.WARNING, "PlaceholderAPI is installed but the expansion "
@@ -577,14 +623,6 @@ public final class ChorusPlugin extends JavaPlugin {
         }
     }
 
-    private static ThreadFactory storageThreadFactory() {
-        AtomicInteger counter = new AtomicInteger();
-        return task -> {
-            Thread thread = new Thread(task, "chorus-storage-" + counter.incrementAndGet());
-            thread.setDaemon(true);
-            return thread;
-        };
-    }
 
     /** A command and the module that owns it, which is what /commands groups by. */
     public record Registered(String module, ChorusCommand command) {

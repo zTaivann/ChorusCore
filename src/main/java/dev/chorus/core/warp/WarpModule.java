@@ -103,10 +103,6 @@ public final class WarpModule implements ChorusModule {
     }
 
     @Override
-    public void disable() {
-    }
-
-    @Override
     public void reload() {
         if (warps == null) {
             return;

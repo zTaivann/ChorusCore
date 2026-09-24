@@ -22,13 +22,12 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /** Delayed teleports shared by every module that moves a player around. */
 public final class TeleportService implements TeleportApi, Listener {
@@ -40,19 +39,17 @@ public final class TeleportService implements TeleportApi, Listener {
 
     private final Plugin plugin;
     private final Messages messages;
-    private final Executor mainThread;
     private final Schedulers schedulers;
-    private final Map<UUID, Pending> pending = new HashMap<>();
-    private final Map<UUID, Deque<Location>> history = new HashMap<>();
-    private final Map<UUID, Long> protectedUntil = new HashMap<>();
+    private final Map<UUID, Pending> pending = new ConcurrentHashMap<>();
+    private final Map<UUID, Deque<Location>> history = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> protectedUntil = new ConcurrentHashMap<>();
 
     private volatile TeleportSettings settings;
 
-    public TeleportService(Plugin plugin, Messages messages, Executor mainThread,
-                           Schedulers schedulers, TeleportSettings settings) {
+    public TeleportService(Plugin plugin, Messages messages, Schedulers schedulers,
+                           TeleportSettings settings) {
         this.plugin = plugin;
         this.messages = messages;
-        this.mainThread = mainThread;
         this.schedulers = schedulers;
         this.settings = settings;
     }
@@ -90,6 +87,12 @@ public final class TeleportService implements TeleportApi, Listener {
 
     public void teleport(Player player, Location destination, CommandRules rules, String cause,
                          Landing landing, Runnable arrived) {
+        schedulers.withEntity(player, () -> begin(player, destination, rules, cause, landing, arrived));
+    }
+
+    /** On the player's own thread, wherever the teleport was asked for. */
+    private void begin(Player player, Location destination, CommandRules rules, String cause,
+                       Landing landing, Runnable arrived) {
         // Addons get their say before anything is charged or any wait begins.
         ChorusTeleportEvent event = new ChorusTeleportEvent(player, destination, cause);
         plugin.getServer().getPluginManager().callEvent(event);
@@ -224,11 +227,7 @@ public final class TeleportService implements TeleportApi, Listener {
         protectedUntil.remove(playerId);
     }
 
-    /**
-     * Checks the ground before committing, on the chunk the player is headed for rather than
-     * the one they are standing in. The chunk is fetched asynchronously: reading blocks in an
-     * unloaded chunk from the server thread would stall every player to answer one.
-     */
+    /** Checks the ground at the destination once it has loaded, on the region that owns it. */
     private void move(Player player, Location destination, CommandRules rules, Landing landing,
                       Runnable arrived) {
         // Creative and spectator: no fall to take and no wall to suffocate in.
@@ -243,18 +242,26 @@ public final class TeleportService implements TeleportApi, Listener {
         // Flying in survival: the room is checked, the ground is not.
         boolean needsFloor = !player.getAllowFlight();
 
-        destination.getWorld().getChunkAtAsync(destination).thenAcceptAsync(loaded -> {
-            if (!player.isOnline()) {
+        destination.getWorld().getChunkAtAsync(destination).whenComplete((loaded, failure) -> {
+            if (failure != null) {
+                messages.send(player, "teleport.failed");
                 return;
             }
-            Location safe = SafeLanding.nearest(
-                    destination, settings.safeLandingRadius(), needsFloor);
-            if (safe == null) {
-                messages.send(player, "teleport.unsafe");
-                return;
-            }
-            commit(player, safe, rules, arrived);
-        }, mainThread);
+            schedulers.region(destination, () -> {
+                Location safe = SafeLanding.nearest(
+                        destination, settings.safeLandingRadius(), needsFloor);
+                schedulers.withEntity(player, () -> {
+                    if (!player.isOnline()) {
+                        return;
+                    }
+                    if (safe == null) {
+                        messages.send(player, "teleport.unsafe");
+                        return;
+                    }
+                    commit(player, safe, rules, arrived);
+                });
+            });
+        });
     }
 
     private void commit(Player player, Location destination, CommandRules rules, Runnable arrived) {
@@ -265,14 +272,15 @@ public final class TeleportService implements TeleportApi, Listener {
         // The puff they leave behind. Arrival rides with the command's own feedback.
         rules.feedback().showAt(origin);
 
-        player.teleportAsync(destination).thenAcceptAsync(moved -> {
-            if (moved) {
-                protect(player);
-                arrived.run();
-            } else {
-                messages.send(player, "teleport.failed");
-            }
-        }, mainThread);
+        player.teleportAsync(destination).whenComplete((moved, failure) ->
+                schedulers.withEntity(player, () -> {
+                    if (Boolean.TRUE.equals(moved)) {
+                        protect(player);
+                        arrived.run();
+                    } else {
+                        messages.send(player, "teleport.failed");
+                    }
+                }));
     }
 
     /** A few seconds of not being hittable on arrival. */
@@ -319,7 +327,7 @@ public final class TeleportService implements TeleportApi, Listener {
 
     /** Newest first, and only as deep as the config allows. */
     private void remember(UUID playerId, Location place) {
-        Deque<Location> places = history.computeIfAbsent(playerId, key -> new ArrayDeque<>());
+        Deque<Location> places = history.computeIfAbsent(playerId, key -> new ConcurrentLinkedDeque<>());
         places.addFirst(place);
         while (places.size() > settings.historySize()) {
             places.pollLast();

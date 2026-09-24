@@ -1,10 +1,11 @@
 package dev.chorus.core.kits.rules;
 
+import dev.chorus.core.command.Numbers;
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.platform.Schedulers;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,13 +55,15 @@ public record KitAction(Kind kind, String argument) {
         return null;
     }
 
-    public static void runAll(List<KitAction> actions, Player player, Messages messages, String kit) {
+    /** On the player's thread. A console line goes on to the global one. */
+    public static void runAll(List<KitAction> actions, Player player, Messages messages, String kit,
+                              Schedulers schedulers) {
         for (KitAction action : actions) {
-            action.run(player, messages, kit);
+            action.run(player, messages, kit, schedulers);
         }
     }
 
-    public void run(Player player, Messages messages, String kit) {
+    public void run(Player player, Messages messages, String kit, Schedulers schedulers) {
         String filled = Placeholders.fill(player, argument.replace("%kit%", kit));
         switch (kind) {
             case MESSAGE -> player.sendMessage(messages.parse(filled));
@@ -68,7 +71,8 @@ public record KitAction(Kind kind, String argument) {
             case ACTIONBAR -> player.sendActionBar(messages.parse(filled));
             case TITLE -> player.showTitle(title(messages, filled));
             case SOUND -> playSound(player, filled);
-            case CONSOLE -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), filled);
+            case CONSOLE -> schedulers.withGlobal(
+                    () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), filled));
             case PLAYER -> player.performCommand(filled);
             case CLOSE -> player.closeInventory();
         }
@@ -97,10 +101,6 @@ public record KitAction(Kind kind, String argument) {
     }
 
     private static float number(String raw, float fallback) {
-        try {
-            return Float.parseFloat(raw.replace(',', '.'));
-        } catch (NumberFormatException notANumber) {
-            return fallback;
-        }
+        return (float) Numbers.decimal(raw.replace(',', '.'), fallback);
     }
 }

@@ -19,7 +19,7 @@ libraries:
 commands:
   chorus:
     description: Core administration.
-    usage: /chorus [reload|status]
+    usage: /chorus [reload|status|check|permissions|placeholders]
   home:
     description: Teleport to one of your homes.
     usage: /home [name]

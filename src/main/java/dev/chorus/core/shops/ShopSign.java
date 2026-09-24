@@ -1,5 +1,6 @@
 package dev.chorus.core.shops;
 
+import dev.chorus.core.command.Numbers;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
@@ -63,21 +64,12 @@ public record ShopSign(boolean buying, int amount, Material material, double pri
     }
 
     private static int amount(String raw) {
-        try {
-            int value = Integer.parseInt(raw);
-            return value <= 0 ? -1 : Math.min(MAX_AMOUNT, value);
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        int value = Numbers.integer(raw, -1);
+        return value <= 0 ? -1 : Math.min(MAX_AMOUNT, value);
     }
 
     private static double price(String raw) {
-        try {
-            double value = Double.parseDouble(raw.replace(',', '.').replace("$", ""));
-            return Double.isFinite(value) && value >= 0 ? value : -1;
-        } catch (NumberFormatException notANumber) {
-            return -1;
-        }
+        return Numbers.money(raw);
     }
 
     private static String plain(Component line) {

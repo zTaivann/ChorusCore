@@ -1,21 +1,22 @@
 package dev.chorus.core.warp;
 
+import dev.chorus.core.block.Signs;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.locale.Messages;
 import dev.chorus.core.location.NamedLocation;
 import dev.chorus.core.location.Names;
-import dev.chorus.core.locale.Messages;
 import dev.chorus.core.teleport.TeleportService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -124,10 +125,8 @@ public final class WarpSignListener implements org.bukkit.event.Listener {
 
     /** Signs grew a back side in 1.20. The front is read, and the newer method is not on 1.18. */
     private @Nullable String warpOn(Block block) {
-        if (!(block.getState() instanceof Sign sign)) {
-            return null;
-        }
-        if (!plain(sign.line(0)).equalsIgnoreCase(HEADER)) {
+        Sign sign = Signs.at(block);
+        if (sign == null || !plain(sign.line(0)).equalsIgnoreCase(HEADER)) {
             return null;
         }
         String warp = Names.normalise(plain(sign.line(1)));

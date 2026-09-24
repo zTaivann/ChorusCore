@@ -9,9 +9,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Flight that runs out. */
 public final class TempFlyService implements Listener {
@@ -21,7 +21,7 @@ public final class TempFlyService implements Listener {
 
     private final Schedulers schedulers;
     private final Messages messages;
-    private final Map<UUID, Grant> grants = new HashMap<>();
+    private final Map<UUID, Grant> grants = new ConcurrentHashMap<>();
 
     TempFlyService(Messages messages, Schedulers schedulers) {
         this.messages = messages;

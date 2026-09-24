@@ -19,6 +19,7 @@ public final class SqlMailRepository implements MailRepository {
             "INSERT INTO chorus_mail (recipient, sender, body, sent_at, seen) VALUES (?, ?, ?, ?, 0)";
     private static final String SELECT_INBOX =
             "SELECT * FROM chorus_mail WHERE recipient = ? ORDER BY sent_at DESC";
+    private static final String COUNT_ALL = "SELECT COUNT(*) FROM chorus_mail WHERE recipient = ?";
     private static final String COUNT_UNREAD =
             "SELECT COUNT(*) FROM chorus_mail WHERE recipient = ? AND seen = 0";
     private static final String MARK_READ =
@@ -70,9 +71,18 @@ public final class SqlMailRepository implements MailRepository {
     }
 
     @Override
+    public int count(UUID recipient) throws SQLException {
+        return count(COUNT_ALL, recipient);
+    }
+
+    @Override
     public int unread(UUID recipient) throws SQLException {
+        return count(COUNT_UNREAD, recipient);
+    }
+
+    private int count(String query, UUID recipient) throws SQLException {
         try (Connection connection = storage.connection();
-             PreparedStatement statement = connection.prepareStatement(COUNT_UNREAD)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, recipient.toString());
             try (ResultSet rows = statement.executeQuery()) {
                 return rows.next() ? rows.getInt(1) : 0;

@@ -18,13 +18,12 @@ import dev.chorus.core.mail.SqlMailRepository;
 import dev.chorus.core.mail.command.MailCommand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public final class ChatModule implements ChorusModule, Listener {
 
@@ -95,19 +94,8 @@ public final class ChatModule implements ChorusModule, Listener {
     }
 
     @EventHandler
-    public void onPreLogin(AsyncPlayerPreLoginEvent event) {
-        try {
-            ignores.load(event.getUniqueId());
-        } catch (SQLException exception) {
-            plugin.getLogger().log(Level.WARNING,
-                    "Could not load the ignore list of " + event.getName(), exception);
-        }
-    }
-
-    @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         chat.forget(event.getPlayer().getUniqueId());
-        ignores.unload(event.getPlayer().getUniqueId());
     }
 
     @Override

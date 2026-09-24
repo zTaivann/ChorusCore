@@ -12,8 +12,8 @@ import dev.chorus.core.shops.chest.ChestShopSettings;
 import dev.chorus.core.shops.chest.ChestShops;
 import dev.chorus.core.shops.chest.SqlChestShopRepository;
 import dev.chorus.core.shops.command.SellCommand;
-import dev.chorus.core.shops.command.ShopCommand;
 import dev.chorus.core.shops.command.SetWorthCommand;
+import dev.chorus.core.shops.command.ShopCommand;
 import dev.chorus.core.shops.command.WorthCommand;
 
 import java.sql.SQLException;

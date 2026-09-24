@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,12 +26,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /** Reads the messages folder and hands out ready-to-send components. */
 public final class Messages implements MessageApi {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
+    private static final Pattern NEWLINE = Pattern.compile("<newline>", Pattern.LITERAL);
 
     /**
      * Placeholders are written {@code %name%} in the file and become {@code <chorus_name>}
@@ -66,16 +68,16 @@ public final class Messages implements MessageApi {
     private final @Nullable ConfigFiles configs;
     private final @Nullable Messages source;
 
-    private final Set<String> alreadyReported = new HashSet<>();
+    private final Set<String> alreadyReported = ConcurrentHashMap.newKeySet();
 
     /** Every translation found on disk, by its language code. */
-    private final Map<String, Translations> languages = new HashMap<>();
+    private volatile Map<String, Translations> languages = Map.of();
 
     /** Lines one command was given instead of the ones in the files, already made ready. */
     private volatile Map<String, String> overrides = Map.of();
 
     private volatile Palette palette = Palette.EMPTY;
-    private Translations english = new Translations(null, Palette.EMPTY);
+    private volatile Translations english = new Translations(null, Palette.EMPTY);
 
     /** What the console and anybody with no language of their own gets. */
     private volatile Translations standard = english;
@@ -86,6 +88,11 @@ public final class Messages implements MessageApi {
         this.plugin = plugin;
         this.configs = configs;
         this.source = source;
+    }
+
+    /** Whether a config file is one of the message files or the palette. */
+    public static boolean owns(String path) {
+        return path.equals(PALETTE) || path.startsWith(FOLDER + "/");
     }
 
     public static Messages load(Plugin plugin, ConfigFiles configs) {
@@ -114,19 +121,22 @@ public final class Messages implements MessageApi {
     /** Re-reads the already reloaded files. Reloading the files themselves is the caller's job. */
     public void reload() {
         alreadyReported.clear();
-        languages.clear();
         palette = Palette.read(configs().get(PALETTE).data(), loop -> logger().warning(
                 "The colour " + loop + " in " + PALETTE + " stands for itself"));
         writeOutShipped();
 
-        english = new Translations(null, palette);
+        // Built aside and swapped in whole, so a line sent mid-reload reads one set or the other.
+        Translations built = new Translations(null, palette);
         String shared = palette.apply(sharedPrefix());
-        english.prefix(shared);
-        readInto(english, FOLDER, shared);
-        readLegacyInto(english, shared);
-        readTranslations(shared);
+        built.prefix(shared);
+        readInto(built, FOLDER, shared);
+        readLegacyInto(built, shared);
+        Map<String, Translations> translated = new HashMap<>();
+        readTranslations(built, translated, shared);
 
-        standard = english;
+        english = built;
+        languages = Map.copyOf(translated);
+        standard = built;
     }
 
     /** Which language everybody gets, and whether players get their own instead. */
@@ -260,7 +270,7 @@ public final class Messages implements MessageApi {
 
     private static List<Component> fillLines(String template, TagResolver extra,
                                              String... placeholders) {
-        String[] parts = template.split("<newline>", -1);
+        String[] parts = NEWLINE.split(template, -1);
         List<Component> lines = new ArrayList<>(parts.length);
         for (String part : parts) {
             lines.add(fill(part, extra, placeholders));
@@ -396,11 +406,13 @@ public final class Messages implements MessageApi {
     }
 
     /** Every folder inside the messages folder, one per language. */
-    private void readTranslations(String shared) {
+    private void readTranslations(Translations english, Map<String, Translations> into,
+                                  String shared) {
         File[] inside = new File(plugin().getDataFolder(), FOLDER).listFiles(File::isDirectory);
         if (inside != null) {
             for (File folder : inside) {
-                Translations language = language(folder.getName().toLowerCase(Locale.ROOT));
+                Translations language =
+                        language(into, english, folder.getName().toLowerCase(Locale.ROOT));
                 List<String> names = found(folder);
                 String own = firstPrefix(folder, names);
                 if (!own.isEmpty()) {
@@ -423,7 +435,7 @@ public final class Messages implements MessageApi {
                 continue;
             }
             YamlConfiguration data = YamlConfiguration.loadConfiguration(file);
-            Translations language = language(code);
+            Translations language = language(into, english, code);
             String prefix = prefixIn(data);
             if (!prefix.isEmpty()) {
                 language.prefix(prefix);
@@ -434,8 +446,9 @@ public final class Messages implements MessageApi {
         }
     }
 
-    private Translations language(String code) {
-        return languages.computeIfAbsent(code, any -> new Translations(english, palette));
+    private Translations language(Map<String, Translations> into, Translations english,
+                                  String code) {
+        return into.computeIfAbsent(code, any -> new Translations(english, palette));
     }
 
     /** A translation's own prefix, which is then the one the rest of its files use. */
