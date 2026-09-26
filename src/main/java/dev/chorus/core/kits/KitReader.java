@@ -1,9 +1,9 @@
 package dev.chorus.core.kits;
 
 import dev.chorus.core.items.Enchantments;
-import dev.chorus.core.kits.rules.KitAction;
-import dev.chorus.core.kits.rules.Requirement;
 import dev.chorus.core.locale.TextFormat;
+import dev.chorus.core.rules.Action;
+import dev.chorus.core.rules.Requirement;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -49,6 +49,7 @@ public final class KitReader {
     private static Kit kit(String key, String name, ConfigurationSection block,
                            Consumer<String> onProblem) {
         boolean placeholders = block.getBoolean("placeholders", false);
+        String owner = "kit '" + key + "'";
 
         return new Kit(
                 key,
@@ -63,9 +64,9 @@ public final class KitReader {
                 block.getBoolean("auto-armor", true),
                 block.getBoolean("clear-inventory", false),
                 placeholders,
-                Requirement.read(block.getList("requirements", List.of()), key, onProblem),
-                KitAction.read(block.getStringList("claim-actions"), key, onProblem),
-                KitAction.read(block.getStringList("fail-actions"), key, onProblem),
+                Requirement.read(block.getList("requirements", List.of()), owner, onProblem),
+                Action.read(block.getStringList("claim-actions"), owner, onProblem),
+                Action.read(block.getStringList("fail-actions"), owner, onProblem),
                 items(block.getMapList("items"), placeholders, key, onProblem));
     }
 

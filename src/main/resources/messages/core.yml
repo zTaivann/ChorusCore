@@ -27,6 +27,7 @@ error:
   player-not-found: '%prefix%<red>%player% is not online.'
   command-disabled: '%prefix%<red>That command is switched off on this server.'
   command-world: '%prefix%<red>That command is switched off in this world.'
+  command-requirement: '%prefix%<red>You cannot use /%command% yet.'
   module-disabled: '%prefix%<red>That feature is switched off on this server.'
   command-recursion: '%prefix%<red>That command runs itself, so it was stopped. Check its run-as-console lines.'
 

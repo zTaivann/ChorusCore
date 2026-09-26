@@ -6,13 +6,16 @@
 # └────────────────────────────────────────────────────────────────────────┘
 #
 # Commands you invent here are registered when the server starts, so adding,
-# renaming or removing one needs a restart rather than /chorus reload. Editing
-# what an existing one says or does is picked up on reload.
+# renaming or removing one, or changing its aliases, needs a restart rather
+# than /chorus reload. Editing what an existing one says or does is picked up
+# on reload.
 #
 # Each command takes:
 #
 #   description       shown in /help.
 #   permission        who may use it. Empty means everyone.
+#   permission-message
+#                     what somebody without it is told. Empty keeps the usual line.
 #   aliases           extra names for it.
 #   cooldown-seconds  how long before the same player may repeat it.
 #                     chorus.bypass.cooldown ignores it.
@@ -23,9 +26,19 @@
 #                     Be careful: this is how you let a player trigger
 #                     something they could not do themselves.
 #   sound             played to the player who ran it.
+#   requires          what has to be true first, such as 'money: 100' or
+#                     'placeholder: %player_level% >= 10'.
+#   on-success        actions once it has run, such as 'title: <gold>Hi'.
+#   on-fail           actions when it is refused: no permission, a
+#                     requirement or the cooldown.
+#   log               true writes every use into the staff log (/stafflog).
 #
-# A command with no messages and no commands to run is skipped with a warning,
-# since it would do nothing at all.
+# requires, on-success and on-fail are written the same way as on any other
+# command; modules/homes.yml explains every type. %player% and %command% work
+# in the actions.
+#
+# A command with no messages, no commands to run and no on-success actions is
+# skipped with a warning, since it would do nothing at all.
 
 # Switches off every command in this file at once.
 enabled: true
@@ -65,11 +78,12 @@ custom:
       volume: 0.5
       pitch: 1.2
 
-  # An example of the console form: the player gets something they could not
-  # give themselves. Delete it if you do not want it.
+  # An example with every option written out. The actionbar comes from
+  # on-success. Delete it if you do not want it.
   website:
     description: Shows the website.
     permission: ''
+    permission-message: ''
     aliases: [ web ]
     cooldown-seconds: 5
     messages:
@@ -80,3 +94,8 @@ custom:
       key: ui.button.click
       volume: 0.5
       pitch: 1.2
+    requires: [ ]
+    on-success:
+      - 'actionbar: <gray>The link is in your chat.'
+    on-fail: [ ]
+    log: false

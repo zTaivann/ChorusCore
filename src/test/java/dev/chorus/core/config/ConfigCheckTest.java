@@ -150,6 +150,48 @@ class ConfigCheckTest {
                 """));
     }
 
+    /** A command block takes what the defaults block does, even where the jar left it out. */
+    @Test
+    void anOptionFromTheDefaultsIsFineOnAnyCommand() throws IOException {
+        assertEquals(List.of(), check("""
+                enabled: true
+                commands:
+                  home:
+                    cooldown-seconds: 30
+                    sound:
+                      key: entity.enderman.teleport
+                    permission: vip.home
+                """));
+    }
+
+    @Test
+    void anOptionNoCommandTakesIsStillReported() throws IOException {
+        List<ConfigProblem> problems = check("""
+                enabled: true
+                commands:
+                  home:
+                    cooldown-second: 30
+                """);
+
+        assertEquals(1, problems.size(), problems.toString());
+        assertTrue(problems.get(0).message().contains("'cooldown-second' is not an option"));
+        assertEquals("cooldown-seconds", problems.get(0).hint(),
+                "the suggestion comes from the defaults block");
+    }
+
+    @Test
+    void aValueOfTheWrongKindInsideACommandIsReported() throws IOException {
+        List<ConfigProblem> problems = check("""
+                enabled: true
+                commands:
+                  home:
+                    cooldown-seconds: soon
+                """);
+
+        assertEquals(1, problems.size(), problems.toString());
+        assertTrue(problems.get(0).message().contains("takes a number"));
+    }
+
     @Test
     void aFileWithNothingWrongReportsNothing() throws IOException {
         assertEquals(List.of(), check(SHIPPED));

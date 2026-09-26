@@ -1,4 +1,4 @@
-package dev.chorus.core.kits.rules;
+package dev.chorus.core.rules;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Player;

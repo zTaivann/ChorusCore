@@ -23,12 +23,16 @@ public final class TpCancelCommand extends PlayerCommand {
         Server server = player.getServer();
 
         if (args.length == 0) {
+            if (!ready(player)) {
+                return;
+            }
             List<TeleportRequest> cancelled = requests.removeAllSentBy(player.getUniqueId());
             if (cancelled.isEmpty()) {
                 messages.send(player, "request.none-sent");
                 return;
             }
             cancelled.forEach(request -> announce(player, server, request));
+            settle(player);
             return;
         }
 
@@ -39,12 +43,16 @@ public final class TpCancelCommand extends PlayerCommand {
             return;
         }
 
+        if (!ready(player)) {
+            return;
+        }
         TeleportRequest request = requests.remove(target.getUniqueId(), player.getUniqueId());
         if (request == null) {
             messages.send(player, "request.none-to", "player", target.getName());
             return;
         }
         announce(player, server, request);
+        settle(player);
     }
 
     private void announce(Player sender, Server server, TeleportRequest request) {

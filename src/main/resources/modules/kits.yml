@@ -248,6 +248,11 @@ commands:
       spread: 0.4
       height: 1.8
       speed: 0.02
+    permission-message: ''
+    requires: [ ]
+    on-success: [ ]
+    on-fail: [ ]
+    log: false
 
   # The per-kit cooldown above is the one that matters. This one would stop a
   # player using /kit at all for a while, whichever kit they asked for.

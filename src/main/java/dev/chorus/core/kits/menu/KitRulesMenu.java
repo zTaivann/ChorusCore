@@ -3,12 +3,12 @@ package dev.chorus.core.kits.menu;
 import dev.chorus.core.kits.KitEditor;
 import dev.chorus.core.kits.KitEditor.Rule;
 import dev.chorus.core.kits.KitEditor.RuleList;
-import dev.chorus.core.kits.rules.KitAction;
-import dev.chorus.core.kits.rules.Requirement;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.menu.ChatPrompts;
 import dev.chorus.core.menu.Menu;
 import dev.chorus.core.menu.MenuItems;
+import dev.chorus.core.rules.Action;
+import dev.chorus.core.rules.Requirement;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -30,20 +30,20 @@ public final class KitRulesMenu {
     /** Where the hint sits on an otherwise empty screen. */
     private static final int EMPTY_SLOT = 4;
 
-    private static final Map<KitAction.Kind, Material> ACTION_ICONS =
-            new EnumMap<>(KitAction.Kind.class);
+    private static final Map<Action.Kind, Material> ACTION_ICONS =
+            new EnumMap<>(Action.Kind.class);
     private static final Map<Requirement.Kind, Material> REQUIREMENT_ICONS =
             new EnumMap<>(Requirement.Kind.class);
 
     static {
-        ACTION_ICONS.put(KitAction.Kind.MESSAGE, Material.PAPER);
-        ACTION_ICONS.put(KitAction.Kind.BROADCAST, Material.BELL);
-        ACTION_ICONS.put(KitAction.Kind.ACTIONBAR, Material.ITEM_FRAME);
-        ACTION_ICONS.put(KitAction.Kind.TITLE, Material.PAINTING);
-        ACTION_ICONS.put(KitAction.Kind.SOUND, Material.NOTE_BLOCK);
-        ACTION_ICONS.put(KitAction.Kind.CONSOLE, Material.COMMAND_BLOCK);
-        ACTION_ICONS.put(KitAction.Kind.PLAYER, Material.PLAYER_HEAD);
-        ACTION_ICONS.put(KitAction.Kind.CLOSE, Material.OAK_DOOR);
+        ACTION_ICONS.put(Action.Kind.MESSAGE, Material.PAPER);
+        ACTION_ICONS.put(Action.Kind.BROADCAST, Material.BELL);
+        ACTION_ICONS.put(Action.Kind.ACTIONBAR, Material.ITEM_FRAME);
+        ACTION_ICONS.put(Action.Kind.TITLE, Material.PAINTING);
+        ACTION_ICONS.put(Action.Kind.SOUND, Material.NOTE_BLOCK);
+        ACTION_ICONS.put(Action.Kind.CONSOLE, Material.COMMAND_BLOCK);
+        ACTION_ICONS.put(Action.Kind.PLAYER, Material.PLAYER_HEAD);
+        ACTION_ICONS.put(Action.Kind.CLOSE, Material.OAK_DOOR);
 
         REQUIREMENT_ICONS.put(Requirement.Kind.PERMISSION, Material.NAME_TAG);
         REQUIREMENT_ICONS.put(Requirement.Kind.PLACEHOLDER, Material.COMPARATOR);
@@ -173,7 +173,7 @@ public final class KitRulesMenu {
     private static boolean understood(RuleList list, String line) {
         return list.denies()
                 ? Requirement.of(line, null) != null
-                : KitAction.of(line) != null;
+                : Action.of(line) != null;
     }
 
     private ItemStack entry(RuleList list, Rule rule, int index) {
@@ -208,7 +208,7 @@ public final class KitRulesMenu {
                     : new Known(word(requirement.kind().name()),
                             REQUIREMENT_ICONS.get(requirement.kind()));
         }
-        KitAction action = KitAction.of(rule.line());
+        Action action = Action.of(rule.line());
         return action == null ? null
                 : new Known(word(action.kind().name()), ACTION_ICONS.get(action.kind()));
     }

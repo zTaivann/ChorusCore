@@ -47,6 +47,7 @@ import dev.chorus.core.players.PlayerProfiles;
 import dev.chorus.core.players.PlayersModule;
 import dev.chorus.core.players.SqlPlayerProfileRepository;
 import dev.chorus.core.request.TeleportRequestModule;
+import dev.chorus.core.rules.Placeholders;
 import dev.chorus.core.shops.ShopsModule;
 import dev.chorus.core.spawn.SpawnModule;
 import dev.chorus.core.staff.StaffModule;
@@ -163,8 +164,17 @@ public final class ChorusPlugin extends JavaPlugin {
 
         confirmations = new Confirmations(messages, core.section("confirmations").getInt("seconds", 0));
         register(confirmations);
+
+        SqlAuditRepository auditStore = new SqlAuditRepository(storage);
+        if (!open(auditStore::createTables, "staff log")) {
+            return;
+        }
+        audit = new AuditLog(auditStore, worker, mainThread, getLogger());
+        audit.apply(core.section("staff-log"));
+        audit.prune();
+
         support = new CommandSupport(messages, new ActionGuard(messages, cooldowns, economy()),
-                schedulers);
+                schedulers, audit);
 
         SqlPlayerFlagRepository flagStore = new SqlPlayerFlagRepository(storage);
         if (!open(flagStore::createTables, "player settings")) {
@@ -181,14 +191,6 @@ public final class ChorusPlugin extends JavaPlugin {
         }
         profiles = new PlayerProfiles(profileStore, worker, mainThread, schedulers, getLogger());
         register(new PlayerProfileListener(profiles));
-
-        SqlAuditRepository auditStore = new SqlAuditRepository(storage);
-        if (!open(auditStore::createTables, "staff log")) {
-            return;
-        }
-        audit = new AuditLog(auditStore, worker, mainThread, getLogger());
-        audit.apply(core.section("staff-log"));
-        audit.prune();
 
         SqlBackupRepository backupStore = new SqlBackupRepository(storage);
         if (!open(backupStore::createTables, "inventory backup")) {
@@ -378,6 +380,7 @@ public final class ChorusPlugin extends JavaPlugin {
 
     public void reload() {
         configs.reloadAll();
+        Placeholders.forget();
         messages.reload();
         ConfigFile core = configs.get("config.yml");
         messages.apply(core.section("language"));

@@ -1,8 +1,8 @@
 package dev.chorus.core.kits;
 
 import dev.chorus.core.kits.KitEditor.Rule;
-import dev.chorus.core.kits.rules.KitAction;
-import dev.chorus.core.kits.rules.Requirement;
+import dev.chorus.core.rules.Action;
+import dev.chorus.core.rules.Requirement;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
@@ -73,7 +73,7 @@ class KitRulesTest {
                 Rule.of("console: lp user %player% parent add vip")));
 
         for (Rule rule : actions) {
-            assertNotNull(KitAction.of(rule.line()), rule.line() + " should be an action");
+            assertNotNull(Action.of(rule.line()), rule.line() + " should be an action");
         }
 
         List<Rule> requirements = throughTheFile(List.of(
@@ -93,7 +93,7 @@ class KitRulesTest {
 
         assertEquals(1, back.size());
         assertEquals("mesage: typo", back.get(0).line());
-        assertNull(KitAction.of(back.get(0).line()), "the parser should still turn it down");
+        assertNull(Action.of(back.get(0).line()), "the parser should still turn it down");
     }
 
     @Test

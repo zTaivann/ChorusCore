@@ -22,10 +22,8 @@ public record WarpDetails(String warp, @Nullable String icon, @Nullable String p
 
     /** The command's own rules, with whatever this warp overrides folded in. */
     public CommandRules over(CommandRules base) {
-        return new CommandRules(base.enabled(), base.warmupSeconds(),
-                cooldownSeconds == INHERIT_COOLDOWN ? base.cooldownSeconds() : cooldownSeconds,
-                price == INHERIT_PRICE ? base.price() : price,
-                base.worlds(), base.feedback(), base.messages());
+        return base.costing(price == INHERIT_PRICE ? base.price() : price,
+                cooldownSeconds == INHERIT_COOLDOWN ? base.cooldownSeconds() : cooldownSeconds);
     }
 
     public WarpDetails withIcon(@Nullable String value) {

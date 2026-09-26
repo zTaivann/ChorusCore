@@ -16,6 +16,7 @@ error:
   player-not-found: '%prefix%<red>%player% no está conectado.'
   command-disabled: '%prefix%<red>Ese comando está desactivado en este servidor.'
   command-world: '%prefix%<red>Ese comando está desactivado en este mundo.'
+  command-requirement: '%prefix%<red>Todavía no puedes usar /%command%.'
   module-disabled: '%prefix%<red>Esa función está desactivada en este servidor.'
   command-recursion: '%prefix%<red>Ese comando se llama a sí mismo, así que se detuvo. Revisa sus líneas de run-as-console.'
 

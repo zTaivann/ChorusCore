@@ -8,8 +8,10 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /** Commands defined entirely in the config, for the /discord and /rules of this world. */
 public final class CustomCommandsModule implements ChorusModule {
@@ -52,32 +54,38 @@ public final class CustomCommandsModule implements ChorusModule {
         unregister();
     }
 
-    /** Adding or removing a command needs a restart, the same as an alias does. */
+    /**
+     * What an existing command says and does is read again. Adding, renaming or removing
+     * one, or changing its aliases, needs a restart, the same as an alias does.
+     */
     @Override
     public void reload() {
-        plugin.getLogger().info("New or renamed custom commands need a server restart.");
+        Map<String, ConfigurationSection> blocks = blocks();
+        for (CustomCommand command : registered) {
+            ConfigurationSection block = blocks.remove(command.definition().name());
+            if (block != null) {
+                command.update(CustomDefinition.read(block, command.definition().name(), this::warn));
+            }
+        }
+        if (!blocks.isEmpty()) {
+            plugin.getLogger().info("New or renamed custom commands need a server restart.");
+        }
     }
 
     private void register() {
-        ConfigurationSection custom = config.section("custom");
         CommandMap map = plugin.getServer().getCommandMap();
         String fallbackPrefix = plugin.getName().toLowerCase(Locale.ROOT);
 
-        for (String name : custom.getKeys(false)) {
-            ConfigurationSection block = custom.getConfigurationSection(name);
-            if (block == null) {
-                continue;
-            }
-
-            CustomDefinition definition = CustomDefinition.read(block, name.toLowerCase(Locale.ROOT));
+        for (Map.Entry<String, ConfigurationSection> entry : blocks().entrySet()) {
+            CustomDefinition definition = CustomDefinition.read(entry.getValue(), entry.getKey(), this::warn);
             if (definition.doesNothing()) {
-                plugin.getLogger().warning(CONFIG + ": /" + definition.name()
-                        + " has no messages and runs no commands, so it was skipped.");
+                warn("/" + definition.name() + " has no messages, commands or on-success actions,"
+                        + " so it was skipped.");
                 continue;
             }
 
-            CustomCommand command = new CustomCommand(definition, plugin.messages(),
-                    plugin.cooldowns(), plugin.getServer(), plugin.schedulers());
+            CustomCommand command = new CustomCommand(definition, plugin.support(),
+                    plugin.cooldowns(), plugin.getServer());
             map.register(fallbackPrefix, command);
             registered.add(command);
         }
@@ -98,5 +106,22 @@ public final class CustomCommandsModule implements ChorusModule {
             command.unregister(map);
         }
         registered.clear();
+    }
+
+    /** Every command block in the file, by its name in lower case. */
+    private Map<String, ConfigurationSection> blocks() {
+        ConfigurationSection custom = config.section("custom");
+        Map<String, ConfigurationSection> blocks = new LinkedHashMap<>();
+        for (String name : custom.getKeys(false)) {
+            ConfigurationSection block = custom.getConfigurationSection(name);
+            if (block != null) {
+                blocks.put(name.toLowerCase(Locale.ROOT), block);
+            }
+        }
+        return blocks;
+    }
+
+    private void warn(String problem) {
+        plugin.getLogger().warning(CONFIG + ": " + problem);
     }
 }

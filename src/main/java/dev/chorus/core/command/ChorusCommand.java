@@ -1,7 +1,10 @@
 package dev.chorus.core.command;
 
+import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.platform.Schedulers;
+import dev.chorus.core.rules.Action;
+import dev.chorus.core.rules.Requirement;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -31,6 +34,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     protected final ActionGuard guard;
     protected final Schedulers schedulers;
 
+    private final AuditLog audit;
     private final String name;
     private final String permission;
 
@@ -40,6 +44,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
         this.messages = support.messages().forCommand();
         this.guard = support.guard();
         this.schedulers = support.schedulers();
+        this.audit = support.audit();
         this.name = name;
         this.permission = permission;
     }
@@ -68,8 +73,10 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
         return rules;
     }
 
+    /** Against the node the config names for this command, or its own when it names none. */
     protected final boolean allowed(CommandSender sender) {
-        return permission == null || sender.hasPermission(permission);
+        String needed = rules.permission() != null ? rules.permission() : permission;
+        return needed == null || needed.isEmpty() || sender.hasPermission(needed);
     }
 
     /**
@@ -86,12 +93,16 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
      * what /warp costs in general, and this holds what that one warp costs.
      */
     protected final boolean ready(CommandSender sender, String key, CommandRules against) {
-        return !(sender instanceof Player player) || guard.allow(player, key, against);
+        if (!(sender instanceof Player player) || guard.allow(player, key, against)) {
+            return true;
+        }
+        failed(player, against);
+        return false;
     }
 
     /**
-     * Starts the cooldown, takes the money and plays the sound. Call it only once the action
-     * really happened, which for a teleport means on arrival rather than on the command.
+     * Starts the cooldown, takes the money, plays the sound and runs the on-success actions.
+     * Call it only once the action really happened, which for a teleport means on arrival.
      */
     protected final void settle(CommandSender sender) {
         settle(sender, name, rules);
@@ -100,28 +111,58 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     protected final void settle(CommandSender sender, String key, CommandRules against) {
         if (sender instanceof Player player) {
             guard.charge(player, key, against);
-            schedulers.withEntity(player, () -> against.feedback().play(player));
+            schedulers.withEntity(player, () -> {
+                against.feedback().play(player);
+                Action.runAll(against.onSuccess(), player, messages, schedulers, "command", name);
+            });
         }
     }
 
     @Override
     public final boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
                                    @NotNull String label, @NotNull String[] args) {
+        CommandRules current = rules;
         if (!allowed(sender)) {
-            messages.send(sender, "error.no-permission");
+            refuse(sender, current, "error.no-permission");
             return true;
         }
-        if (!rules.enabled()) {
+        if (!current.enabled()) {
             messages.send(sender, "error.command-disabled");
             return true;
         }
-        if (sender instanceof Player player && !player.hasPermission(WORLD_BYPASS)
-                && !rules.worlds().allows(player.getWorld().getName())) {
-            messages.send(sender, "error.command-world");
-            return true;
+        if (sender instanceof Player player) {
+            if (!player.hasPermission(WORLD_BYPASS)
+                    && !current.worlds().allows(player.getWorld().getName())) {
+                refuse(sender, current, "error.command-world");
+                return true;
+            }
+            Requirement unmet = guard.unmet(player, current.requires());
+            if (unmet != null) {
+                unmet.tell(player, messages, "error.command-requirement", "command", name);
+                failed(player, current);
+                return true;
+            }
+        }
+        if (current.log()) {
+            audit.record(sender, "used", "/" + name, args.length == 0 ? null : String.join(" ", args));
         }
         run(sender, args);
         return true;
+    }
+
+    private void refuse(CommandSender sender, CommandRules current, String key) {
+        messages.send(sender, key);
+        if (sender instanceof Player player) {
+            failed(player, current);
+        }
+    }
+
+    /** The on-fail actions, on the player's own thread. */
+    private void failed(Player player, CommandRules against) {
+        if (!against.onFail().isEmpty()) {
+            schedulers.withEntity(player, () ->
+                    Action.runAll(against.onFail(), player, messages, schedulers, "command", name));
+        }
     }
 
     protected abstract void run(CommandSender sender, String[] args);

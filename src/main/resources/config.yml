@@ -124,8 +124,9 @@ metrics: true
 
 # ── Staff log ────────────────────────────────────────────────────────────
 staff-log:
-  # Writes down freezing and unfreezing, /sudo, /lockdown, /tempfly, notes and
-  # every /eco. Read it in game with /stafflog.
+  # Writes down freezing and unfreezing, /sudo, /lockdown, /tempfly, notes,
+  # every /eco, and every use of a command with log: true. Read it in game
+  # with /stafflog.
   enabled: true
 
   # Entries older than this are dropped when the server starts. 0 keeps them

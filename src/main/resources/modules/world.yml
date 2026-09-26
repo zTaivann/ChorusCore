@@ -76,6 +76,11 @@ commands:
       spread: 0.4
       height: 1.8
       speed: 0.02
+    permission-message: ''
+    requires: [ ]
+    on-success: [ ]
+    on-fail: [ ]
+    log: false
 
   world:
     enabled: true

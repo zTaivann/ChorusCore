@@ -61,10 +61,9 @@ public final class SetHomeCommand extends PlayerCommand {
         }
 
         // The price grows with the number already owned. Moving one is not surcharged.
-        CommandRules against = new CommandRules(rules().enabled(), rules().warmupSeconds(),
-                rules().cooldownSeconds(),
+        CommandRules against = rules().costing(
                 homes.settings().priceFor(rules().price(), homes.count(playerId), replacing),
-                rules().worlds(), rules().feedback(), rules().messages());
+                rules().cooldownSeconds());
         if (replacing && !confirmations.confirmed(player, "sethome:" + key,
                 "home.overwrite-confirm", "home", key)) {
             return;

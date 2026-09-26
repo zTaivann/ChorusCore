@@ -3,11 +3,11 @@ package dev.chorus.core.kits;
 import dev.chorus.core.backup.BackupReason;
 import dev.chorus.core.backup.InventoryBackups;
 import dev.chorus.core.economy.Economy;
-import dev.chorus.core.kits.rules.KitAction;
-import dev.chorus.core.kits.rules.Requirement;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.players.Playtime;
+import dev.chorus.core.rules.Action;
+import dev.chorus.core.rules.Requirement;
 import dev.chorus.core.storage.LoginData;
 import dev.chorus.core.storage.Queries;
 import org.bukkit.Material;
@@ -145,17 +145,16 @@ public final class KitService implements LoginData.Part {
 
             @Override
             public boolean hasClaimed(String other) {
-                Map<String, KitRepository.Use> taken = uses.get(player.getUniqueId());
-                return taken != null && taken.containsKey(other);
+                return KitService.this.hasClaimed(player.getUniqueId(), other);
             }
         };
+        return Requirement.firstUnmet(kit.requirements(), player, context);
+    }
 
-        for (Requirement requirement : kit.requirements()) {
-            if (!requirement.met(player, context)) {
-                return requirement;
-            }
-        }
-        return null;
+    /** Whether this player has ever taken the kit, for a requirement that asks. */
+    public boolean hasClaimed(UUID owner, String kit) {
+        Map<String, KitRepository.Use> taken = uses.get(owner);
+        return taken != null && taken.containsKey(kit);
     }
 
     /**
@@ -179,7 +178,7 @@ public final class KitService implements LoginData.Part {
             }
             schedulers.withEntity(player, () -> {
                 hand(player, kit);
-                KitAction.runAll(kit.claimActions(), player, messages, kit.name(), schedulers);
+                Action.runAll(kit.claimActions(), player, messages, schedulers, "kit", kit.name());
             });
         });
     }

@@ -1,4 +1,4 @@
-package dev.chorus.core.kits.rules;
+package dev.chorus.core.rules;
 
 import dev.chorus.core.command.Numbers;
 import dev.chorus.core.locale.Messages;
@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-/** One thing that happens when a kit is claimed, or when a claim is refused. */
-public record KitAction(Kind kind, String argument) {
+/** One thing that happens when a kit is claimed or a command is used, or when either is refused. */
+public record Action(Kind kind, String argument) {
 
     public enum Kind {
         MESSAGE, BROADCAST, ACTIONBAR, TITLE, SOUND, CONSOLE, PLAYER, CLOSE
@@ -25,13 +25,17 @@ public record KitAction(Kind kind, String argument) {
     private static final long TITLE_FADE_MILLIS = 300;
     private static final long TITLE_STAY_MILLIS = 2500;
 
-    /** Skips anything unusable rather than refusing the whole kit over one typo. */
-    public static List<KitAction> read(List<String> lines, String kit, Consumer<String> onProblem) {
-        List<KitAction> actions = new ArrayList<>(lines.size());
+    /**
+     * Skips anything unusable rather than refusing the whole list over one typo.
+     *
+     * @param owner how a problem names what the list belongs to, such as {@code kit 'vip'}
+     */
+    public static List<Action> read(List<String> lines, String owner, Consumer<String> onProblem) {
+        List<Action> actions = new ArrayList<>(lines.size());
         for (String line : lines) {
-            KitAction action = of(line);
+            Action action = of(line);
             if (action == null) {
-                onProblem.accept("kit '" + kit + "' has an action this plugin does not know: '"
+                onProblem.accept(owner + " has an action this plugin does not know: '"
                         + line + "'");
                 continue;
             }
@@ -41,7 +45,7 @@ public record KitAction(Kind kind, String argument) {
     }
 
     /** One line on its own, for a screen that has to say whether it is a line at all. */
-    public static @Nullable KitAction of(String line) {
+    public static @Nullable Action of(String line) {
         String trimmed = line.trim();
         int colon = trimmed.indexOf(':');
         String name = (colon < 0 ? trimmed : trimmed.substring(0, colon)).trim().toUpperCase(Locale.ROOT);
@@ -49,22 +53,31 @@ public record KitAction(Kind kind, String argument) {
 
         for (Kind kind : Kind.values()) {
             if (kind.name().equals(name)) {
-                return new KitAction(kind, argument);
+                return new Action(kind, argument);
             }
         }
         return null;
     }
 
-    /** On the player's thread. A console line goes on to the global one. */
-    public static void runAll(List<KitAction> actions, Player player, Messages messages, String kit,
-                              Schedulers schedulers) {
-        for (KitAction action : actions) {
-            action.run(player, messages, kit, schedulers);
+    /**
+     * On the player's thread. A console line goes on to the global one.
+     *
+     * @param placeholders name and value pairs, such as {@code "kit", "vip"}
+     */
+    public static void runAll(List<Action> actions, Player player, Messages messages,
+                              Schedulers schedulers, String... placeholders) {
+        for (Action action : actions) {
+            action.run(player, messages, schedulers, placeholders);
         }
     }
 
-    public void run(Player player, Messages messages, String kit, Schedulers schedulers) {
-        String filled = Placeholders.fill(player, argument.replace("%kit%", kit));
+    public void run(Player player, Messages messages, Schedulers schedulers,
+                    String... placeholders) {
+        String line = argument;
+        for (int at = 0; at + 1 < placeholders.length; at += 2) {
+            line = line.replace("%" + placeholders[at] + "%", placeholders[at + 1]);
+        }
+        String filled = Placeholders.fill(player, line);
         switch (kind) {
             case MESSAGE -> player.sendMessage(messages.parse(filled));
             case BROADCAST -> Bukkit.getServer().sendMessage(messages.parse(filled));

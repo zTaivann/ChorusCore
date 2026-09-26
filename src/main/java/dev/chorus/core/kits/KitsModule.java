@@ -68,6 +68,7 @@ public final class KitsModule implements ChorusModule {
         load();
 
         plugin.loginData().add("kit history", kits, true);
+        support.guard().claimedKits(kits::hasClaimed);
         plugin.register(new FirstJoinKitListener(kits, plugin.messages(), plugin.getLogger()));
         commands.add(plugin.register(new KitCommand(support, kits, plugin.getLogger())));
         commands.add(plugin.register(new KitListCommand(support, kits, () -> settings)));
@@ -83,6 +84,7 @@ public final class KitsModule implements ChorusModule {
 
     @Override
     public void disable() {
+        support.guard().claimedKits(null);
         if (kits != null) {
             kits.clear();
         }

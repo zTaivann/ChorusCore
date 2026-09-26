@@ -60,6 +60,51 @@
 #                       messages:
 #                         error.no-permission: '<red>Buy VIP to use this.'
 #
+#   permission        the permission it takes, in place of its own. '' lets
+#                     everyone use it. Set it on a command, not in defaults.
+#                     Extras such as the .others node keep their own names.
+#   permission-message
+#                     what somebody without that permission is told. Empty
+#                     keeps the line from the messages folder.
+#
+#   requires          what has to be true before the command runs. Each one is
+#                     written type: value, and takes either shape:
+#
+#                       requires:
+#                         - 'money: 500'
+#                         - condition: 'placeholder: %player_level% >= 10'
+#                           deny: '<red>Come back at level 10.'
+#
+#                     The types are permission, placeholder, money, playtime
+#                     (in seconds) and kit (a kit they must have taken).
+#                     placeholder takes anything PlaceholderAPI knows, compared
+#                     with >=, <=, ==, !=, >, < or contains. Without a deny line
+#                     they get error.command-requirement from the messages folder.
+#
+#   on-success        what happens once the command has worked. For a teleport
+#                     that is on arrival.
+#   on-fail           what happens when it is refused: no permission, the wrong
+#                     world, a requirement, the cooldown or the price.
+#
+#                     Both are written type: value, run in the order listed:
+#
+#                       on-success:
+#                         - 'message: <green>Done.'
+#                         - 'actionbar: <green>Done'
+#                         - 'title: <gold>Welcome;<gray>back'
+#                         - 'sound: entity.player.levelup 1 1.4'
+#                         - 'broadcast: <gray>%player% used /%command%.'
+#                         - 'console: give %player% bread 1'
+#                         - 'player: spawn'
+#                         - 'close'
+#
+#                     console runs as the server. %player% and %command% work in
+#                     all of them, as does anything PlaceholderAPI knows.
+#
+#   log               true writes every use into the staff log, with whatever
+#                     was typed after the command. Read it with /stafflog.
+#                     Needs staff-log.enabled in config.yml.
+#
 # Teleport commands show their particles twice: once where the player left from
 # and once where they arrive.
 
@@ -94,6 +139,11 @@ commands:
       spread: 0.4
       height: 1.8
       speed: 0.02
+    permission-message: ''
+    requires: [ ]
+    on-success: [ ]
+    on-fail: [ ]
+    log: false
 
   tp:
     enabled: true

@@ -1,5 +1,6 @@
 package dev.chorus.core;
 
+import dev.chorus.core.command.CommandRules;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
@@ -25,10 +26,6 @@ class CommandConfigTest {
 
     /** The two commands the core itself owns have no warmup, cooldown or price. */
     private static final Set<String> UNPRICED = Set.of("chorus", "commands");
-
-    private static final Set<String> OPTIONS =
-            Set.of("enabled", "warmup-seconds", "cooldown-seconds", "price", "worlds",
-                    "sound", "particle", "messages");
 
     private static Set<String> declaredCommands() {
         return new TreeSet<>(Resources.section(Resources.read("plugin.yml"), "commands").getKeys(false));
@@ -88,7 +85,8 @@ class CommandConfigTest {
             assertNotNull(defaults, path + " has no defaults block");
             for (String option : List.of("enabled", "warmup-seconds", "cooldown-seconds", "price", "worlds",
                     "sound.key", "sound.volume", "sound.pitch", "particle.name", "particle.count",
-                    "particle.spread", "particle.height", "particle.speed")) {
+                    "particle.spread", "particle.height", "particle.speed", "permission-message",
+                    "requires", "on-success", "on-fail", "log")) {
                 assertTrue(defaults.contains(option), path + " defaults are missing " + option);
             }
         }
@@ -118,7 +116,7 @@ class CommandConfigTest {
                     continue;
                 }
                 block.getKeys(false).stream()
-                        .filter(option -> !OPTIONS.contains(option))
+                        .filter(option -> !CommandRules.OPTIONS.contains(option))
                         .forEach(option -> problems.add(
                                 path + " has an unknown option '" + option + "' on /" + command));
             }

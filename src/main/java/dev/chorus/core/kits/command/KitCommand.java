@@ -5,9 +5,8 @@ import dev.chorus.core.command.Durations;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.kits.Kit;
 import dev.chorus.core.kits.KitService;
-import dev.chorus.core.kits.rules.KitAction;
-import dev.chorus.core.kits.rules.Placeholders;
-import dev.chorus.core.kits.rules.Requirement;
+import dev.chorus.core.rules.Action;
+import dev.chorus.core.rules.Requirement;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -91,17 +90,12 @@ public final class KitCommand extends PlayerCommand {
             return true;
         }
         refuse(player, kit);
-        if (unmet.denyMessage() == null) {
-            messages.send(player, "kits.requirement", "kit", kit.name());
-            return false;
-        }
-        player.sendMessage(messages.parse(
-                Placeholders.fill(player, unmet.denyMessage().replace("%kit%", kit.name()))));
+        unmet.tell(player, messages, "kits.requirement", "kit", kit.name());
         return false;
     }
 
     private void refuse(Player player, Kit kit) {
-        KitAction.runAll(kit.failActions(), player, messages, kit.name(), schedulers);
+        Action.runAll(kit.failActions(), player, messages, schedulers, "kit", kit.name());
     }
 
     @Override

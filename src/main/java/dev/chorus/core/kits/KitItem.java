@@ -1,7 +1,7 @@
 package dev.chorus.core.kits;
 
-import dev.chorus.core.kits.rules.Placeholders;
 import dev.chorus.core.locale.TextFormat;
+import dev.chorus.core.rules.Placeholders;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;

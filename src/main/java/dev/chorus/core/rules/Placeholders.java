@@ -1,4 +1,4 @@
-package dev.chorus.core.kits.rules;
+package dev.chorus.core.rules;
 
 import dev.chorus.core.papi.PlaceholderValues;
 import org.bukkit.Bukkit;

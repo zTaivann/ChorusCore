@@ -1,7 +1,7 @@
 package dev.chorus.core.kits;
 
-import dev.chorus.core.kits.rules.KitAction;
-import dev.chorus.core.kits.rules.Requirement;
+import dev.chorus.core.rules.Action;
+import dev.chorus.core.rules.Requirement;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -13,8 +13,8 @@ import java.util.List;
 public record Kit(String name, Component display, List<Component> lore, ItemStack icon,
                   int cooldownSeconds, boolean oneTime, int maxClaims, double price,
                   String permission, boolean autoArmor, boolean clearInventory,
-                  boolean placeholders, List<Requirement> requirements, List<KitAction> claimActions,
-                  List<KitAction> failActions, List<KitItem> items) {
+                  boolean placeholders, List<Requirement> requirements, List<Action> claimActions,
+                  List<Action> failActions, List<KitItem> items) {
 
     public boolean allowed(Player player) {
         return permission.isEmpty() || player.hasPermission(permission);

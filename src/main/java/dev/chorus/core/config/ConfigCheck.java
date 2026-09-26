@@ -1,5 +1,6 @@
 package dev.chorus.core.config;
 
+import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.feedback.ParticleCue;
 import org.bukkit.Material;
 import org.bukkit.Server;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Reads the config files and reports what will not work, by file and line. */
@@ -35,6 +37,10 @@ public final class ConfigCheck {
     private static final Set<String> MATERIAL_KEYS = Set.of("shops.worth.", "items.condense.");
 
     private static final Pattern SOUND = Pattern.compile("[a-z0-9_]+(\\.[a-z0-9_]+)+");
+
+    /** An option inside one command's block: the command, then the option. */
+    private static final Pattern COMMAND_OPTION = Pattern.compile("commands\\.([^.]+)\\.(.+)");
+    private static final String DEFAULTS = "defaults";
 
     /** Enough to show what is wrong without burying the console. */
     private static final int MAX_PROBLEMS = 25;
@@ -77,12 +83,14 @@ public final class ConfigCheck {
                 return;
             }
             if (shipped != null && !isOpen(key)) {
-                if (!shipped.contains(key)) {
+                String known = shippedPath(shipped, key);
+                if (known == null) {
                     problems.add(new ConfigProblem(path, lines.of(key),
-                            "'" + last(key) + "' is not an option.", suggestion(shipped, key)));
+                            "'" + last(key) + "' is not an option.",
+                            suggestion(shipped, general(key))));
                     continue;
                 }
-                String wrong = mismatch(shipped, mine, key);
+                String wrong = mismatch(shipped, known, mine, key);
                 if (wrong != null) {
                     problems.add(new ConfigProblem(path, lines.of(key), wrong));
                     continue;
@@ -149,10 +157,36 @@ public final class ConfigCheck {
         }
     }
 
+    /**
+     * Where the jar's copy has this option, or null when it has none. A command block takes
+     * every option the defaults block does, and a few of its own.
+     */
+    private static @Nullable String shippedPath(YamlConfiguration shipped, String key) {
+        if (shipped.contains(key)) {
+            return key;
+        }
+        String general = general(key);
+        if (!general.equals(key) && shipped.contains(general)) {
+            return general;
+        }
+        Matcher command = COMMAND_OPTION.matcher(key);
+        return command.matches() && CommandRules.PER_COMMAND.contains(command.group(2))
+                ? key : null;
+    }
+
+    /** The same option in the defaults block, for one inside a command block. */
+    private static String general(String key) {
+        Matcher command = COMMAND_OPTION.matcher(key);
+        if (!command.matches() || command.group(1).equals(DEFAULTS)) {
+            return key;
+        }
+        return "commands." + DEFAULTS + "." + command.group(2);
+    }
+
     /** The kind a value is written as, when it is not the kind the option takes. */
-    private static @Nullable String mismatch(YamlConfiguration shipped, YamlConfiguration mine,
-                                             String key) {
-        Object wanted = shipped.get(key);
+    private static @Nullable String mismatch(YamlConfiguration shipped, String shippedKey,
+                                             YamlConfiguration mine, String key) {
+        Object wanted = shipped.get(shippedKey);
         Object given = mine.get(key);
         if (wanted == null || given == null) {
             return null;
