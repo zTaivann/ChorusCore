@@ -128,3 +128,5 @@ core:
 
 cooldown:
   wait: '%prefix%<red>Wait <white>%time%</white> before using that again.'
+  wait-world: '%prefix%<red>That was used in this world a moment ago. It is free again in <white>%time%</white>.'
+  wait-server: '%prefix%<red>That was used on the server a moment ago. It is free again in <white>%time%</white>.'

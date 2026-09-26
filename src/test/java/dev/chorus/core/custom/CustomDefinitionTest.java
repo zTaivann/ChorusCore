@@ -1,5 +1,6 @@
 package dev.chorus.core.custom;
 
+import dev.chorus.core.command.CooldownScope;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -22,6 +23,7 @@ class CustomDefinitionTest {
                 permission: vote.use
                 permission-message: '<red>Vote on the website first.'
                 cooldown-group: Travel
+                cooldown-scope: server
                 messages: [ 'Thanks!' ]
                 requires:
                   - 'playtime: 3600'
@@ -34,6 +36,7 @@ class CustomDefinitionTest {
 
         assertEquals("<red>Vote on the website first.", vote.permissionMessage());
         assertEquals("travel", vote.cooldownGroup());
+        assertEquals(CooldownScope.SERVER, vote.cooldownScope());
         assertEquals(List.of(Requirement.Kind.PLAYTIME),
                 vote.requires().stream().map(Requirement::kind).toList());
         assertEquals(List.of(Action.Kind.TITLE),
@@ -50,6 +53,7 @@ class CustomDefinitionTest {
 
         assertEquals("", plain.permissionMessage());
         assertEquals("", plain.cooldownGroup());
+        assertEquals(CooldownScope.PLAYER, plain.cooldownScope());
         assertTrue(plain.requires().isEmpty());
         assertTrue(plain.onSuccess().isEmpty());
         assertFalse(plain.log());
@@ -66,11 +70,13 @@ class CustomDefinitionTest {
     void aLineThePluginDoesNotKnowIsNamed() throws InvalidConfigurationException {
         List<String> problems = new ArrayList<>();
         YamlConfiguration block = new YamlConfiguration();
-        block.loadFromString("on-fail: [ 'shout: hi' ]\nrequires: [ 'level: 5' ]");
+        block.loadFromString("on-fail: [ 'shout: hi' ]\nrequires: [ 'level: 5' ]\ncooldown-scope: team");
 
         CustomDefinition.read(block, "vote", problems::add);
 
         assertEquals(List.of(
+                "/vote has a cooldown-scope this plugin does not know: 'team'. It takes player,"
+                        + " world or server.",
                 "/vote has a requirement this plugin does not know: 'level: 5'",
                 "/vote has an action this plugin does not know: 'shout: hi'"), problems);
     }

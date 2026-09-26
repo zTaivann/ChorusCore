@@ -1,5 +1,6 @@
 package dev.chorus.core.custom;
 
+import dev.chorus.core.command.CooldownScope;
 import dev.chorus.core.feedback.SoundCue;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
@@ -13,7 +14,8 @@ import java.util.function.Consumer;
 /** One command an admin invented in the config. */
 public record CustomDefinition(String name, String description, String permission,
                                String permissionMessage, List<String> aliases,
-                               int cooldownSeconds, String cooldownGroup, List<String> messages,
+                               int cooldownSeconds, String cooldownGroup,
+                               CooldownScope cooldownScope, List<String> messages,
                                List<String> playerCommands, List<String> consoleCommands,
                                SoundCue sound, List<Requirement> requires,
                                List<Action> onSuccess, List<Action> onFail, boolean log) {
@@ -37,6 +39,7 @@ public record CustomDefinition(String name, String description, String permissio
                 aliases,
                 Math.max(0, block.getInt("cooldown-seconds", 0)),
                 block.getString("cooldown-group", "").trim().toLowerCase(Locale.ROOT),
+                scope(block.getString("cooldown-scope", "player"), owner, onProblem),
                 List.copyOf(block.getStringList("messages")),
                 List.copyOf(block.getStringList("run-as-player")),
                 List.copyOf(block.getStringList("run-as-console")),
@@ -45,6 +48,16 @@ public record CustomDefinition(String name, String description, String permissio
                 Action.read(block.getStringList("on-success"), owner, onProblem),
                 Action.read(block.getStringList("on-fail"), owner, onProblem),
                 block.getBoolean("log", false));
+    }
+
+    private static CooldownScope scope(String written, String owner, Consumer<String> onProblem) {
+        CooldownScope scope = CooldownScope.of(written);
+        if (scope == null) {
+            onProblem.accept(owner + " has a cooldown-scope this plugin does not know: '" + written
+                    + "'. It takes player, world or server.");
+            return CooldownScope.PLAYER;
+        }
+        return scope;
     }
 
     public boolean doesNothing() {

@@ -110,3 +110,5 @@ core:
 
 cooldown:
   wait: '%prefix%<red>Espera <white>%time%</white> antes de volver a usar eso.'
+  wait-world: '%prefix%<red>Eso se acaba de usar en este mundo. Vuelve a estar libre en <white>%time%</white>.'
+  wait-server: '%prefix%<red>Eso se acaba de usar en el servidor. Vuelve a estar libre en <white>%time%</white>.'

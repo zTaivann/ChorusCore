@@ -77,7 +77,8 @@ public final class ActionGuard {
 
     public void charge(Player player, String command, CommandRules rules) {
         if (rules.cooldownSeconds() > 0 && !player.hasPermission(COOLDOWN_BYPASS)) {
-            cooldowns.start(player.getUniqueId(), Cooldowns.timer(command, rules.cooldownGroup()),
+            cooldowns.start(rules.cooldownScope().owner(player),
+                    Cooldowns.timer(command, rules.cooldownGroup()),
                     rules.cooldownSeconds(), System.currentTimeMillis());
         }
 
@@ -99,12 +100,12 @@ public final class ActionGuard {
         if (rules.cooldownSeconds() <= 0 || player.hasPermission(COOLDOWN_BYPASS)) {
             return false;
         }
-        long left = cooldowns.remaining(player.getUniqueId(),
+        long left = cooldowns.remaining(rules.cooldownScope().owner(player),
                 Cooldowns.timer(command, rules.cooldownGroup()), System.currentTimeMillis());
         if (left <= 0) {
             return false;
         }
-        messages.send(player, "cooldown.wait", "time", Durations.format(left));
+        messages.send(player, rules.cooldownScope().waitMessage(), "time", Durations.format(left));
         return true;
     }
 }

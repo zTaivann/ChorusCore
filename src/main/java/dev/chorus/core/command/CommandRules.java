@@ -19,22 +19,24 @@ import java.util.logging.Logger;
  * Everything one command's config block controls.
  *
  * @param cooldownGroup the name of the cooldown it shares with other commands, or {@code ""}
+ * @param cooldownScope who the cooldown holds back once it starts
  * @param permission    the node it takes instead of its own, {@code ""} for everyone, or null
  * @param log           whether each use goes into the staff log
  */
 public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSeconds,
-                           String cooldownGroup, double price, WorldRule worlds,
-                           CommandFeedback feedback, Map<String, String> messages,
+                           String cooldownGroup, CooldownScope cooldownScope, double price,
+                           WorldRule worlds, CommandFeedback feedback, Map<String, String> messages,
                            @Nullable String permission, List<Requirement> requires,
                            List<Action> onSuccess, List<Action> onFail, boolean log) {
 
-    public static final CommandRules FREE = new CommandRules(true, 0, 0, "", 0,
-            WorldRule.EVERYWHERE, CommandFeedback.NONE, Map.of(), null, List.of(), List.of(),
-            List.of(), false);
+    public static final CommandRules FREE = new CommandRules(true, 0, 0, "",
+            CooldownScope.PLAYER, 0, WorldRule.EVERYWHERE, CommandFeedback.NONE, Map.of(), null,
+            List.of(), List.of(), List.of(), false);
 
     /** Every option a command block takes. */
     public static final Set<String> OPTIONS = Set.of("enabled", "warmup-seconds",
-            "cooldown-seconds", "cooldown-group", "price", "worlds", "sound", "particle",
+            "cooldown-seconds", "cooldown-group", "cooldown-scope", "price", "worlds", "sound",
+            "particle",
             "messages", "permission", "permission-message", "requires", "on-success", "on-fail",
             "log");
 
@@ -60,14 +62,15 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
     /** The same rules with another price and cooldown, for a home or a warp that sets its own. */
     public CommandRules costing(double otherPrice, int otherCooldownSeconds) {
         return new CommandRules(enabled, warmupSeconds, otherCooldownSeconds, cooldownGroup,
-                otherPrice, worlds, feedback, messages, permission, requires, onSuccess, onFail,
-                log);
+                cooldownScope, otherPrice, worlds, feedback, messages, permission, requires,
+                onSuccess, onFail, log);
     }
 
     /** The same rules with another wait before a teleport. */
     public CommandRules waiting(int otherWarmupSeconds) {
         return new CommandRules(enabled, otherWarmupSeconds, cooldownSeconds, cooldownGroup,
-                price, worlds, feedback, messages, permission, requires, onSuccess, onFail, log);
+                cooldownScope, price, worlds, feedback, messages, permission, requires,
+                onSuccess, onFail, log);
     }
 
     private static CommandRules merge(@Nullable ConfigurationSection block, CommandRules base,
@@ -84,6 +87,7 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
                 Math.max(0, block.getInt("warmup-seconds", base.warmupSeconds())),
                 Math.max(0, block.getInt("cooldown-seconds", base.cooldownSeconds())),
                 group(block, base.cooldownGroup()),
+                scope(block, base.cooldownScope(), owner, logger),
                 Math.max(0, block.getDouble("price", base.price())),
                 WorldRule.read(block, base.worlds()),
                 CommandFeedback.read(block, base.feedback(), name -> logger.warning(
@@ -100,6 +104,21 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
 
     private static String group(ConfigurationSection block, String base) {
         return block.getString("cooldown-group", base).trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static CooldownScope scope(ConfigurationSection block, CooldownScope base,
+                                       String owner, Logger logger) {
+        String written = block.getString("cooldown-scope");
+        if (written == null) {
+            return base;
+        }
+        CooldownScope scope = CooldownScope.of(written);
+        if (scope == null) {
+            logger.warning(owner + " has a cooldown-scope this plugin does not know: '" + written
+                    + "'. It takes player, world or server.");
+            return base;
+        }
+        return scope;
     }
 
     private static @Nullable String permission(ConfigurationSection block, @Nullable String base,

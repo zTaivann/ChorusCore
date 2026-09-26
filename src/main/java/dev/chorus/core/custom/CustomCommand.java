@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** A command that exists only because the config says so. */
@@ -134,13 +135,15 @@ public final class CustomCommand extends Command {
         }
 
         String key = Cooldowns.timer("custom:" + current.name(), current.cooldownGroup());
+        UUID owner = current.cooldownScope().owner(player);
         long now = System.currentTimeMillis();
-        long left = cooldowns.remaining(player.getUniqueId(), key, now);
+        long left = cooldowns.remaining(owner, key, now);
         if (left > 0) {
-            messages.send(player, "cooldown.wait", "time", Durations.format(left));
+            messages.send(player, current.cooldownScope().waitMessage(),
+                    "time", Durations.format(left));
             return true;
         }
-        cooldowns.start(player.getUniqueId(), key, current.cooldownSeconds(), now);
+        cooldowns.start(owner, key, current.cooldownSeconds(), now);
         return false;
     }
 

@@ -36,6 +36,14 @@
 #                     A command with no cooldown-seconds takes no part. Empty
 #                     keeps the command's own wait.
 #
+#   cooldown-scope    who the wait holds back once somebody starts it:
+#                       player  only the player who used it. The usual.
+#                       world   everyone in the world it was used in.
+#                       server  everyone on the server.
+#                     world and server suit things there should only be one of
+#                     at a time, such as a broadcast or an event. Commands that
+#                     share a cooldown-group should share a scope as well.
+#
 #   price             what it costs, through Vault. 0 is free. Without an
 #                     economy plugin the price is ignored.
 #                     chorus.bypass.price never pays.
@@ -175,6 +183,7 @@ commands:
     warmup-seconds: 0
     cooldown-seconds: 0
     cooldown-group: ''
+    cooldown-scope: player
     price: 0.0
     worlds: [ ]
     sound:

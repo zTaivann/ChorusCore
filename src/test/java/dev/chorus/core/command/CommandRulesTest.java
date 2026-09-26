@@ -227,17 +227,37 @@ class CommandRulesTest {
     }
 
     @Test
+    void aCooldownScopeIsReadAndAWrongOneKeepsTheDefault() throws InvalidConfigurationException {
+        String yaml = """
+                defaults:
+                  cooldown-scope: world
+                broadcast:
+                  cooldown-scope: Server
+                heal:
+                  cooldown-scope: everyone
+                """;
+
+        assertEquals(CooldownScope.SERVER, read(yaml, "broadcast").cooldownScope());
+        assertEquals(CooldownScope.WORLD, read(yaml, "fly").cooldownScope(), "from the defaults");
+        assertEquals(CooldownScope.WORLD, read(yaml, "heal").cooldownScope(),
+                "a scope that does not exist changes nothing");
+        assertEquals(CooldownScope.PLAYER, read("fly:\n  enabled: true\n", "fly").cooldownScope());
+    }
+
+    @Test
     void aHomeOrAWarpKeepsEverythingButWhatItCosts() throws InvalidConfigurationException {
         CommandRules rules = read("""
                 fly:
                   price: 10
                   cooldown-seconds: 5
                   cooldown-group: travel
+                  cooldown-scope: world
                   log: true
                   on-success: [ 'actionbar: Done' ]
                 """, "fly").costing(99, 60);
 
         assertEquals("travel", rules.cooldownGroup());
+        assertEquals(CooldownScope.WORLD, rules.cooldownScope());
         assertEquals(99, rules.price());
         assertEquals(60, rules.cooldownSeconds());
         assertTrue(rules.log());
