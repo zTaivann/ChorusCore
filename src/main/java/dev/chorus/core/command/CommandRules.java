@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -17,22 +18,25 @@ import java.util.logging.Logger;
 /**
  * Everything one command's config block controls.
  *
- * @param permission the node it takes instead of its own, {@code ""} for everyone, or null
- * @param log        whether each use goes into the staff log
+ * @param cooldownGroup the name of the cooldown it shares with other commands, or {@code ""}
+ * @param permission    the node it takes instead of its own, {@code ""} for everyone, or null
+ * @param log           whether each use goes into the staff log
  */
-public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSeconds, double price,
-                           WorldRule worlds, CommandFeedback feedback,
-                           Map<String, String> messages, @Nullable String permission,
-                           List<Requirement> requires, List<Action> onSuccess,
-                           List<Action> onFail, boolean log) {
+public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSeconds,
+                           String cooldownGroup, double price, WorldRule worlds,
+                           CommandFeedback feedback, Map<String, String> messages,
+                           @Nullable String permission, List<Requirement> requires,
+                           List<Action> onSuccess, List<Action> onFail, boolean log) {
 
-    public static final CommandRules FREE = new CommandRules(true, 0, 0, 0, WorldRule.EVERYWHERE,
-            CommandFeedback.NONE, Map.of(), null, List.of(), List.of(), List.of(), false);
+    public static final CommandRules FREE = new CommandRules(true, 0, 0, "", 0,
+            WorldRule.EVERYWHERE, CommandFeedback.NONE, Map.of(), null, List.of(), List.of(),
+            List.of(), false);
 
     /** Every option a command block takes. */
     public static final Set<String> OPTIONS = Set.of("enabled", "warmup-seconds",
-            "cooldown-seconds", "price", "worlds", "sound", "particle", "messages", "permission",
-            "permission-message", "requires", "on-success", "on-fail", "log");
+            "cooldown-seconds", "cooldown-group", "price", "worlds", "sound", "particle",
+            "messages", "permission", "permission-message", "requires", "on-success", "on-fail",
+            "log");
 
     /** The options that belong to one command and are ignored in the defaults block. */
     public static final Set<String> PER_COMMAND = Set.of("permission");
@@ -55,14 +59,15 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
 
     /** The same rules with another price and cooldown, for a home or a warp that sets its own. */
     public CommandRules costing(double otherPrice, int otherCooldownSeconds) {
-        return new CommandRules(enabled, warmupSeconds, otherCooldownSeconds, otherPrice, worlds,
-                feedback, messages, permission, requires, onSuccess, onFail, log);
+        return new CommandRules(enabled, warmupSeconds, otherCooldownSeconds, cooldownGroup,
+                otherPrice, worlds, feedback, messages, permission, requires, onSuccess, onFail,
+                log);
     }
 
     /** The same rules with another wait before a teleport. */
     public CommandRules waiting(int otherWarmupSeconds) {
-        return new CommandRules(enabled, otherWarmupSeconds, cooldownSeconds, price, worlds,
-                feedback, messages, permission, requires, onSuccess, onFail, log);
+        return new CommandRules(enabled, otherWarmupSeconds, cooldownSeconds, cooldownGroup,
+                price, worlds, feedback, messages, permission, requires, onSuccess, onFail, log);
     }
 
     private static CommandRules merge(@Nullable ConfigurationSection block, CommandRules base,
@@ -78,6 +83,7 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
                 block.getBoolean("enabled", base.enabled()),
                 Math.max(0, block.getInt("warmup-seconds", base.warmupSeconds())),
                 Math.max(0, block.getInt("cooldown-seconds", base.cooldownSeconds())),
+                group(block, base.cooldownGroup()),
                 Math.max(0, block.getDouble("price", base.price())),
                 WorldRule.read(block, base.worlds()),
                 CommandFeedback.read(block, base.feedback(), name -> logger.warning(
@@ -90,6 +96,10 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
                 actions(block, "on-success", base.onSuccess(), owner, problem),
                 actions(block, "on-fail", base.onFail(), owner, problem),
                 block.getBoolean("log", base.log()));
+    }
+
+    private static String group(ConfigurationSection block, String base) {
+        return block.getString("cooldown-group", base).trim().toLowerCase(Locale.ROOT);
     }
 
     private static @Nullable String permission(ConfigurationSection block, @Nullable String base,

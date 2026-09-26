@@ -77,7 +77,8 @@ public final class ActionGuard {
 
     public void charge(Player player, String command, CommandRules rules) {
         if (rules.cooldownSeconds() > 0 && !player.hasPermission(COOLDOWN_BYPASS)) {
-            cooldowns.start(player.getUniqueId(), command, rules.cooldownSeconds(), System.currentTimeMillis());
+            cooldowns.start(player.getUniqueId(), Cooldowns.timer(command, rules.cooldownGroup()),
+                    rules.cooldownSeconds(), System.currentTimeMillis());
         }
 
         double price = priceFor(player, rules);
@@ -98,7 +99,8 @@ public final class ActionGuard {
         if (rules.cooldownSeconds() <= 0 || player.hasPermission(COOLDOWN_BYPASS)) {
             return false;
         }
-        long left = cooldowns.remaining(player.getUniqueId(), command, System.currentTimeMillis());
+        long left = cooldowns.remaining(player.getUniqueId(),
+                Cooldowns.timer(command, rules.cooldownGroup()), System.currentTimeMillis());
         if (left <= 0) {
             return false;
         }

@@ -133,7 +133,7 @@ public final class CustomCommand extends Command {
             return false;
         }
 
-        String key = "custom:" + current.name();
+        String key = Cooldowns.timer("custom:" + current.name(), current.cooldownGroup());
         long now = System.currentTimeMillis();
         long left = cooldowns.remaining(player.getUniqueId(), key, now);
         if (left > 0) {

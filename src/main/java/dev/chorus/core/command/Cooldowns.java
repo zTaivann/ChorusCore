@@ -7,7 +7,14 @@ import java.util.concurrent.ConcurrentHashMap;
 /** Per player, per command cooldowns. */
 public final class Cooldowns {
 
+    private static final String GROUP = "group:";
+
     private final Map<UUID, Map<String, Long>> expiry = new ConcurrentHashMap<>();
+
+    /** The timer a command counts on: its own, or the one its group shares. */
+    public static String timer(String own, String group) {
+        return group.isEmpty() ? own : GROUP + group;
+    }
 
     /** Milliseconds left, or zero when the player may go ahead. */
     public long remaining(UUID player, String command, long now) {

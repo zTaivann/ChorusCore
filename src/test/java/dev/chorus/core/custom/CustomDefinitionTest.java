@@ -21,6 +21,7 @@ class CustomDefinitionTest {
         CustomDefinition vote = read("""
                 permission: vote.use
                 permission-message: '<red>Vote on the website first.'
+                cooldown-group: Travel
                 messages: [ 'Thanks!' ]
                 requires:
                   - 'playtime: 3600'
@@ -32,6 +33,7 @@ class CustomDefinitionTest {
                 """);
 
         assertEquals("<red>Vote on the website first.", vote.permissionMessage());
+        assertEquals("travel", vote.cooldownGroup());
         assertEquals(List.of(Requirement.Kind.PLAYTIME),
                 vote.requires().stream().map(Requirement::kind).toList());
         assertEquals(List.of(Action.Kind.TITLE),
@@ -47,6 +49,7 @@ class CustomDefinitionTest {
                 """);
 
         assertEquals("", plain.permissionMessage());
+        assertEquals("", plain.cooldownGroup());
         assertTrue(plain.requires().isEmpty());
         assertTrue(plain.onSuccess().isEmpty());
         assertFalse(plain.log());

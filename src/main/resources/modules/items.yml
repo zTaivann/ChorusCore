@@ -25,6 +25,18 @@
 #                     Only starts once the command actually succeeded.
 #                     chorus.bypass.cooldown ignores it.
 #
+#   cooldown-group    a name for commands that wait as one. Using any command in
+#                     the group starts the wait for all of them, for as long as
+#                     the one used says. It works across files, so /home, /warp
+#                     and /spawn can share one wait:
+#
+#                       home:
+#                         cooldown-seconds: 30
+#                         cooldown-group: travel
+#
+#                     A command with no cooldown-seconds takes no part. Empty
+#                     keeps the command's own wait.
+#
 #   price             what it costs, through Vault. 0 is free. Without an
 #                     economy plugin the price is ignored.
 #                     chorus.bypass.price never pays.
@@ -212,6 +224,7 @@ commands:
     enabled: true
     warmup-seconds: 0
     cooldown-seconds: 0
+    cooldown-group: ''
     price: 0.0
     worlds: [ ]
     sound:

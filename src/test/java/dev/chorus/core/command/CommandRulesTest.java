@@ -211,15 +211,33 @@ class CommandRulesTest {
     }
 
     @Test
+    void aCooldownGroupIsReadInLowerCaseAndInherited() throws InvalidConfigurationException {
+        String yaml = """
+                defaults:
+                  cooldown-group: Travel
+                home:
+                  enabled: true
+                heal:
+                  cooldown-group: ''
+                """;
+
+        assertEquals("travel", read(yaml, "home").cooldownGroup());
+        assertEquals("", read(yaml, "heal").cooldownGroup(), "empty keeps its own wait");
+        assertEquals("", read("fly:\n  enabled: true\n", "fly").cooldownGroup());
+    }
+
+    @Test
     void aHomeOrAWarpKeepsEverythingButWhatItCosts() throws InvalidConfigurationException {
         CommandRules rules = read("""
                 fly:
                   price: 10
                   cooldown-seconds: 5
+                  cooldown-group: travel
                   log: true
                   on-success: [ 'actionbar: Done' ]
                 """, "fly").costing(99, 60);
 
+        assertEquals("travel", rules.cooldownGroup());
         assertEquals(99, rules.price());
         assertEquals(60, rules.cooldownSeconds());
         assertTrue(rules.log());

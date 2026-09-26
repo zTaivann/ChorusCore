@@ -19,6 +19,8 @@
 #   aliases           extra names for it.
 #   cooldown-seconds  how long before the same player may repeat it.
 #                     chorus.bypass.cooldown ignores it.
+#   cooldown-group    a name shared with other commands, custom or not, that
+#                     wait as one: using any of them starts the wait for all.
 #   messages          lines sent to whoever ran it, in MiniMessage.
 #                     %prefix% and %player% both work.
 #   run-as-player     commands run as the player, with their permissions.
@@ -86,6 +88,7 @@ custom:
     permission-message: ''
     aliases: [ web ]
     cooldown-seconds: 5
+    cooldown-group: ''
     messages:
       - '%prefix%<gray>Find us at <aqua><underlined>example.com'
     run-as-player: [ ]

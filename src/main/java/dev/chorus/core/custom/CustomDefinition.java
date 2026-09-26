@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 /** One command an admin invented in the config. */
 public record CustomDefinition(String name, String description, String permission,
                                String permissionMessage, List<String> aliases,
-                               int cooldownSeconds, List<String> messages,
+                               int cooldownSeconds, String cooldownGroup, List<String> messages,
                                List<String> playerCommands, List<String> consoleCommands,
                                SoundCue sound, List<Requirement> requires,
                                List<Action> onSuccess, List<Action> onFail, boolean log) {
@@ -36,6 +36,7 @@ public record CustomDefinition(String name, String description, String permissio
                 block.getString("permission-message", ""),
                 aliases,
                 Math.max(0, block.getInt("cooldown-seconds", 0)),
+                block.getString("cooldown-group", "").trim().toLowerCase(Locale.ROOT),
                 List.copyOf(block.getStringList("messages")),
                 List.copyOf(block.getStringList("run-as-player")),
                 List.copyOf(block.getStringList("run-as-console")),
