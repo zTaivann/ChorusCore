@@ -7,7 +7,7 @@ public final class Durations {
     private Durations() {
     }
 
-    /** Rounds up, so a second and a half left never shows as "1s" and then refuses again. */
+    /** Rounded up to the next second. */
     public static String format(long millis) {
         long total = (millis + 999) / 1000;
         long days = TimeUnit.SECONDS.toDays(total);

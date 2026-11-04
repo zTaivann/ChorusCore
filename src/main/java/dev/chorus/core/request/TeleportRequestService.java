@@ -12,9 +12,8 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
- * The open /tpa requests, kept per target and in the order they arrived so that a bare
- * /tpaccept answers the most recent one. Locked throughout, since a sender, a target and the
- * expiry sweep may each be on another thread.
+ * The open /tpa requests per target, in the order they arrived. Locked throughout: a sender,
+ * a target and the expiry sweep may each be on another thread.
  */
 public final class TeleportRequestService {
 

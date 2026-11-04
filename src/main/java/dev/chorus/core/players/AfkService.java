@@ -166,7 +166,7 @@ public final class AfkService implements Listener {
             long idle = now - entry.getValue();
             if (current.kicks() && idle >= kickAfter && away.contains(entry.getKey())) {
                 schedulers.withEntity(player,
-                        () -> player.kick(messages.render("players.afk-kicked")));
+                        () -> player.kick(messages.render(player, "players.afk-kicked")));
                 continue;
             }
             if (current.autoAfk() && idle >= afkAfter && away.add(entry.getKey())) {

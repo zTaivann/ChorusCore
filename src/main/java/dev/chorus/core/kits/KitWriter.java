@@ -41,7 +41,7 @@ final class KitWriter {
 
     /** One item on its own, which is what an icon is. */
     static Map<String, Object> describe(ItemStack item) {
-        // Linked so the file reads in the order a person would write it.
+        // Keeps a fixed key order.
         Map<String, Object> written = new LinkedHashMap<>();
         written.put("material", item.getType().name());
         if (item.getAmount() != 1) {

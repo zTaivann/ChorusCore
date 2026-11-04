@@ -20,9 +20,6 @@ import java.util.logging.Logger;
 /** The ledger the plugin keeps when it is the economy itself. */
 public final class Balances {
 
-    /** How long a /baltop ranking is reused before it is worked out again. */
-    private static final long RANKING_MILLIS = 30_000;
-
     private final BalanceRepository repository;
     private final Executor worker;
     private final Logger logger;
@@ -32,10 +29,13 @@ public final class Balances {
     private volatile List<Ranked> ranking = List.of();
     private volatile long rankedAt;
 
+    /** How long a /baltop ranking is reused before it is worked out again. */
+    private volatile long rankingMillis = 30_000;
+
     /** Players whose balance has changed since it was last written. */
     private final Set<UUID> unsaved = ConcurrentHashMap.newKeySet();
 
-    /** Bumped by every change, so a ranking built over one is known to be out of date. */
+    /** Bumped by every balance change. */
     private final AtomicLong changes = new AtomicLong();
     private volatile long rankedFor = -1;
 
@@ -55,11 +55,16 @@ public final class Balances {
         return currency;
     }
 
+    public void rankingSeconds(int seconds) {
+        this.rankingMillis = Math.max(0, seconds) * 1000L;
+    }
+
     /** Blocking, once, at startup. */
     public void load() throws SQLException {
         accounts.clear();
         for (BalanceRepository.Account account : repository.all()) {
-            accounts.put(account.player(), new Entry(account.name(), account.balance()));
+            accounts.put(account.player(),
+                    new Entry(account.name(), account.balance(), account.hidden()));
         }
         changes.incrementAndGet();
     }
@@ -70,15 +75,20 @@ public final class Balances {
 
     /** Opens an account at the starting balance if this player has never had one. */
     public void open(UUID player, String name) {
+        open(player, name, currency.startingBalance());
+    }
+
+    /** The same, with a starting balance of its own for a new account. */
+    public void open(UUID player, String name, double startingBalance) {
         boolean[] changed = new boolean[1];
         accounts.compute(player, (id, existing) -> {
             if (existing != null && existing.name.equals(name)) {
                 return existing;
             }
             changed[0] = true;
-            return new Entry(name, existing == null
-                    ? currency.clamp(currency.startingBalance())
-                    : existing.balance);
+            return existing == null
+                    ? new Entry(name, currency.clamp(startingBalance), false)
+                    : new Entry(name, existing.balance, existing.hidden);
         });
         if (changed[0]) {
             write(player);
@@ -139,8 +149,9 @@ public final class Balances {
             if (next == null) {
                 return existing;
             }
-            Entry updated = new Entry(existing == null ? fallback : existing.name,
-                    currency.clamp(next));
+            Entry updated = existing == null
+                    ? new Entry(fallback, currency.clamp(next), false)
+                    : new Entry(existing.name, currency.clamp(next), existing.hidden);
             written[0] = updated;
             return updated;
         });
@@ -151,6 +162,30 @@ public final class Balances {
         write(id);
         changes.incrementAndGet();
         return true;
+    }
+
+    /** Leaves a player out of /baltop, or puts them back, remembering it while they are away. */
+    public void hide(UUID player, boolean hidden) {
+        boolean[] changed = new boolean[1];
+        accounts.computeIfPresent(player, (id, existing) -> {
+            if (existing.hidden == hidden) {
+                return existing;
+            }
+            changed[0] = true;
+            return new Entry(existing.name, existing.balance, hidden);
+        });
+        if (!changed[0]) {
+            return;
+        }
+        changes.incrementAndGet();
+        worker.execute(() -> {
+            try {
+                repository.hide(player, hidden);
+            } catch (SQLException exception) {
+                logger.log(Level.WARNING, "Could not save whether " + player
+                        + " shows in /baltop", exception);
+            }
+        });
     }
 
     public void forget(UUID player) {
@@ -165,22 +200,23 @@ public final class Balances {
         });
     }
 
-    /** The richest accounts, richest first. */
-    public List<Ranked> top(int limit, int offset) {
-        List<Ranked> ranked = rank();
-        int from = Math.min(offset, ranked.size());
-        return List.copyOf(ranked.subList(from, Math.min(from + limit, ranked.size())));
+    /** Every account /baltop may show, richest first. */
+    public List<Ranked> ranking() {
+        return rank();
     }
 
+    /** What the accounts /baltop may show hold between them. */
     public double total() {
         double sum = 0;
         for (Entry entry : accounts.values()) {
-            sum += entry.balance;
+            if (!entry.hidden) {
+                sum += entry.balance;
+            }
         }
         return sum;
     }
 
-    /** Throws the ranking away, so the next /baltop is worked out from scratch. */
+    /** Drops the cached ranking. */
     public void refresh() {
         changes.incrementAndGet();
     }
@@ -189,12 +225,16 @@ public final class Balances {
         long generation = changes.get();
         long now = System.currentTimeMillis();
         List<Ranked> cached = ranking;
-        if (rankedFor == generation && now - rankedAt < RANKING_MILLIS) {
+        if (rankedFor == generation && now - rankedAt < rankingMillis) {
             return cached;
         }
 
         List<Ranked> ranked = new ArrayList<>(accounts.size());
-        accounts.forEach((id, entry) -> ranked.add(new Ranked(id, entry.name, entry.balance)));
+        accounts.forEach((id, entry) -> {
+            if (!entry.hidden) {
+                ranked.add(new Ranked(id, entry.name, entry.balance));
+            }
+        });
         ranked.sort(Comparator.comparingDouble(Ranked::balance).reversed());
 
         ranking = List.copyOf(ranked);
@@ -227,6 +267,6 @@ public final class Balances {
     public record Ranked(UUID player, String name, double balance) {
     }
 
-    private record Entry(String name, double balance) {
+    private record Entry(String name, double balance, boolean hidden) {
     }
 }

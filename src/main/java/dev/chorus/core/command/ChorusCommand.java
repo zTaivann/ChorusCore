@@ -1,10 +1,10 @@
 package dev.chorus.core.command;
 
-import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
+import dev.chorus.core.stafflog.StaffLog;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -27,14 +27,13 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     private static final String WORLD_BYPASS = "chorus.bypass.worlds";
 
     /**
-     * This command's own view of the messages, so that a { messages} block in its
-     * config can replace a line for this command without touching it anywhere else.
+     * This command's own view of the messages, with its messages block applied.
      */
     protected final Messages messages;
     protected final ActionGuard guard;
     protected final Schedulers schedulers;
 
-    private final AuditLog audit;
+    private final StaffLog staffLog;
     private final String name;
     private final String permission;
 
@@ -44,7 +43,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
         this.messages = support.messages().forCommand();
         this.guard = support.guard();
         this.schedulers = support.schedulers();
-        this.audit = support.audit();
+        this.staffLog = support.staffLog();
         this.name = name;
         this.permission = permission;
     }
@@ -80,18 +79,14 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Cooldown and price check. Call it once the arguments are known good, so a typo never
-     * costs anything. The console is never charged and never waits.
+     * Cooldown, daily limit and price check. Call it once the arguments are valid. The
+     * console always passes.
      */
     protected final boolean ready(CommandSender sender) {
         return ready(sender, name, rules);
     }
 
-    /**
-     * The same check against a rule set worked out at the time and a cooldown of its own.
-     * A warp with its own price and its own wait needs both: the command block still holds
-     * what /warp costs in general, and this holds what that one warp costs.
-     */
+    /** The same check against other rules and cooldown key, such as one warp's own. */
     protected final boolean ready(CommandSender sender, String key, CommandRules against) {
         if (!(sender instanceof Player player) || guard.allow(player, key, against)) {
             return true;
@@ -101,7 +96,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Starts the cooldown, takes the money, plays the sound and runs the on-success actions.
+     * Starts the cooldown, charges the price, plays the sound and runs the on-success actions.
      * Call it only once the action really happened, which for a teleport means on arrival.
      */
     protected final void settle(CommandSender sender) {
@@ -116,6 +111,20 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
                 Action.runAll(against.onSuccess(), player, messages, schedulers, "command", name);
             });
         }
+    }
+
+    /**
+     * For an action that finishes later, such as a teleport after its warmup: takes the price
+     * now when the rules charge on use. Hand what it returns to the teleport as its cancel action.
+     */
+    protected final Runnable chargeUpfront(CommandSender sender) {
+        return chargeUpfront(sender, name, rules);
+    }
+
+    protected final Runnable chargeUpfront(CommandSender sender, String key, CommandRules against) {
+        return sender instanceof Player player
+                ? guard.chargeUpfront(player, key, against)
+                : ActionGuard.NOTHING_TO_REFUND;
     }
 
     @Override
@@ -144,7 +153,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
             }
         }
         if (current.log()) {
-            audit.record(sender, "used", "/" + name, args.length == 0 ? null : String.join(" ", args));
+            staffLog.record(sender, "used", "/" + name, args.length == 0 ? null : String.join(" ", args));
         }
         run(sender, args);
         return true;
@@ -205,7 +214,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
         return target;
     }
 
-    /** Names for tab completion, filtered while iterating rather than after. */
+    /** Online names for tab completion. */
     protected static List<String> onlineNames(CommandSender sender, String input, boolean includeSelf) {
         String typed = input.toLowerCase(Locale.ROOT);
         List<String> names = new ArrayList<>();

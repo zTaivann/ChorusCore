@@ -1,4 +1,4 @@
-package dev.chorus.core.flags;
+package dev.chorus.core.preference;
 
 import dev.chorus.core.storage.Schema;
 import dev.chorus.core.storage.SqlDialect;
@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-/** A row exists only while the flag is on, so there is nothing to store for the default. */
-public final class SqlPlayerFlagRepository implements PlayerFlagRepository {
+/** A row exists only while the preference is set, so there is nothing to store for the default. */
+public final class SqlPlayerPreferenceRepository implements PlayerPreferenceRepository {
 
     private static final String SELECT = "SELECT flag FROM chorus_player_flags WHERE player = ?";
     private static final String DELETE =
@@ -24,7 +24,7 @@ public final class SqlPlayerFlagRepository implements PlayerFlagRepository {
     private final List<String> steps;
     private final String insert;
 
-    public SqlPlayerFlagRepository(Storage storage) {
+    public SqlPlayerPreferenceRepository(Storage storage) {
         this.storage = storage;
         this.steps = List.of(createTable(storage.dialect()));
         this.insert = insert(storage.dialect());
@@ -42,31 +42,31 @@ public final class SqlPlayerFlagRepository implements PlayerFlagRepository {
             statement.setString(1, player.toString());
 
             try (ResultSet rows = statement.executeQuery()) {
-                Set<String> flags = new HashSet<>();
+                Set<String> preferences = new HashSet<>();
                 while (rows.next()) {
-                    flags.add(rows.getString("flag"));
+                    preferences.add(rows.getString("flag"));
                 }
-                return flags;
+                return preferences;
             }
         }
     }
 
     @Override
-    public void set(UUID player, String flag) throws SQLException {
+    public void set(UUID player, String preference) throws SQLException {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(insert)) {
             statement.setString(1, player.toString());
-            statement.setString(2, flag);
+            statement.setString(2, preference);
             statement.executeUpdate();
         }
     }
 
     @Override
-    public void clear(UUID player, String flag) throws SQLException {
+    public void clear(UUID player, String preference) throws SQLException {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(DELETE)) {
             statement.setString(1, player.toString());
-            statement.setString(2, flag);
+            statement.setString(2, preference);
             statement.executeUpdate();
         }
     }

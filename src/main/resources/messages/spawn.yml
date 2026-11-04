@@ -5,13 +5,12 @@
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
-# Part of the messages folder. See core.yml.
-# A 'prefix' set here is what %prefix% means in this file.
+# Format: see core.yml. A prefix here replaces %prefix% in this file.
 
 spawn:
-  set: '%prefix%<gray>Spawn is now where you are standing.'
-  set-world: '%prefix%<gray>Spawn of <white>%world%</white> is now where you are standing.'
-  teleported: '%prefix%<gray>Welcome to spawn.'
-  not-set: '%prefix%<red>No spawn has been set yet.'
-  world-missing: '%prefix%<red>The spawn world <white>%world%</white> is not loaded right now.'
-  no-such-world: '%prefix%<red>This server has no world called <white>%world%</white>.'
+  set: '%prefix%<gray>Spawn set at your location.'
+  set-world: '%prefix%<gray>Spawn of <white>%world%</white> set at your location.'
+  teleported: '%prefix%<gray>You arrived at the spawn.'
+  not-set: '%prefix%<red>The spawn has not been set yet.'
+  world-missing: '%prefix%<red>The spawn world <white>%world%</white> is not loaded.'
+  no-such-world: '%prefix%<red>There is no world called <white>%world%</white>.'

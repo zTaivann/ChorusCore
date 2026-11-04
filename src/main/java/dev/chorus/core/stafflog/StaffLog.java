@@ -1,4 +1,4 @@
-package dev.chorus.core.audit;
+package dev.chorus.core.stafflog;
 
 import dev.chorus.core.storage.Queries;
 import org.bukkit.command.CommandSender;
@@ -14,12 +14,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** What staff did, and to whom. */
-public final class AuditLog {
+public final class StaffLog {
 
     private static final int MAX_DETAIL = 250;
     private static final int MAX_PAGE = 50;
 
-    private final AuditRepository repository;
+    private final StaffLogRepository repository;
     private final Executor worker;
     private final Executor mainThread;
     private final Logger logger;
@@ -28,7 +28,7 @@ public final class AuditLog {
     private volatile int keepDays = 60;
     private volatile int pageSize = 10;
 
-    public AuditLog(AuditRepository repository, Executor worker, Executor mainThread, Logger logger) {
+    public StaffLog(StaffLogRepository repository, Executor worker, Executor mainThread, Logger logger) {
         this.repository = repository;
         this.worker = worker;
         this.mainThread = mainThread;
@@ -54,7 +54,7 @@ public final class AuditLog {
         if (!enabled) {
             return;
         }
-        AuditEntry entry = new AuditEntry(actor.getName(), action, subject, trim(detail),
+        StaffLogEntry entry = new StaffLogEntry(actor.getName(), action, subject, trim(detail),
                 System.currentTimeMillis());
 
         worker.execute(() -> {
@@ -67,7 +67,7 @@ public final class AuditLog {
     }
 
     /** A null name asks for everything. Completes on the server thread. */
-    public CompletableFuture<List<AuditEntry>> recent(@Nullable String name, int limit) {
+    public CompletableFuture<List<StaffLogEntry>> recent(@Nullable String name, int limit) {
         return Queries.run(() -> repository.findRecent(name, limit), worker, mainThread);
     }
 

@@ -142,8 +142,7 @@ public final class Schedulers {
     }
 
     /**
-     * The reflective half. Every lookup happens once, on a server that turned out to be
-     * Folia; a server that is not never builds one of these.
+     * The Folia calls, looked up once. Only built on Folia.
      */
     private static final class Folia {
 

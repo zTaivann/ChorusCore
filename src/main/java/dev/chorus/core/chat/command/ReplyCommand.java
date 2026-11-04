@@ -3,8 +3,8 @@ package dev.chorus.core.chat.command;
 import dev.chorus.core.chat.IgnoreList;
 import dev.chorus.core.chat.PrivateMessages;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -12,8 +12,8 @@ import java.util.UUID;
 public final class ReplyCommand extends PrivateMessageCommand {
 
     public ReplyCommand(CommandSupport support, PrivateMessages chat,
-                          PlayerFlagService flags, IgnoreList ignores) {
-        super(support, chat, flags, ignores, "reply", "chorus.chat.reply");
+                          PlayerPreferenceService preferences, IgnoreList ignores) {
+        super(support, chat, preferences, ignores, "reply", "chorus.chat.reply");
     }
 
     @Override
@@ -24,7 +24,7 @@ public final class ReplyCommand extends PrivateMessageCommand {
         }
 
         UUID partnerId = chat.replyTarget(player.getUniqueId(),
-                flags.isSet(player.getUniqueId(), PlayerFlag.REPLY_TO_SENDER));
+                preferences.isSet(player.getUniqueId(), PlayerPreference.REPLY_TO_SENDER));
         Player partner = partnerId == null ? null : player.getServer().getPlayer(partnerId);
         if (partner == null || !player.canSee(partner)) {
             messages.send(player, "chat.no-reply-target");

@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-/** The kit editor as a screen. */
+/** The kit editor as a menu. */
 public final class KitEditMenu {
 
     private static final int ROWS = 5;
@@ -87,7 +87,7 @@ public final class KitEditMenu {
         int pages = Math.max(1, (all.size() + PER_PAGE - 1) / PER_PAGE);
         int current = Math.min(Math.max(0, page), pages - 1);
 
-        Menu menu = new Menu(player.getServer(), messages.render("menu.editor.list-title",
+        Menu menu = new Menu(player.getServer(), messages.render(player, "menu.editor.list-title",
                 "page", String.valueOf(current + 1),
                 "pages", String.valueOf(pages)), ROWS);
 
@@ -95,29 +95,31 @@ public final class KitEditMenu {
         for (int slot = 0; slot < PER_PAGE && first + slot < all.size(); slot++) {
             Kit kit = all.get(first + slot);
             menu.set(slot, MenuItems.of(kit.icon(),
-                            messages.render("menu.editor.list-entry",
+                            messages.render(player, "menu.editor.list-entry",
                                     "kit", KitEditor.titled(kit.name())),
-                            messages.renderLines("menu.editor.list-entry-lore",
+                            messages.renderLines(player, "menu.editor.list-entry-lore",
                                     "items", String.valueOf(kit.items().size()))),
                     clicker -> open(clicker, kit.name()));
         }
 
         if (current > 0) {
             menu.set(PREVIOUS_SLOT,
-                    button(settings.back(), "menu.buttons.previous",
+                    button(player, settings.back(), "menu.buttons.previous",
                             "menu.buttons.previous-lore", "page", String.valueOf(current)),
                     clicker -> openList(clicker, current - 1));
         }
         if (current < pages - 1) {
             menu.set(NEXT_SLOT,
-                    button(settings.back(), "menu.buttons.next",
+                    button(player, settings.back(), "menu.buttons.next",
                             "menu.buttons.next-lore", "page", String.valueOf(current + 2)),
                     clicker -> openList(clicker, current + 1));
         }
 
-        menu.set(NEW_KIT_SLOT, button(settings.newKit(), "menu.editor.new", "menu.editor.new-lore"),
+        menu.set(NEW_KIT_SLOT,
+                button(player, settings.newKit(), "menu.editor.new", "menu.editor.new-lore"),
                 this::askNewKit);
-        menu.set(CLOSE_SLOT, button(settings.close(), "menu.buttons.close", "menu.buttons.close-lore"),
+        menu.set(CLOSE_SLOT,
+                button(player, settings.close(), "menu.buttons.close", "menu.buttons.close-lore"),
                 Player::closeInventory);
         menu.fill(0, menu.size(), MenuItems.filler(settings.filler()));
         menu.open(player);
@@ -132,39 +134,39 @@ public final class KitEditMenu {
         }
 
         Menu menu = new Menu(player.getServer(),
-                messages.render("menu.editor.title", "kit", KitEditor.titled(kit.name())), ROWS);
+                messages.render(player, "menu.editor.title", "kit", KitEditor.titled(kit.name())), ROWS);
 
         menu.set(HEADER_SLOT, MenuItems.of(kit.icon(),
-                        messages.render("menu.editor.header", "kit", KitEditor.titled(kit.name())),
-                        messages.renderLines("menu.editor.header-lore", "display", kit.display())),
+                        messages.render(player, "menu.editor.header", "kit", KitEditor.titled(kit.name())),
+                        messages.renderLines(player, "menu.editor.header-lore", "display", kit.display())),
                 clicker -> ask(clicker, kit, "menu.editor.ask-display", "display"));
 
-        lists(menu, kit);
+        lists(player, menu, kit);
 
-        menu.set(ICON_SLOT, button(settings.icon(), "menu.editor.icon", "menu.editor.icon-lore",
+        menu.set(ICON_SLOT, button(player, settings.icon(), "menu.editor.icon", "menu.editor.icon-lore",
                         "icon", kit.icon().getType().name().toLowerCase(Locale.ROOT)),
                 clicker -> openIcon(clicker, kit));
 
-        menu.set(ITEMS_SLOT, button(settings.items(), "menu.editor.items", "menu.editor.items-lore",
+        menu.set(ITEMS_SLOT, button(player, settings.items(), "menu.editor.items", "menu.editor.items-lore",
                         "count", String.valueOf(kit.items().size())),
                 clicker -> openItems(clicker, kit));
 
         menu.set(PREVIEW_SLOT,
-                button(settings.preview(), "menu.editor.preview", "menu.editor.preview-lore"),
+                button(player, settings.preview(), "menu.editor.preview", "menu.editor.preview-lore"),
                 clicker -> preview(clicker, kit));
 
-        menu.set(LORE_SLOT, button(settings.lore(), "menu.editor.lore", "menu.editor.lore-lore",
+        menu.set(LORE_SLOT, button(player, settings.lore(), "menu.editor.lore", "menu.editor.lore-lore",
                         "value", kit.lore().isEmpty()
-                                ? messages.plain("kits.word-none")
+                                ? messages.plain(player, "kits.word-none")
                                 : String.valueOf(kit.lore().size())),
                 clicker -> ask(clicker, kit, "menu.editor.ask-lore", "lore"));
 
-        settings(menu, kit);
+        settings(player, menu, kit);
 
-        menu.set(BACK_SLOT, button(settings.back(), "menu.editor.back", "menu.editor.back-lore"),
+        menu.set(BACK_SLOT, button(player, settings.back(), "menu.editor.back", "menu.editor.back-lore"),
                 this::openList);
         menu.setPerClick(DELETE_SLOT,
-                button(settings.delete(), "menu.editor.delete", "menu.editor.delete-lore"),
+                button(player, settings.delete(), "menu.editor.delete", "menu.editor.delete-lore"),
                 (clicker, click) -> {
                     // Only on a shift click.
                     if (click.isShiftClick()) {
@@ -180,63 +182,63 @@ public final class KitEditMenu {
         menu.open(player);
     }
 
-    /** The three lists, each on a screen of its own. */
-    private void lists(Menu menu, Kit kit) {
-        menu.set(REQUIREMENTS_SLOT, button(settings.requirements(), "menu.editor.requirements",
+    /** The three lists, each in a menu of its own. */
+    private void lists(Player player, Menu menu, Kit kit) {
+        menu.set(REQUIREMENTS_SLOT, button(player, settings.requirements(), "menu.editor.requirements",
                         "menu.editor.requirements-lore",
                         "count", String.valueOf(kit.requirements().size())),
                 clicker -> rules.open(clicker, kit.name(), KitEditor.RuleList.REQUIREMENTS));
 
-        menu.set(CLAIM_ACTIONS_SLOT, button(settings.claimActions(), "menu.editor.claimactions",
+        menu.set(CLAIM_ACTIONS_SLOT, button(player, settings.claimActions(), "menu.editor.claimactions",
                         "menu.editor.claimactions-lore",
                         "count", String.valueOf(kit.claimActions().size())),
                 clicker -> rules.open(clicker, kit.name(), KitEditor.RuleList.CLAIM_ACTIONS));
 
-        menu.set(FAIL_ACTIONS_SLOT, button(settings.failActions(), "menu.editor.failactions",
+        menu.set(FAIL_ACTIONS_SLOT, button(player, settings.failActions(), "menu.editor.failactions",
                         "menu.editor.failactions-lore",
                         "count", String.valueOf(kit.failActions().size())),
                 clicker -> rules.open(clicker, kit.name(), KitEditor.RuleList.FAIL_ACTIONS));
 
-        menu.set(PLACEHOLDERS_SLOT, toggle(kit.placeholders(), "menu.editor.placeholders",
-                        "menu.editor.placeholders-lore", word(kit.placeholders())),
+        menu.set(PLACEHOLDERS_SLOT, toggle(player, kit.placeholders(), "menu.editor.placeholders",
+                        "menu.editor.placeholders-lore", word(player, kit.placeholders())),
                 clicker -> set(clicker, kit, "placeholders", String.valueOf(!kit.placeholders())));
     }
 
-    private void settings(Menu menu, Kit kit) {
+    private void settings(Player player, Menu menu, Kit kit) {
         menu.setPerClick(SETTING_SLOTS[0],
-                button(settings.cooldown(), "menu.editor.cooldown", "menu.editor.cooldown-lore",
-                        "value", cooldownOf(kit)),
+                button(player, settings.cooldown(), "menu.editor.cooldown", "menu.editor.cooldown-lore",
+                        "value", cooldownOf(player, kit)),
                 (clicker, click) -> number(clicker, kit, click, "cooldown", "menu.editor.ask-cooldown",
                         kit.cooldownSeconds(), click.isShiftClick() ? COOLDOWN_LEAP : COOLDOWN_STEP));
 
         menu.setPerClick(SETTING_SLOTS[1],
-                button(settings.maxClaims(), "menu.editor.maxclaims", "menu.editor.maxclaims-lore",
-                        "value", claimsOf(kit)),
+                button(player, settings.maxClaims(), "menu.editor.maxclaims", "menu.editor.maxclaims-lore",
+                        "value", claimsOf(player, kit)),
                 (clicker, click) -> number(clicker, kit, click, "maxclaims",
                         "menu.editor.ask-maxclaims", kit.maxClaims(), click.isShiftClick() ? 10 : 1));
 
         menu.setPerClick(SETTING_SLOTS[2],
-                button(settings.price(), "menu.editor.price", "menu.editor.price-lore",
-                        "value", priceOf(kit)),
+                button(player, settings.price(), "menu.editor.price", "menu.editor.price-lore",
+                        "value", priceOf(player, kit)),
                 (clicker, click) -> number(clicker, kit, click, "price", "menu.editor.ask-price",
                         (int) kit.price(), click.isShiftClick() ? 100 : 10));
 
-        menu.set(SETTING_SLOTS[3], toggle(kit.oneTime(), "menu.editor.onetime",
-                        "menu.editor.onetime-lore", word(kit.oneTime())),
+        menu.set(SETTING_SLOTS[3], toggle(player, kit.oneTime(), "menu.editor.onetime",
+                        "menu.editor.onetime-lore", word(player, kit.oneTime())),
                 clicker -> set(clicker, kit, "onetime", String.valueOf(!kit.oneTime())));
 
-        menu.set(SETTING_SLOTS[4], toggle(kit.autoArmor(), "menu.editor.autoarmor",
-                        "menu.editor.autoarmor-lore", word(kit.autoArmor())),
+        menu.set(SETTING_SLOTS[4], toggle(player, kit.autoArmor(), "menu.editor.autoarmor",
+                        "menu.editor.autoarmor-lore", word(player, kit.autoArmor())),
                 clicker -> set(clicker, kit, "autoarmor", String.valueOf(!kit.autoArmor())));
 
-        menu.set(SETTING_SLOTS[5], toggle(kit.clearInventory(), "menu.editor.clearinventory",
-                        "menu.editor.clearinventory-lore", word(kit.clearInventory())),
+        menu.set(SETTING_SLOTS[5], toggle(player, kit.clearInventory(), "menu.editor.clearinventory",
+                        "menu.editor.clearinventory-lore", word(player, kit.clearInventory())),
                 clicker -> set(clicker, kit, "clearinventory", String.valueOf(!kit.clearInventory())));
 
         menu.set(SETTING_SLOTS[6],
-                button(settings.permission(), "menu.editor.permission", "menu.editor.permission-lore",
+                button(player, settings.permission(), "menu.editor.permission", "menu.editor.permission-lore",
                         "value", kit.permission().isEmpty()
-                                ? messages.plain("kits.word-everyone")
+                                ? messages.plain(player, "kits.word-everyone")
                                 : kit.permission()),
                 clicker -> ask(clicker, kit, "menu.editor.ask-permission", "permission"));
     }
@@ -260,7 +262,7 @@ public final class KitEditMenu {
 
     /** Asks in chat and comes straight back to the kit. */
     private void ask(Player player, Kit kit, String question, String setting) {
-        prompts.ask(player, messages.render(question, "kit", kit.name()),
+        prompts.ask(player, messages.render(player, question, "kit", kit.name()),
                 typed -> {
                     // "none" empties a text setting: an empty chat line cannot be sent.
                     String value = typed.equalsIgnoreCase("none") ? "" : typed;
@@ -273,7 +275,7 @@ public final class KitEditMenu {
     }
 
     private void askNewKit(Player player) {
-        prompts.ask(player, messages.render("menu.editor.ask-name"),
+        prompts.ask(player, messages.render(player, "menu.editor.ask-name"),
                 typed -> {
                     String name = ChatPrompts.normalise(typed);
                     if (!name.matches("[a-z0-9_-]{1,32}")) {
@@ -299,7 +301,7 @@ public final class KitEditMenu {
 
     private void set(Player player, Kit kit, String setting, String value) {
         if (editor.set(kit.name(), setting, value)) {
-            // Reopened rather than repainted: the file has just been read again.
+            // Reopened, since the file was just read again.
             open(player, kit.name());
             return;
         }
@@ -309,7 +311,7 @@ public final class KitEditMenu {
     /** One slot for the icon, and one slot that means one. */
     private void openIcon(Player player, Kit kit) {
         PaletteMenu slot = new PaletteMenu(player.getServer(),
-                messages.render("menu.editor.icon-title", "kit", KitEditor.titled(kit.name())), 1, 1,
+                messages.render(player, "menu.editor.icon-title", "kit", KitEditor.titled(kit.name())), 1, 1,
                 (closer, contents) -> {
                     ItemStack chosen = firstOf(contents);
                     if (chosen == null) {
@@ -333,7 +335,7 @@ public final class KitEditMenu {
     /** The item editor. */
     private void openItems(Player player, Kit kit) {
         PaletteMenu items = new PaletteMenu(player.getServer(),
-                messages.render("menu.editor.items-title", "kit", KitEditor.titled(kit.name())),
+                messages.render(player, "menu.editor.items-title", "kit", KitEditor.titled(kit.name())),
                 settings.itemRows(),
                 (closer, contents) -> {
                     KitEditor.Result result = editor.setItems(kit.name(), contents);
@@ -359,7 +361,8 @@ public final class KitEditMenu {
         List<ItemStack> contents = kit.contents();
         int rows = Math.max(1, Math.min(6, (contents.size() + 8) / 9));
         Menu menu = new Menu(player.getServer(),
-                messages.render("menu.editor.preview-title", "kit", KitEditor.titled(kit.name())), rows);
+                messages.render(player, "menu.editor.preview-title",
+                        "kit", KitEditor.titled(kit.name())), rows);
 
         for (int slot = 0; slot < Math.min(contents.size(), menu.size()); slot++) {
             menu.set(slot, contents.get(slot));
@@ -367,7 +370,7 @@ public final class KitEditMenu {
         menu.open(player);
     }
 
-    /** Opens a screen on the next tick rather than now. */
+    /** Opens a menu on the next tick rather than now. */
     private void later(Player player, Runnable open) {
         if (!plugin.isEnabled()) {
             // A close during shutdown. Asking a stopping server to schedule anything throws.
@@ -389,35 +392,35 @@ public final class KitEditMenu {
         return null;
     }
 
-    private ItemStack button(Material material, String nameKey, String loreKey,
+    private ItemStack button(Player player, Material material, String nameKey, String loreKey,
                              String... placeholders) {
-        return MenuItems.of(material, messages.render(nameKey),
-                messages.renderLines(loreKey, placeholders));
+        return MenuItems.of(material, messages.render(player, nameKey),
+                messages.renderLines(player, loreKey, placeholders));
     }
 
-    /** Green for on, grey for off, so the state reads before the text does. */
-    private ItemStack toggle(boolean on, String nameKey, String loreKey, String value) {
+    /** Green for on, grey for off. */
+    private ItemStack toggle(Player player, boolean on, String nameKey, String loreKey, String value) {
         return MenuItems.of(on ? settings.enabled() : settings.disabled(),
-                messages.render(nameKey), messages.renderLines(loreKey, "value", value));
+                messages.render(player, nameKey), messages.renderLines(player, loreKey, "value", value));
     }
 
-    private String cooldownOf(Kit kit) {
+    private String cooldownOf(Player player, Kit kit) {
         return kit.cooldownSeconds() == 0
-                ? messages.plain("kits.word-none")
+                ? messages.plain(player, "kits.word-none")
                 : Durations.format(TimeUnit.SECONDS.toMillis(kit.cooldownSeconds()));
     }
 
-    private String claimsOf(Kit kit) {
+    private String claimsOf(Player player, Kit kit) {
         return kit.maxClaims() == 0
-                ? messages.plain("kits.word-unlimited")
+                ? messages.plain(player, "kits.word-unlimited")
                 : String.valueOf(kit.maxClaims());
     }
 
-    private String priceOf(Kit kit) {
-        return kit.price() <= 0 ? messages.plain("kits.word-free") : economy.format(kit.price());
+    private String priceOf(Player player, Kit kit) {
+        return kit.price() <= 0 ? messages.plain(player, "kits.word-free") : economy.format(kit.price());
     }
 
-    private String word(boolean value) {
-        return messages.plain(value ? "kits.word-true" : "kits.word-false");
+    private String word(Player player, boolean value) {
+        return messages.plain(player, value ? "kits.word-true" : "kits.word-false");
     }
 }

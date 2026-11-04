@@ -4,8 +4,8 @@ import dev.chorus.core.chat.IgnoreList;
 import dev.chorus.core.chat.PrivateMessages;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -17,15 +17,15 @@ abstract class PrivateMessageCommand extends PlayerCommand {
 
     protected final PrivateMessages chat;
 
-    protected final PlayerFlagService flags;
+    protected final PlayerPreferenceService preferences;
     private final IgnoreList ignores;
 
     protected PrivateMessageCommand(CommandSupport support, PrivateMessages chat,
-                                    PlayerFlagService flags, IgnoreList ignores,
+                                    PlayerPreferenceService preferences, IgnoreList ignores,
                                     String name, String permission) {
         super(support, name, permission);
         this.chat = chat;
-        this.flags = flags;
+        this.preferences = preferences;
         this.ignores = ignores;
     }
 
@@ -34,7 +34,7 @@ abstract class PrivateMessageCommand extends PlayerCommand {
         if (from.hasPermission(ignores.bypassPermission())) {
             return false;
         }
-        if (flags.isSet(to.getUniqueId(), PlayerFlag.MESSAGES_BLOCKED)
+        if (preferences.isSet(to.getUniqueId(), PlayerPreference.MESSAGES_BLOCKED)
                 || ignores.ignores(to.getUniqueId(), from.getUniqueId())) {
             messages.send(from, "chat.msg-refused", "player", to.getName());
             return true;
@@ -69,8 +69,7 @@ abstract class PrivateMessageCommand extends PlayerCommand {
     }
 
     /**
-     * Joins the words after {@code firstWord} back together. The result reaches the message
-     * as plain text, so a player cannot smuggle formatting tags into someone else's chat.
+     * Joins the words after {@code firstWord} back together, as plain text.
      */
     protected static String textFrom(String[] args, int firstWord) {
         StringBuilder text = new StringBuilder();

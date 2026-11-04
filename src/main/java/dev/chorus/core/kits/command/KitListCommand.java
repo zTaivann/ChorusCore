@@ -56,7 +56,7 @@ public final class KitListCommand extends PlayerCommand {
         List<ListMenu.Entry> entries = new ArrayList<>(visible.size());
         for (Kit kit : visible) {
             List<Component> lore = new ArrayList<>(kit.lore());
-            lore.add(messages.render("menu.kits.lore-divider"));
+            lore.add(messages.render(player, "menu.kits.lore-divider"));
             lore.add(status(kit, player, now));
             entries.add(new ListMenu.Entry(kit.icon(), kit.display(), lore, clicker -> {
                 clicker.closeInventory();
@@ -69,15 +69,15 @@ public final class KitListCommand extends PlayerCommand {
     private Component status(Kit kit, Player player, long now) {
         long left = kits.remaining(player.getUniqueId(), kit, now);
         if (left == Long.MAX_VALUE) {
-            return messages.render("menu.kits.lore-taken");
+            return messages.render(player, "menu.kits.lore-taken");
         }
         if (left > 0) {
-            return messages.render("menu.kits.lore-cooldown", "time", Durations.format(left));
+            return messages.render(player, "menu.kits.lore-cooldown", "time", Durations.format(left));
         }
         if (kits.unmet(player, kit) != null) {
-            return messages.render("menu.kits.lore-locked");
+            return messages.render(player, "menu.kits.lore-locked");
         }
-        return messages.render("menu.kits.lore-action");
+        return messages.render(player, "menu.kits.lore-action");
     }
 
     private void sendList(Player player, List<Kit> visible) {
@@ -85,10 +85,10 @@ public final class KitListCommand extends PlayerCommand {
 
         List<Component> entries = new ArrayList<>(visible.size());
         for (Kit kit : visible) {
-            entries.add(messages.render("kits.list-entry", "kit", kit.name())
+            entries.add(messages.render(player, "kits.list-entry", "kit", kit.name())
                     .clickEvent(ClickEvent.runCommand("/kit " + kit.name())));
         }
         player.sendMessage(Component.join(
-                JoinConfiguration.separator(messages.render("kits.list-separator")), entries));
+                JoinConfiguration.separator(messages.render(player, "kits.list-separator")), entries));
     }
 }

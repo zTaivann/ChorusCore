@@ -1,7 +1,7 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   T E L E P O R T                                                      │
-# │   /tpa  /tpahere  /tpaccept  /tpdeny  /back  /tptoggle                 │
+# │   /tpa  /tpahere  /tpaccept  /tpdeny  /tpcancel  /tptoggle  /back      │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
@@ -9,53 +9,55 @@
 
 request:
   usage: '%prefix%<gray>Uso: <white>/%command% [jugador]</white>'
-  self: '%prefix%<red>No puedes mandarte una solicitud a ti mismo.'
-  duplicate: '%prefix%<red>Ya tienes una solicitud esperando a <white>%player%</white>.'
-  sent: '%prefix%<gray>Solicitud enviada a <white>%player%</white>. Vence en %seconds% segundos.'
-  received: '%prefix%<white>%player%</white><gray> quiere teletransportarse hacia ti.'
-  received-here: '%prefix%<white>%player%</white><gray> quiere que vayas hacia él.'
+  self: '%prefix%<red>No puedes enviarte una solicitud a ti mismo.'
+  duplicate: '%prefix%<red>Ya tienes una solicitud pendiente a <white>%player%</white>.'
+  sent: '%prefix%<gray>Solicitud enviada a <white>%player%</white>. Caduca en %seconds% segundos.'
+  received: '%prefix%<white>%player%</white><gray> quiere teletransportarse a tu ubicación.'
+  received-here: '%prefix%<white>%player%</white><gray> quiere que te teletransportes a su ubicación.'
   button-accept: '<green><bold>[ ACEPTAR ]</bold></green>'
   button-deny: '<red><bold>[ RECHAZAR ]</bold></red>'
   button-separator: '<gray> o </gray>'
-  button-accept-hover: '<gray>Dejar pasar a <white>%player%</white>'
-  button-deny-hover: '<gray>Rechazar a <white>%player%</white>'
+  button-accept-hover: '<gray>Aceptar la solicitud de <white>%player%</white>'
+  button-deny-hover: '<gray>Rechazar la solicitud de <white>%player%</white>'
   accepted: '%prefix%<gray>Aceptaste la solicitud de <white>%player%</white>.'
   accepted-by: '%prefix%<white>%player%</white><gray> aceptó tu solicitud.'
   denied: '%prefix%<gray>Rechazaste la solicitud de <white>%player%</white>.'
   denied-by: '%prefix%<white>%player%</white><gray> rechazó tu solicitud.'
   cancelled: '%prefix%<gray>Tu solicitud a <white>%player%</white> se canceló.'
   cancelled-by: '%prefix%<white>%player%</white><gray> canceló su solicitud.'
-  expired: '%prefix%<gray>Tu solicitud a <white>%player%</white> venció.'
+  expired: '%prefix%<gray>Tu solicitud a <white>%player%</white> caducó.'
   none: '%prefix%<red>No tienes solicitudes pendientes.'
-  none-sent: '%prefix%<red>No has mandado ninguna solicitud.'
+  none-sent: '%prefix%<red>No has enviado ninguna solicitud.'
   none-from: '%prefix%<red>No tienes ninguna solicitud pendiente de <white>%player%</white>.'
-  none-to: '%prefix%<red>No tienes ninguna solicitud pendiente hacia <white>%player%</white>.'
-  toggle-off: '%prefix%<gray>Las solicitudes de teletransporte están <red>bloqueadas</red>.'
-  toggle-on: '%prefix%<gray>Vuelves a <green>aceptar</green> solicitudes de teletransporte.'
-  blocked: '%prefix%<red>%player% no está aceptando solicitudes de teletransporte.'
-  auto-on: '%prefix%<green>Las solicitudes se van a aceptar solas.'
-  auto-off: '%prefix%<gray>Las solicitudes van a volver a preguntarte.'
-  auto-accepted: '%prefix%<gray>%player% acepta todas las solicitudes. En camino.'
-  auto-accepted-by: '%prefix%<gray>%player% viene en camino, aceptado automáticamente.'
-  offline-usage: '%prefix%<gray>Usa <white>/tpoffline [jugador]</white>.'
-  offline-went: '%prefix%<gray>Te llevamos a donde <white>%player%</white> se desconectó hace <white>%ago%</white>.'
-  offline-here: '%prefix%<gray>%player% está conectado, así que esto es simplemente donde está.'
-  offline-nowhere: '%prefix%<gray>No hay nada anotado de <white>%player%</white>.'
-  all-sent: '%prefix%<gray>Se le preguntó a <white>%count%</white> jugadores; <white>%came%</white> vinieron de una. Tienen <white>%seconds%s</white>.'
-  all-nobody: '%prefix%<gray>No hay a quién preguntarle.'
+  none-to: '%prefix%<red>No tienes ninguna solicitud pendiente a <white>%player%</white>.'
+  toggle-off: '%prefix%<gray>Ya no aceptas solicitudes de teletransporte.'
+  toggle-on: '%prefix%<green>Vuelves a aceptar solicitudes de teletransporte.'
+  blocked: '%prefix%<red>%player% no acepta solicitudes de teletransporte.'
+
+  auto-on: '%prefix%<green>Las solicitudes de teletransporte se aceptarán automáticamente.'
+  auto-off: '%prefix%<gray>Las solicitudes de teletransporte vuelven a esperar tu respuesta.'
+  auto-accepted: '%prefix%<gray>%player% acepta todas las solicitudes. Teletransportando.'
+  auto-accepted-by: '%prefix%<gray>%player% se está teletransportando a tu ubicación. Aceptada automáticamente.'
+  offline-usage: '%prefix%<gray>Uso: <white>/tpoffline [jugador]</white>'
+  offline-went: '%prefix%<gray>Has llegado a donde <white>%player%</white> se desconectó hace <white>%ago%</white>.'
+  offline-here: '%prefix%<gray>%player% está conectado, así que has llegado a su ubicación.'
+  offline-nowhere: '%prefix%<red>No hay ninguna ubicación guardada de <white>%player%</white>.'
+
+  all-sent: '%prefix%<gray>Se envió una solicitud a <white>%count%</white> jugadores; <white>%came%</white> la aceptaron automáticamente. Los demás tienen <white>%seconds%s</white> para aceptarla.'
+  all-nobody: '%prefix%<gray>No hay jugadores a los que enviar la solicitud.'
 
 
 back:
-  teleported: '%prefix%<gray>Volviste a donde estabas.'
-  none: '%prefix%<red>No hay a dónde volver.'
+  teleported: '%prefix%<gray>Volviste a tu ubicación anterior.'
+  none: '%prefix%<red>No hay ninguna ubicación anterior.'
   world-missing: '%prefix%<red>Ese mundo ya no está cargado.'
   out-of-range: '%prefix%<red>Solo puedes retroceder <white>%depth%</white> pasos.'
 
 
 teleport:
-  warmup: '%prefix%<gray>No te muevas por <white>%seconds%</white> segundos.'
+  warmup: '%prefix%<gray>No te muevas durante <white>%seconds%</white> segundos.'
   cancelled-move: '%prefix%<red>Teletransporte cancelado: te moviste.'
   cancelled-damage: '%prefix%<red>Teletransporte cancelado: recibiste daño.'
-  failed: '%prefix%<red>El teletransporte no se pudo completar.'
+  failed: '%prefix%<red>No se pudo completar el teletransporte.'
   warmup-countdown: '<gray>Teletransportando en <white><bold>%seconds%</bold></white>'
-  unsafe: '%prefix%<red>No hay dónde caer sin peligro ahí.'
+  unsafe: '%prefix%<red>No hay ningún sitio seguro donde aterrizar ahí.'

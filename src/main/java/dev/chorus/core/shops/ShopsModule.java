@@ -15,7 +15,9 @@ import dev.chorus.core.shops.command.SellCommand;
 import dev.chorus.core.shops.command.SetWorthCommand;
 import dev.chorus.core.shops.command.ShopCommand;
 import dev.chorus.core.shops.command.WorthCommand;
+import org.bukkit.configuration.ConfigurationSection;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +61,7 @@ public final class ShopsModule implements ChorusModule {
     @Override
     public void enable() {
         config = plugin.configs().get(CONFIG);
-        worth = new WorthTable(config);
+        worth = new WorthTable(worthFile());
         readWorth();
 
         ShopService service = new ShopService(plugin.economy());
@@ -94,7 +96,7 @@ public final class ShopsModule implements ChorusModule {
         // So /editsign and anything else that rewrites a block leaves a shop alone.
         plugin.reserved().register(block -> chestShops.at(block) != null);
         commands.add(plugin.register(new ShopCommand(support, chestShops, displays,
-                plugin.economy(), plugin.confirmations())));
+                plugin.economy(), plugin.confirmations(), chestSigns::settings)));
 
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
         applySigns();
@@ -132,7 +134,41 @@ public final class ShopsModule implements ChorusModule {
     }
 
     private void readWorth() {
-        worth.reload(name -> plugin.getLogger().warning(
-                "This server has no material called '" + name + "', priced in " + CONFIG));
+        worth.reload(plugin.getLogger()::warning);
+    }
+
+    /**
+     * The prices lived in shops.yml before 0.1.7. The start that first writes worth.yml carries
+     * a server's own list and multiplier over, so nothing it had set is lost.
+     */
+    private ConfigFile worthFile() {
+        boolean fresh = !new File(plugin.getDataFolder(), WorthTable.FILE).exists();
+        ConfigFile file = plugin.configs().get(WorthTable.FILE);
+        ConfigurationSection settings = config.section("shops");
+        ConfigurationSection old = settings.getConfigurationSection("worth");
+        Object oldMultiplier = settings.get("sell-multiplier");
+        if (old == null && oldMultiplier == null) {
+            return file;
+        }
+        if (!fresh) {
+            plugin.getLogger().warning(CONFIG + " still has a worth list or a sell-multiplier, but "
+                    + WorthTable.FILE + " is the file that is read.");
+            return file;
+        }
+        if (old != null) {
+            ConfigurationSection items = file.data().createSection("worth");
+            old.getKeys(false).forEach(key -> items.set(key, old.get(key)));
+            file.data().createSection("groups");
+        }
+        if (oldMultiplier != null) {
+            file.data().set("sell-multiplier", oldMultiplier);
+        }
+        settings.set("worth", null);
+        settings.set("sell-multiplier", null);
+        if (file.save() && config.save()) {
+            plugin.getLogger().info("Moved the item prices from " + CONFIG + " to "
+                    + WorthTable.FILE + ".");
+        }
+        return file;
     }
 }

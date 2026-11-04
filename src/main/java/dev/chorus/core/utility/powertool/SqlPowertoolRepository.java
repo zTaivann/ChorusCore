@@ -88,7 +88,7 @@ public final class SqlPowertoolRepository implements PowertoolRepository {
         }
     }
 
-    /** Blank lines dropped, so a row left half written by an older version reads as empty. */
+    /** Blank lines dropped. */
     private static List<String> split(String stored) {
         List<String> commands = new ArrayList<>();
         for (String command : stored.split(SEPARATOR)) {

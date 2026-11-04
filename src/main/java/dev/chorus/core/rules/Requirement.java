@@ -15,8 +15,11 @@ import java.util.function.Consumer;
 public record Requirement(Kind kind, String argument, @Nullable String deny) {
 
     public enum Kind {
-        PERMISSION, PLACEHOLDER, MONEY, PLAYTIME, KIT
+        PERMISSION, PLACEHOLDER, BALANCE, PLAYTIME, KIT
     }
+
+    /** Earlier names, still accepted. */
+    private static final Map<String, Kind> RENAMED = Map.of("MONEY", Kind.BALANCE);
 
     /** @param owner how a problem names what the list belongs to, such as {@code kit 'vip'} */
     public static List<Requirement> read(List<?> entries, String owner, Consumer<String> onProblem) {
@@ -35,7 +38,7 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
         return List.copyOf(requirements);
     }
 
-    /** One line on its own, for a screen that has to say whether it is a line at all. */
+    /** One line, or null when it is not a requirement. */
     public static @Nullable Requirement of(@Nullable String line, @Nullable String deny) {
         if (line == null || line.isBlank()) {
             return null;
@@ -46,6 +49,10 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
         }
         String name = line.substring(0, colon).trim().toUpperCase(Locale.ROOT);
         String argument = line.substring(colon + 1).trim();
+        Kind renamed = RENAMED.get(name);
+        if (renamed != null) {
+            return new Requirement(renamed, argument, deny);
+        }
 
         for (Kind kind : Kind.values()) {
             if (kind.name().equals(name)) {
@@ -71,7 +78,7 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
         return switch (kind) {
             case PERMISSION -> player.hasPermission(argument);
             case PLACEHOLDER -> Comparisons.holds(Placeholders.fill(player, argument));
-            case MONEY -> context.balance() >= number(argument);
+            case BALANCE -> context.balance() >= number(argument);
             case PLAYTIME -> context.playtimeSeconds() >= number(argument);
             case KIT -> context.hasClaimed(argument.toLowerCase(Locale.ROOT));
         };
@@ -100,7 +107,7 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
         player.sendMessage(messages.parse(Placeholders.fill(player, line)));
     }
 
-    /** The numbers a requirement needs, gathered once rather than per requirement. */
+    /** What a requirement may ask about the player. */
     public interface Context {
 
         double balance();
@@ -110,7 +117,7 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
         boolean hasClaimed(String kit);
     }
 
-    /** A requirement nobody can meet is safer than one everybody passes by accident. */
+    /** A number, or one nobody can reach when it is not a number. */
     private static double number(String raw) {
         return Numbers.decimal(raw.replace(',', '.'), Double.MAX_VALUE);
     }

@@ -54,10 +54,7 @@ public final class CustomCommandsModule implements ChorusModule {
         unregister();
     }
 
-    /**
-     * What an existing command says and does is read again. Adding, renaming or removing
-     * one, or changing its aliases, needs a restart, the same as an alias does.
-     */
+    /** Rereads existing commands. New, renamed or removed ones need a restart. */
     @Override
     public void reload() {
         Map<String, ConfigurationSection> blocks = blocks();

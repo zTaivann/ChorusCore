@@ -1,9 +1,9 @@
 package dev.chorus.core.staff.command;
 
-import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.staff.FreezeService;
+import dev.chorus.core.stafflog.StaffLog;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -16,12 +16,12 @@ public final class FreezeCommand extends ChorusCommand {
     private static final String EXEMPT_PERMISSION = "chorus.staff.freeze.exempt";
 
     private final FreezeService freezes;
-    private final AuditLog audit;
+    private final StaffLog staffLog;
 
-    public FreezeCommand(CommandSupport support, FreezeService freezes, AuditLog audit) {
+    public FreezeCommand(CommandSupport support, FreezeService freezes, StaffLog staffLog) {
         super(support, "freeze", "chorus.staff.freeze");
         this.freezes = freezes;
-        this.audit = audit;
+        this.staffLog = staffLog;
     }
 
     @Override
@@ -45,7 +45,7 @@ public final class FreezeCommand extends ChorusCommand {
 
         boolean frozen = freezes.toggle(target);
         settle(sender);
-        audit.record(sender, frozen ? "freeze" : "unfreeze", target.getName(), null);
+        staffLog.record(sender, frozen ? "freeze" : "unfreeze", target.getName(), null);
 
         messages.send(sender, frozen ? "staff.freeze-on" : "staff.freeze-off",
                 "player", target.getName());

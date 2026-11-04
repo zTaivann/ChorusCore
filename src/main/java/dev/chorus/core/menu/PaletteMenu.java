@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiConsumer;
 
-/** A screen for laying items out without ever moving one. */
+/** A menu for laying items out without ever moving one. */
 public final class PaletteMenu implements InventoryHolder {
 
     private final Inventory inventory;
@@ -50,7 +50,7 @@ public final class PaletteMenu implements InventoryHolder {
         }
     }
 
-    /** Anything past the capacity, so a single slot reads as a single slot. */
+    /** Anything past the capacity. */
     public void surround(@Nullable ItemStack filler) {
         if (filler == null) {
             return;
@@ -64,7 +64,7 @@ public final class PaletteMenu implements InventoryHolder {
         player.openInventory(inventory);
     }
 
-    /** A slot on the screen: the copy comes off. Decoration is not a slot. */
+    /** A slot in the menu: the copy comes off. Decoration is not a slot. */
     void takeOff(int slot) {
         if (slot >= 0 && slot < capacity) {
             inventory.setItem(slot, null);

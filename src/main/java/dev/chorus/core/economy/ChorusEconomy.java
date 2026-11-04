@@ -1,6 +1,8 @@
 package dev.chorus.core.economy;
 
+import dev.chorus.core.locale.Messages;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 
 /** The plugin using its own ledger, with nothing in between. */
 public final class ChorusEconomy implements Economy {
@@ -19,6 +21,12 @@ public final class ChorusEconomy implements Economy {
     @Override
     public String status() {
         return "built in, " + balances.size() + " accounts";
+    }
+
+    @Override
+    public String status(Messages messages, CommandSender reader) {
+        return messages.plain(reader, "core.economy-builtin",
+                "accounts", String.valueOf(balances.size()));
     }
 
     @Override

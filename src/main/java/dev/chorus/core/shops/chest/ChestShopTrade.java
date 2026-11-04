@@ -19,22 +19,22 @@ public final class ChestShopTrade {
         /** The buyer has nowhere to put it. */
         NO_SPACE,
         /** The buyer cannot afford it. */
-        NO_MONEY,
+        NO_BALANCE,
         /** The seller is not carrying any. */
         NOTHING_CARRIED,
         /** The shop's container is full. */
         SHOP_FULL,
         /** The shop's owner cannot pay. */
         SHOP_BROKE,
-        /** The money would not move, so nothing did. */
+        /** The payment failed, so nothing moved. */
         FAILED
     }
 
     /**
      * @param amount how many actually changed hands
-     * @param money  what was actually paid
+     * @param total  what was actually paid
      */
-    public record Trade(Result result, int amount, double money) {
+    public record Trade(Result result, int amount, double total) {
 
         static Trade refused(Result result) {
             return new Trade(result, 0, 0);
@@ -44,7 +44,7 @@ public final class ChestShopTrade {
     private ChestShopTrade() {
     }
 
-    /** The shop hands items to the player and takes their money. */
+    /** The shop hands items to the player and charges them. */
     public static Trade buy(Player buyer, ChestShop shop, Inventory stock, ItemStack template,
                             int wanted, Economy economy, OfflinePlayer owner) {
         int available = shop.unlimited() ? wanted : count(stock, template);
@@ -57,8 +57,8 @@ public final class ChestShopTrade {
         }
 
         int amount = Math.min(wanted, Math.min(available, room));
-        if (!economy.has(buyer, money(shop, amount))) {
-            return new Trade(Result.NO_MONEY, amount, money(shop, amount));
+        if (!economy.has(buyer, total(shop, amount))) {
+            return new Trade(Result.NO_BALANCE, amount, total(shop, amount));
         }
 
         // Out of the shop first. Everything below puts them straight back if it cannot finish.
@@ -67,16 +67,16 @@ public final class ChestShopTrade {
             return Trade.refused(Result.NO_STOCK);
         }
 
-        double cost = money(shop, taken);
-        if (!economy.withdraw(buyer, cost)) {
+        double charge = total(shop, taken);
+        if (!economy.withdraw(buyer, charge)) {
             returnToStock(shop, stock, template, taken);
-            return new Trade(Result.NO_MONEY, taken, cost);
+            return new Trade(Result.NO_BALANCE, taken, charge);
         }
 
         int leftover = put(buyer.getInventory(), template, taken);
         if (leftover > 0) {
             returnToStock(shop, stock, template, leftover);
-            economy.deposit(buyer, money(shop, leftover));
+            economy.deposit(buyer, total(shop, leftover));
         }
 
         int delivered = taken - leftover;
@@ -84,15 +84,15 @@ public final class ChestShopTrade {
             return Trade.refused(Result.NO_SPACE);
         }
 
-        double paid = money(shop, delivered);
+        double paid = total(shop, delivered);
         if (!shop.unlimited() && !economy.deposit(owner, paid)) {
-            // The buyer has their items and has paid; the shop could not take the money.
+            // The buyer has their items and has paid; the shop could not receive the payment.
             return new Trade(Result.FAILED, delivered, paid);
         }
         return new Trade(Result.DONE, delivered, paid);
     }
 
-    /** The player hands items to the shop and takes its money. */
+    /** The player hands items to the shop and is paid by it. */
     public static Trade sell(Player seller, ChestShop shop, Inventory stock, ItemStack template,
                              int wanted, Economy economy, OfflinePlayer owner) {
         int carrying = count(seller.getInventory(), template);
@@ -105,8 +105,8 @@ public final class ChestShopTrade {
         }
 
         int amount = Math.min(wanted, Math.min(carrying, room));
-        if (!shop.unlimited() && !economy.has(owner, money(shop, amount))) {
-            return new Trade(Result.SHOP_BROKE, amount, money(shop, amount));
+        if (!shop.unlimited() && !economy.has(owner, total(shop, amount))) {
+            return new Trade(Result.SHOP_BROKE, amount, total(shop, amount));
         }
 
         // Out of the seller first, for the same reason.
@@ -115,7 +115,7 @@ public final class ChestShopTrade {
             return Trade.refused(Result.NOTHING_CARRIED);
         }
 
-        double payout = money(shop, taken);
+        double payout = total(shop, taken);
         if (!shop.unlimited() && !economy.withdraw(owner, payout)) {
             put(seller.getInventory(), template, taken);
             return new Trade(Result.SHOP_BROKE, taken, payout);
@@ -125,7 +125,7 @@ public final class ChestShopTrade {
         if (leftover > 0) {
             put(seller.getInventory(), template, leftover);
             if (!shop.unlimited()) {
-                economy.deposit(owner, money(shop, leftover));
+                economy.deposit(owner, total(shop, leftover));
             }
         }
 
@@ -134,7 +134,7 @@ public final class ChestShopTrade {
             return Trade.refused(Result.SHOP_FULL);
         }
 
-        double paid = money(shop, sold);
+        double paid = total(shop, sold);
         if (!economy.deposit(seller, paid)) {
             // Nothing has left the shop yet, so all of it goes back.
             if (!shop.unlimited()) {
@@ -147,7 +147,7 @@ public final class ChestShopTrade {
         return new Trade(Result.DONE, sold, paid);
     }
 
-    /** How much of the item is in a shop right now, for the sign and the info screen. */
+    /** How much of the item is in a shop right now, for the sign and /shop info. */
     public static int stockOf(ChestShop shop, Inventory stock, ItemStack template) {
         return shop.unlimited() ? Integer.MAX_VALUE : count(stock, template);
     }
@@ -164,7 +164,7 @@ public final class ChestShopTrade {
         }
     }
 
-    private static double money(ChestShop shop, int amount) {
+    private static double total(ChestShop shop, int amount) {
         return Math.round(shop.price() * amount * 100.0) / 100.0;
     }
 

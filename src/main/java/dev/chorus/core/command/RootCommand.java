@@ -11,6 +11,7 @@ import dev.chorus.core.importer.QuickShopImport;
 import dev.chorus.core.importer.ShopImportReport;
 import dev.chorus.core.papi.PlaceholderValues;
 import dev.chorus.core.players.PlayerPurge;
+import dev.chorus.core.shops.WorthTable;
 import dev.chorus.core.storage.Queries;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -43,7 +44,7 @@ public final class RootCommand extends ChorusCommand {
     /** How many changed settings a reload lists before it starts counting them instead. */
     private static final int LISTED_CHANGES = 5;
 
-    /** A floor under the purge, so a slip of the finger cannot empty the database. */
+    /** The fewest days /chorus purge accepts. */
     private static final int MIN_PURGE_DAYS = 30;
     private static final long MILLIS_PER_DAY = 24L * 60 * 60 * 1000;
 
@@ -163,7 +164,7 @@ public final class RootCommand extends ChorusCommand {
                 "folder", folder.getFileName().toString());
 
         EssentialsImport importer = new EssentialsImport(plugin.storage(), folder,
-                plugin.configs().get("modules/shops.yml"));
+                plugin.configs().get(WorthTable.FILE));
         Queries.run(() -> importer.run(!live, overwrite), plugin.worker(), plugin.mainThread())
                 .whenComplete((report, failure) -> {
                     if (failure != null) {
@@ -284,7 +285,7 @@ public final class RootCommand extends ChorusCommand {
         changes(sender, before);
     }
 
-    /** What the reload actually changed, rather than that it happened. */
+    /** Lists what the reload changed. */
     private void changes(CommandSender sender, ConfigSnapshot before) {
         ConfigSnapshot.Change change =
                 ConfigSnapshot.of(plugin.configs()).since(before);
@@ -382,7 +383,7 @@ public final class RootCommand extends ChorusCommand {
         for (String name : PlaceholderValues.NAMES) {
             String value = values == null ? null : values.of(reader, name);
             messages.send(sender, "core.placeholders-entry", "name", "%chorus_" + name + "%",
-                    "value", value == null ? messages.plain("core.placeholders-none") : value);
+                    "value", value == null ? messages.plain(sender, "core.placeholders-none") : value);
         }
     }
 
@@ -395,25 +396,26 @@ public final class RootCommand extends ChorusCommand {
                 "version", plugin.getDescription().getVersion());
         messages.send(sender, "core.status-storage",
                 "storage", plugin.storage().dialect().name().toLowerCase(Locale.ROOT));
-        messages.send(sender, "core.status-economy", "economy", plugin.economy().status());
+        messages.send(sender, "core.status-economy",
+                "economy", plugin.economy().status(messages, sender));
         messages.send(sender, "core.status-placeholders", "placeholders",
                 plugin.getServer().getPluginManager().isPluginEnabled(PlaceholderValues.PLUGIN)
-                        ? "hooked in"
-                        : "not installed");
+                        ? messages.plain(sender, "core.status-connected")
+                        : messages.plain(sender, "core.status-missing"));
         messages.send(sender, "core.status-modules",
                 "modules", String.join(", ", plugin.enabledModules()));
-        messages.send(sender, "core.status-updates", "updates", updateStatus());
+        messages.send(sender, "core.status-updates", "updates", updateStatus(sender));
     }
 
-    private String updateStatus() {
+    private String updateStatus(CommandSender sender) {
         if (!plugin.updates().enabled()) {
-            return messages.plain("core.update-off");
+            return messages.plain(sender, "core.update-off");
         }
         String newer = plugin.updates().newerVersion();
-        return newer.isEmpty() ? messages.plain("core.update-current") : newer;
+        return newer.isEmpty() ? messages.plain(sender, "core.update-current") : newer;
     }
 
-    /** Everything worth pasting into a bug report, in one block. */
+    /** Versions and settings for a bug report. */
     private void debug(CommandSender sender) {
         Runtime runtime = Runtime.getRuntime();
         long used = (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024);
@@ -430,12 +432,12 @@ public final class RootCommand extends ChorusCommand {
                 "memory", used + "/" + max + "MB");
         messages.send(sender, "core.debug-storage",
                 "storage", plugin.storage().dialect().name().toLowerCase(Locale.ROOT),
-                "economy", plugin.economy().status());
+                "economy", plugin.economy().status(messages, sender));
         messages.send(sender, "core.debug-modules",
                 "on", String.join(", ", plugin.enabledModules()),
-                "off", plugin.switchedOffModules().isEmpty()
-                        ? messages.plain("core.debug-none")
-                        : String.join(", ", plugin.switchedOffModules()));
+                "off", plugin.disabledModules().isEmpty()
+                        ? messages.plain(sender, "core.debug-none")
+                        : String.join(", ", plugin.disabledModules()));
         messages.send(sender, "core.debug-commands",
                 "count", String.valueOf(plugin.registeredCommands().size()),
                 "players", String.valueOf(plugin.getServer().getOnlinePlayers().size()));

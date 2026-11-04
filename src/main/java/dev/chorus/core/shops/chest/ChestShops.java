@@ -55,6 +55,16 @@ public final class ChestShops {
         return counts.getOrDefault(player, 0);
     }
 
+    public int ownedBy(UUID player, String world) {
+        int owned = 0;
+        for (ChestShop shop : byBlock.values()) {
+            if (shop.isOwner(player) && shop.world().equalsIgnoreCase(world)) {
+                owned++;
+            }
+        }
+        return owned;
+    }
+
     /** Every shop, for the things that have to walk all of them. */
     public Collection<ChestShop> all() {
         return List.copyOf(byBlock.values());

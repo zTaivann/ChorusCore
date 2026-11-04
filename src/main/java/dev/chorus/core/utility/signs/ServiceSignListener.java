@@ -110,7 +110,7 @@ public final class ServiceSignListener implements Listener {
                 ? free(player, sign)
                 : player.performCommand(line(kind, sign));
 
-        // Only a command that actually ran costs anything.
+        // Only a command that actually ran is charged.
         if (done && price > 0 && economy.enabled() && economy.withdraw(player, price)) {
             messages.send(player, "economy.charged", "price", economy.format(price));
         }
@@ -164,7 +164,7 @@ public final class ServiceSignListener implements Listener {
 
     /** Zero when the last line is not a price, which is how a free sign is written. */
     private static double price(String raw) {
-        return Math.max(0, Numbers.money(raw));
+        return Math.max(0, Numbers.amount(raw));
     }
 
     private static String plain(Component line) {

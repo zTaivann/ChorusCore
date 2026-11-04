@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Writes down who paid whom, so a dispute about a trade has an answer. */
+/** Records who paid whom. */
 public final class PaymentLog {
 
     private final PaymentRepository repository;

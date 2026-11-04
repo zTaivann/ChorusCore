@@ -89,6 +89,32 @@ class PaletteTest {
         assertTrue(palette.apply("<c:one>x").endsWith("x"), "it should still read the line");
     }
 
+    @Test
+    void anEarlierNameStillWorks() throws InvalidConfigurationException {
+        Palette palette = read("menu-homes: '<red>'");
+
+        assertEquals("<red>Homes</red>", palette.apply("<c:screen-homes>Homes</c>"));
+    }
+
+    @Test
+    void aColourSetUnderAnEarlierNameIsKept() throws InvalidConfigurationException {
+        YamlConfiguration file = yaml("screen-homes: '<blue>'");
+        file.setDefaults(yaml("menu-homes: '<red>'"));
+        Palette palette = Palette.read(file, loop -> { });
+
+        assertEquals("<blue>Homes</blue>", palette.apply("<c:menu-homes>Homes</c>"));
+    }
+
+    @Test
+    void aNameTheFileLeavesOutComesFromTheBundledPalette() throws InvalidConfigurationException {
+        YamlConfiguration file = yaml("accent: '<gold>'");
+        file.setDefaults(yaml("accent: '<red>'\ngood: '<green>'"));
+        Palette palette = Palette.read(file, loop -> { });
+
+        assertEquals("<gold>a</gold>", palette.apply("<c:accent>a</c>"));
+        assertEquals("<green>b</green>", palette.apply("<c:good>b</c>"));
+    }
+
     private static Palette read(String lines) throws InvalidConfigurationException {
         return Palette.read(yaml(lines), loop -> { });
     }

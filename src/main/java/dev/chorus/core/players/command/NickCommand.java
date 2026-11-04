@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-/** {@code /nick [player] <name|off>}: what somebody is called on screen. */
+/** {@code /nick [player] <name|off>}: the name somebody is shown with. */
 public final class NickCommand extends ChorusCommand {
 
     private static final String OTHERS = "chorus.players.nick.others";

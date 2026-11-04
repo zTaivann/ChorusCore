@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Everything the server already knows about one player, gathered into one card. A line it
- * cannot fill is left out rather than printed empty.
+ * Everything the server knows about one player. Lines with nothing to show are left out.
  */
 public final class WhoisCommand extends ChorusCommand {
 
@@ -94,9 +93,9 @@ public final class WhoisCommand extends ChorusCommand {
         messages.send(sender, "players.whois-first",
                 "date", DATE.format(Instant.ofEpochMilli(target.getFirstPlayed())));
 
-        String flags = flagsOf(target);
-        if (!flags.isEmpty()) {
-            messages.send(sender, "players.whois-flags", "flags", flags);
+        String modes = modesOf(sender, target);
+        if (!modes.isEmpty()) {
+            messages.send(sender, "players.whois-modes", "modes", modes);
         }
         if (sender.hasPermission(IP_PERMISSION)) {
             InetSocketAddress socket = target.getAddress();
@@ -134,21 +133,21 @@ public final class WhoisCommand extends ChorusCommand {
         });
     }
 
-    private static String flagsOf(Player target) {
-        List<String> flags = new ArrayList<>();
+    private String modesOf(CommandSender reader, Player target) {
+        List<String> modes = new ArrayList<>();
         if (target.isFlying()) {
-            flags.add("flying");
+            modes.add(messages.plain(reader, "players.whois-mode-flying"));
         }
         if (target.isInvulnerable()) {
-            flags.add("invulnerable");
+            modes.add(messages.plain(reader, "players.whois-mode-invulnerable"));
         }
         if (target.isSleeping()) {
-            flags.add("sleeping");
+            modes.add(messages.plain(reader, "players.whois-mode-sleeping"));
         }
         if (target.isOp()) {
-            flags.add("operator");
+            modes.add(messages.plain(reader, "players.whois-mode-operator"));
         }
-        return String.join(", ", flags);
+        return String.join(", ", modes);
     }
 
     @Override

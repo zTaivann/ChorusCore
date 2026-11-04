@@ -36,8 +36,7 @@ public final class Queries {
     }
 
     /**
-     * Runs a query off the server thread and hands the result back on it. Both outcomes go
-     * through the same hop, so a caller never has to wonder which thread its callback is on.
+     * Runs a query off the server thread and completes on the server thread.
      */
     public static <T> CompletableFuture<T> run(Call<T> call, Executor worker, Executor mainThread) {
         CompletableFuture<T> result = new CompletableFuture<>();
@@ -53,9 +52,8 @@ public final class Queries {
     }
 
     /**
-     * Runs a query on the storage thread and waits for it, for a thread that is allowed to
-     * wait, such as the one a player joins on. Queued behind every write already waiting, so
-     * it reads what was saved a moment before rather than what was there before that.
+     * Runs a query on the storage thread and waits for it, behind every write already
+     * queued. For threads that may block, such as the login thread.
      */
     public static <T> T await(Call<T> call, Executor worker) throws SQLException {
         // Already on it: waiting for the queue would be waiting for this very thread.

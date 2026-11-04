@@ -15,7 +15,9 @@ import java.util.UUID;
 
 public final class SqlBalanceRepository implements BalanceRepository {
 
-    private static final String SELECT_ALL = "SELECT player, name, balance FROM chorus_balances";
+    private static final String SELECT_ALL =
+            "SELECT player, name, balance, hidden FROM chorus_balances";
+    private static final String HIDE = "UPDATE chorus_balances SET hidden = ? WHERE player = ?";
     private static final String DELETE = "DELETE FROM chorus_balances WHERE player = ?";
 
     private final Storage storage;
@@ -41,7 +43,8 @@ public final class SqlBalanceRepository implements BalanceRepository {
             List<Account> accounts = new ArrayList<>();
             while (rows.next()) {
                 accounts.add(new Account(UUID.fromString(rows.getString("player")),
-                        rows.getString("name"), rows.getDouble("balance")));
+                        rows.getString("name"), rows.getDouble("balance"),
+                        rows.getInt("hidden") != 0));
             }
             return accounts;
         }
@@ -54,6 +57,16 @@ public final class SqlBalanceRepository implements BalanceRepository {
             statement.setString(1, player.toString());
             statement.setString(2, name);
             statement.setDouble(3, balance);
+            statement.executeUpdate();
+        }
+    }
+
+    @Override
+    public void hide(UUID player, boolean hidden) throws SQLException {
+        try (Connection connection = storage.connection();
+             PreparedStatement statement = connection.prepareStatement(HIDE)) {
+            statement.setInt(1, hidden ? 1 : 0);
+            statement.setString(2, player.toString());
             statement.executeUpdate();
         }
     }
@@ -87,14 +100,16 @@ public final class SqlBalanceRepository implements BalanceRepository {
                         name    TEXT NOT NULL,
                         balance REAL NOT NULL DEFAULT 0
                     )""",
-                    "CREATE INDEX IF NOT EXISTS chorus_balances_top ON chorus_balances (balance)");
+                    "CREATE INDEX IF NOT EXISTS chorus_balances_top ON chorus_balances (balance)",
+                    "ALTER TABLE chorus_balances ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0");
             case MYSQL -> List.of("""
                     CREATE TABLE IF NOT EXISTS chorus_balances (
                         player  CHAR(36)    NOT NULL PRIMARY KEY,
                         name    VARCHAR(32) NOT NULL,
                         balance DOUBLE      NOT NULL DEFAULT 0,
                         INDEX chorus_balances_top (balance)
-                    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4""");
+                    ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4""",
+                    "ALTER TABLE chorus_balances ADD COLUMN hidden TINYINT NOT NULL DEFAULT 0");
         };
     }
 }

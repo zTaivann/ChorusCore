@@ -18,27 +18,35 @@ import java.util.logging.Logger;
 /**
  * Everything one command's config block controls.
  *
- * @param cooldownGroup the name of the cooldown it shares with other commands, or {@code ""}
- * @param cooldownScope who the cooldown holds back once it starts
- * @param permission    the node it takes instead of its own, {@code ""} for everyone, or null
- * @param log           whether each use goes into the staff log
+ * @param cooldownGroup  the name of the cooldown it shares with other commands, or {@code ""}
+ * @param cooldownScope  who the cooldown holds back once it starts
+ * @param daily          how many times a day it may be used, counted the way the cooldown is
+ * @param discounts      percent off the price for some permissions; the biggest one counts
+ * @param priceItem      items taken as part of the price, on top of {@code price}
+ * @param chargeOn       when the price is taken
+ * @param refundOnCancel whether a price taken on use comes back when the teleport is cancelled
+ * @param permission     the node it takes instead of its own, {@code ""} for everyone, or null
+ * @param log            whether each use goes into the staff log
  */
 public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSeconds,
-                           String cooldownGroup, CooldownScope cooldownScope, double price,
-                           WorldRule worlds, CommandFeedback feedback, Map<String, String> messages,
+                           String cooldownGroup, CooldownScope cooldownScope, DailyLimit daily,
+                           double price, List<Discount> discounts, ItemPrice priceItem,
+                           ChargeOn chargeOn, boolean refundOnCancel, WorldRule worlds,
+                           CommandFeedback feedback, Map<String, String> messages,
                            @Nullable String permission, List<Requirement> requires,
                            List<Action> onSuccess, List<Action> onFail, boolean log) {
 
     public static final CommandRules FREE = new CommandRules(true, 0, 0, "",
-            CooldownScope.PLAYER, 0, WorldRule.EVERYWHERE, CommandFeedback.NONE, Map.of(), null,
-            List.of(), List.of(), List.of(), false);
+            CooldownScope.PLAYER, DailyLimit.NONE, 0, List.of(), ItemPrice.NONE, ChargeOn.SUCCESS,
+            true, WorldRule.EVERYWHERE, CommandFeedback.NONE, Map.of(), null, List.of(), List.of(),
+            List.of(), false);
 
     /** Every option a command block takes. */
     public static final Set<String> OPTIONS = Set.of("enabled", "warmup-seconds",
-            "cooldown-seconds", "cooldown-group", "cooldown-scope", "price", "worlds", "sound",
-            "particle",
-            "messages", "permission", "permission-message", "requires", "on-success", "on-fail",
-            "log");
+            "cooldown-seconds", "cooldown-group", "cooldown-scope", "uses-per-day",
+            "uses-reset-at", "price", "discounts", "price-item", "charge-on", "refund-on-cancel",
+            "worlds", "sound", "particle", "messages", "permission", "permission-message",
+            "requires", "on-success", "on-fail", "log");
 
     /** The options that belong to one command and are ignored in the defaults block. */
     public static final Set<String> PER_COMMAND = Set.of("permission");
@@ -62,15 +70,15 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
     /** The same rules with another price and cooldown, for a home or a warp that sets its own. */
     public CommandRules costing(double otherPrice, int otherCooldownSeconds) {
         return new CommandRules(enabled, warmupSeconds, otherCooldownSeconds, cooldownGroup,
-                cooldownScope, otherPrice, worlds, feedback, messages, permission, requires,
-                onSuccess, onFail, log);
+                cooldownScope, daily, otherPrice, discounts, priceItem, chargeOn, refundOnCancel,
+                worlds, feedback, messages, permission, requires, onSuccess, onFail, log);
     }
 
     /** The same rules with another wait before a teleport. */
     public CommandRules waiting(int otherWarmupSeconds) {
         return new CommandRules(enabled, otherWarmupSeconds, cooldownSeconds, cooldownGroup,
-                cooldownScope, price, worlds, feedback, messages, permission, requires,
-                onSuccess, onFail, log);
+                cooldownScope, daily, price, discounts, priceItem, chargeOn, refundOnCancel, worlds,
+                feedback, messages, permission, requires, onSuccess, onFail, log);
     }
 
     private static CommandRules merge(@Nullable ConfigurationSection block, CommandRules base,
@@ -88,7 +96,14 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
                 Math.max(0, block.getInt("cooldown-seconds", base.cooldownSeconds())),
                 group(block, base.cooldownGroup()),
                 scope(block, base.cooldownScope(), owner, logger),
+                DailyLimit.read(block, base.daily(), owner, problem),
                 Math.max(0, block.getDouble("price", base.price())),
+                block.contains("discounts")
+                        ? Discount.read(block.getList("discounts", List.of()), owner, problem)
+                        : base.discounts(),
+                ItemPrice.read(block, base.priceItem(), owner, problem),
+                chargeOn(block, base.chargeOn(), owner, logger),
+                block.getBoolean("refund-on-cancel", base.refundOnCancel()),
                 WorldRule.read(block, base.worlds()),
                 CommandFeedback.read(block, base.feedback(), name -> logger.warning(
                         "This server has no particle called '" + name + "', configured for /" + command)),
@@ -119,6 +134,21 @@ public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSecon
             return base;
         }
         return scope;
+    }
+
+    private static ChargeOn chargeOn(ConfigurationSection block, ChargeOn base, String owner,
+                                     Logger logger) {
+        String written = block.getString("charge-on");
+        if (written == null) {
+            return base;
+        }
+        ChargeOn moment = ChargeOn.of(written);
+        if (moment == null) {
+            logger.warning(owner + " has a charge-on this plugin does not know: '" + written
+                    + "'. It takes success or use.");
+            return base;
+        }
+        return moment;
     }
 
     private static @Nullable String permission(ConfigurationSection block, @Nullable String base,

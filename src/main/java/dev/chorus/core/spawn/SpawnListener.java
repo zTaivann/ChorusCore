@@ -24,7 +24,7 @@ final class SpawnListener implements Listener {
         spawn.location(player.getWorld()).ifPresent(player::teleportAsync);
     }
 
-    /** A bed or an anchor is the player's own choice, so it always wins over the config. */
+    /** A bed or respawn anchor takes priority. */
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
         if (!spawn.settings().teleportOnRespawn() || event.isBedSpawn() || event.isAnchorSpawn()) {

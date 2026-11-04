@@ -8,9 +8,9 @@
 # Solo las líneas que se traducen. El resto viene de messages/spawn.yml.
 
 spawn:
-  set: '%prefix%<gray>El spawn se movió a donde estás parado.'
-  set-world: '%prefix%<gray>El spawn de <white>%world%</white> se movió a donde estás parado.'
-  teleported: '%prefix%<gray>Bienvenido al spawn.'
-  not-set: '%prefix%<red>Todavía no se ha puesto ningún spawn.'
-  world-missing: '%prefix%<red>El mundo del spawn <white>%world%</white> no está cargado ahora mismo.'
-  no-such-world: '%prefix%<red>Este servidor no tiene ningún mundo llamado <white>%world%</white>.'
+  set: '%prefix%<gray>Spawn establecido en tu ubicación.'
+  set-world: '%prefix%<gray>Spawn de <white>%world%</white> establecido en tu ubicación.'
+  teleported: '%prefix%<gray>Has llegado al spawn.'
+  not-set: '%prefix%<red>Todavía no se ha establecido el spawn.'
+  world-missing: '%prefix%<red>El mundo del spawn <white>%world%</white> no está cargado.'
+  no-such-world: '%prefix%<red>No existe ningún mundo llamado <white>%world%</white>.'

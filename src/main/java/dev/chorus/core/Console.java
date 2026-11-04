@@ -10,7 +10,7 @@ import java.util.List;
 /** What the console sees when the plugin starts. */
 final class Console {
 
-    /** Deep to light, one shade a row, which reads as a single letterform rather than stripes. */
+    /** One shade per row, dark to light. */
     private static final String[] SHADES = {
             "#5b2ea8", "#6f3ec4", "#8451da", "#9a68e8", "#b083f0", "#c6a3f7"};
 
@@ -35,7 +35,7 @@ final class Console {
     private static final String LABEL = "<color:#9a68e8>";
     private static final String VALUE = "<color:#d7d7d7>";
 
-    /** Long enough for the longest label, so the values line up in a column. */
+    /** Width of the label column. */
     private static final int COLUMN = 15;
 
     private final ConsoleCommandSender console;

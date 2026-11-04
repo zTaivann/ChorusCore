@@ -54,8 +54,7 @@ public final class SafeLanding {
     }
 
     /**
-     * A candidate that many blocks away, on the floor of its block rather than at the original
-     * height. Once the exact spot is out, whole blocks are the only sensible granularity.
+     * A candidate that many blocks away, at the bottom of its block.
      */
     private static @Nullable Location shifted(Location from, int blocks) {
         World world = from.getWorld();

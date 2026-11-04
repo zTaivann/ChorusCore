@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 
 /**
- * Signs that trade with the server: {@code [Buy]} hands items over for money, {@code [Sell]}
+ * Signs that trade with the server: {@code [Buy]} hands items over for a price, {@code [Sell]}
  * takes them back.
  */
 public final class ShopSignListener implements Listener {
@@ -68,7 +68,7 @@ public final class ShopSignListener implements Listener {
             messages.send(player, "shops.sign-invalid");
             return;
         }
-        if (shop.usesWorthTable() && worth.of(shop.material()) <= 0) {
+        if (shop.usesWorthTable() && !worth.sellable(shop.material())) {
             event.setCancelled(true);
             messages.send(player, "shops.no-worth",
                     "item", shop.material().name().toLowerCase(Locale.ROOT));
@@ -143,7 +143,7 @@ public final class ShopSignListener implements Listener {
     private void sell(Player player, ShopSign shop, Economy economy) {
         String item = shop.material().name().toLowerCase(Locale.ROOT);
         double price = shop.usesWorthTable()
-                ? worth.of(shop.material()) * shop.amount()
+                ? worth.of(player, shop.material()) * shop.amount()
                 : shop.price();
         if (price <= 0) {
             messages.send(player, "shops.no-worth", "item", item);

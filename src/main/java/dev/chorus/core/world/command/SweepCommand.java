@@ -85,7 +85,7 @@ public final class SweepCommand extends ChorusCommand {
         });
     }
 
-    /** A radius is already a decision about where, so it is not asked about twice. */
+    /** A sweep with a radius is not confirmed. */
     private void around(Player player, int radius, Predicate<Entity> matches, String wanted) {
         onPlayer(player, () -> {
             Location centre = player.getLocation();

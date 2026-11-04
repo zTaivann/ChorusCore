@@ -6,7 +6,7 @@ import dev.chorus.core.utility.UtilityService;
 import org.bukkit.entity.Player;
 
 /**
- * A throwaway inventory. Nothing saves it, so whatever is inside when the screen closes is
+ * A throwaway inventory. Nothing saves it, so whatever is inside when the menu closes is
  * gone for good; that is the entire point of the command.
  */
 public final class DisposalCommand extends PlayerCommand {
@@ -27,6 +27,6 @@ public final class DisposalCommand extends PlayerCommand {
 
         int slots = utility.settings().disposal().rows() * 9;
         player.openInventory(player.getServer()
-                .createInventory(null, slots, messages.render("menu.titles.disposal")));
+                .createInventory(null, slots, messages.render(player, "menu.titles.disposal")));
     }
 }

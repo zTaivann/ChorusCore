@@ -1,6 +1,5 @@
 package dev.chorus.core.custom;
 
-import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ActionGuard;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Cooldowns;
@@ -9,6 +8,7 @@ import dev.chorus.core.locale.Messages;
 import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
+import dev.chorus.core.stafflog.StaffLog;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.Server;
@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** A command that exists only because the config says so. */
+/** A command defined in the config. */
 public final class CustomCommand extends Command {
 
     private static final String COOLDOWN_BYPASS = "chorus.bypass.cooldown";
@@ -35,7 +35,7 @@ public final class CustomCommand extends Command {
     private final Messages messages;
     private final ActionGuard guard;
     private final Schedulers schedulers;
-    private final AuditLog audit;
+    private final StaffLog staffLog;
     private final Cooldowns cooldowns;
     private final Server server;
 
@@ -48,7 +48,7 @@ public final class CustomCommand extends Command {
         this.messages = support.messages().forCommand();
         this.guard = support.guard();
         this.schedulers = support.schedulers();
-        this.audit = support.audit();
+        this.staffLog = support.staffLog();
         this.cooldowns = cooldowns;
         this.server = server;
         update(definition);
@@ -58,7 +58,7 @@ public final class CustomCommand extends Command {
         return definition;
     }
 
-    /** What it says and does, read again. Its name and aliases stay until a restart. */
+    /** Replaces its definition. The name and aliases stay until a restart. */
     void update(CustomDefinition changed) {
         this.definition = changed;
         messages.override(changed.permissionMessage().isEmpty()
@@ -82,12 +82,12 @@ public final class CustomCommand extends Command {
                 return true;
             }
         }
-        if (onCooldown(sender, current)) {
+        if (!ready(sender, current)) {
             failed(sender, current);
             return true;
         }
         if (current.log()) {
-            audit.record(sender, "used", "/" + current.name(),
+            staffLog.record(sender, "used", "/" + current.name(),
                     args.length == 0 ? null : String.join(" ", args));
         }
 
@@ -128,26 +128,35 @@ public final class CustomCommand extends Command {
         }
     }
 
-    private boolean onCooldown(CommandSender sender, CustomDefinition current) {
-        if (current.cooldownSeconds() <= 0 || !(sender instanceof Player player)
-                || player.hasPermission(COOLDOWN_BYPASS)) {
+    /** Checks the cooldown and the day's uses, and counts this one when it may run. */
+    private boolean ready(CommandSender sender, CustomDefinition current) {
+        if (!(sender instanceof Player player) || player.hasPermission(COOLDOWN_BYPASS)) {
+            return true;
+        }
+
+        String timer = Cooldowns.timer("custom:" + current.name(), current.cooldownGroup());
+        UUID owner = current.cooldownScope().owner(player);
+        long now = System.currentTimeMillis();
+        if (current.cooldownSeconds() > 0) {
+            long left = cooldowns.remaining(owner, timer, now);
+            if (left > 0) {
+                messages.send(player, current.cooldownScope().waitMessage(),
+                        "time", Durations.format(left));
+                return false;
+            }
+        }
+        if (!guard.hasUsesLeft(player, timer, current.cooldownScope(), current.daily())) {
             return false;
         }
 
-        String key = Cooldowns.timer("custom:" + current.name(), current.cooldownGroup());
-        UUID owner = current.cooldownScope().owner(player);
-        long now = System.currentTimeMillis();
-        long left = cooldowns.remaining(owner, key, now);
-        if (left > 0) {
-            messages.send(player, current.cooldownScope().waitMessage(),
-                    "time", Durations.format(left));
-            return true;
+        if (current.cooldownSeconds() > 0) {
+            cooldowns.start(owner, timer, current.cooldownSeconds(), now);
         }
-        cooldowns.start(owner, key, current.cooldownSeconds(), now);
-        return false;
+        guard.countUse(player, timer, current.cooldownScope(), current.daily());
+        return true;
     }
 
-    /** Put in after parsing, so a nickname can never carry formatting into the line. */
+    /** Inserted after parsing, as plain text. */
     private static Component substitute(Component line, String player) {
         return line.replaceText(TextReplacementConfig.builder()
                 .matchLiteral("%player%")

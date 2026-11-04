@@ -4,7 +4,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.jetbrains.annotations.Nullable;
 
-/** Signs found by their type first, so a block that is not one is never copied to find out. */
+/** Sign lookups that check the block type before reading its state. */
 public final class Signs {
 
     private Signs() {
@@ -15,7 +15,7 @@ public final class Signs {
         return block.getType().name().endsWith("_SIGN");
     }
 
-    /** The sign at a block for reading, or null. The live one, so nothing is copied. */
+    /** The sign at a block, read without a snapshot, or null. */
     public static @Nullable Sign at(Block block) {
         return isSign(block) && block.getState(false) instanceof Sign sign ? sign : null;
     }

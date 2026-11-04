@@ -115,7 +115,7 @@ public final class ServerText {
                 .replace("%max%", String.valueOf(reader.getServer().getMaxPlayers()));
     }
 
-    /** Package-private so the checks can read a file without standing up a server. */
+    /** Package-private for the tests. */
     static List<Chapter> parse(List<String> lines) {
         List<Chapter> found = new ArrayList<>();
         String name = "";

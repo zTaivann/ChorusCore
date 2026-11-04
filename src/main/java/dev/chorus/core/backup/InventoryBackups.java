@@ -20,7 +20,7 @@ import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** A copy of everything a player was carrying, taken before they lose it. */
+/** A backup of everything a player was carrying, made before they lose it. */
 public final class InventoryBackups {
 
     private static final int MAX_LIST = 45;
@@ -73,15 +73,15 @@ public final class InventoryBackups {
         return keepPerPlayer == 0 ? MAX_LIST : Math.min(MAX_LIST, keepPerPlayer);
     }
 
-    /** A copy with nothing unusual about it: a clear, a kit, a restore. */
+    /** A backup with nothing unusual about it: a clear, a kit, a restore. */
     public void take(Player player, BackupReason reason, String detail, String actor) {
         take(player, reason, detail, actor, null, null);
     }
 
     /**
-     * A copy, with what killed them when that is why it is being taken.
+     * A backup, with what killed them when that is why it is being made.
      *
-     * @param detail what to call it on screen beyond the reason, such as the kit's name
+     * @param detail what to call it in menus beyond the reason, such as the kit's name
      * @param cause  the damage that did it, or null
      * @param killer who did it, or null
      */
@@ -93,7 +93,7 @@ public final class InventoryBackups {
 
         // Encoded on the thread that owns the inventory, not on the worker.
         Location where = player.getLocation();
-        InventorySnapshot snapshot = new InventorySnapshot(0, player.getUniqueId(),
+        InventoryBackup backup = new InventoryBackup(0, player.getUniqueId(),
                 System.currentTimeMillis(),
                 detail.isEmpty() ? reason.stored() : reason.stored() + " " + detail,
                 actor,
@@ -107,7 +107,7 @@ public final class InventoryBackups {
 
         worker.execute(() -> {
             try {
-                repository.save(snapshot);
+                repository.save(backup);
             } catch (Exception failed) {
                 logger.log(Level.WARNING,
                         "Could not save the inventory of " + player.getName(), failed);
@@ -115,33 +115,33 @@ public final class InventoryBackups {
         });
     }
 
-    public CompletableFuture<List<InventorySnapshot>> find(UUID owner) {
+    public CompletableFuture<List<InventoryBackup>> find(UUID owner) {
         return Queries.run(() -> repository.findFor(owner, limit()), worker, mainThread);
     }
 
-    /** The newest copies from anybody, for a report that does not name who. */
-    public CompletableFuture<List<InventorySnapshot>> recent() {
+    /** The newest backups from anybody, for a report that does not name who. */
+    public CompletableFuture<List<InventoryBackup>> recent() {
         return Queries.run(() -> repository.recent(limit()), worker, mainThread);
     }
 
-    /** One by its row, read again so a screen left open never restores something stale. */
-    public CompletableFuture<InventorySnapshot> find(long id) {
+    /** One by its row, read from the database. */
+    public CompletableFuture<InventoryBackup> find(long id) {
         return Queries.run(() -> repository.find(id), worker, mainThread);
     }
 
     /**
      * Puts one back, after copying what the player is carrying now.
      *
-     * @return what was put back, so the caller can say. Empty when it cannot be read at all.
+     * @return what was put back. Empty when it cannot be read.
      */
-    public Set<Part> restore(Player player, InventorySnapshot snapshot, Set<Part> parts,
+    public Set<Part> restore(Player player, InventoryBackup backup, Set<Part> parts,
                              String actor) {
         Set<Part> done = EnumSet.noneOf(Part.class);
         ItemStack[] contents = parts.contains(Part.INVENTORY)
-                ? InventoryCodec.decode(snapshot.contents())
+                ? InventoryCodec.decode(backup.contents())
                 : null;
-        ItemStack[] ender = parts.contains(Part.ENDER_CHEST) && snapshot.hasEnderChest()
-                ? InventoryCodec.decode(snapshot.enderChest())
+        ItemStack[] ender = parts.contains(Part.ENDER_CHEST) && backup.hasEnderChest()
+                ? InventoryCodec.decode(backup.enderChest())
                 : null;
 
         if (contents == null && ender == null && !parts.contains(Part.STATS)) {
@@ -158,10 +158,10 @@ public final class InventoryBackups {
             done.add(Part.ENDER_CHEST);
         }
         if (parts.contains(Part.STATS)) {
-            player.setLevel(snapshot.level());
-            player.setExp(snapshot.experience());
-            player.setHealth(Math.max(1, Math.min(snapshot.health(), player.getMaxHealth())));
-            player.setFoodLevel(snapshot.food());
+            player.setLevel(backup.level());
+            player.setExp(backup.experience());
+            player.setHealth(Math.max(1, Math.min(backup.health(), player.getMaxHealth())));
+            player.setFoodLevel(backup.food());
             done.add(Part.STATS);
         }
         return done;
@@ -170,15 +170,15 @@ public final class InventoryBackups {
     /**
      * Hands the saved items over without taking anything away.
      *
-     * @return how many items were handed over, or -1 when the copy cannot be read.
+     * @return how many items were handed over, or -1 when the backup cannot be read.
      */
-    public int deliver(Player player, InventorySnapshot snapshot, boolean includeEnderChest) {
-        ItemStack[] contents = InventoryCodec.decode(snapshot.contents());
+    public int deliver(Player player, InventoryBackup backup, boolean includeEnderChest) {
+        ItemStack[] contents = InventoryCodec.decode(backup.contents());
         if (contents == null) {
             return -1;
         }
-        ItemStack[] ender = includeEnderChest && snapshot.hasEnderChest()
-                ? InventoryCodec.decode(snapshot.enderChest())
+        ItemStack[] ender = includeEnderChest && backup.hasEnderChest()
+                ? InventoryCodec.decode(backup.enderChest())
                 : null;
 
         int handed = hand(player, contents);
@@ -202,11 +202,11 @@ public final class InventoryBackups {
     }
 
     /** Leaves a restore waiting for somebody who is not online to receive it. */
-    public CompletableFuture<Void> queue(UUID owner, long snapshot, Set<Part> parts, String actor) {
+    public CompletableFuture<Void> queue(UUID owner, long backupId, Set<Part> parts, String actor) {
         String written = parts.stream().map(Enum::name).reduce((left, right) -> left + "," + right)
                 .orElse("");
         return Queries.run(() -> {
-            repository.queue(owner, snapshot, written, actor);
+            repository.queue(owner, backupId, written, actor);
             return null;
         }, worker, mainThread);
     }
@@ -214,7 +214,7 @@ public final class InventoryBackups {
     /**
      * Applies whatever was waiting for a player who has just arrived.
      *
-     * @param told runs with what was put back, so the caller can say so.
+     * @param told runs with what was put back.
      */
     public void applyWaiting(Player player, BiConsumer<Set<Part>, String> told) {
         UUID owner = player.getUniqueId();
@@ -223,18 +223,18 @@ public final class InventoryBackups {
                     if (failure != null || waiting == null) {
                         return;
                     }
-                    find(waiting.snapshot()).whenComplete((snapshot, missing) -> {
-                        if (missing != null || snapshot == null) {
+                    find(waiting.backupId()).whenComplete((backup, missing) -> {
+                        if (missing != null || backup == null) {
                             return;
                         }
                         Set<Part> parts = parts(waiting.parts());
                         if (!player.isOnline()) {
                             // Taken off the queue for somebody who has left again: it goes back on.
-                            queue(owner, snapshot.id(), parts, waiting.actor());
+                            queue(owner, backup.id(), parts, waiting.actor());
                             return;
                         }
                         schedulers.withEntity(player, () -> {
-                            Set<Part> done = restore(player, snapshot, parts, waiting.actor());
+                            Set<Part> done = restore(player, backup, parts, waiting.actor());
                             if (!done.isEmpty()) {
                                 told.accept(done, waiting.actor());
                             }
@@ -270,7 +270,7 @@ public final class InventoryBackups {
         STATS
     }
 
-    /** Called at startup, on a worker. Old copies are the only thing this table grows. */
+    /** Called at startup, on a worker. Old backups are the only thing this table grows. */
     public void prune() {
         if (!enabled || (keepDays == 0 && keepPerPlayer == 0)) {
             return;
@@ -283,7 +283,7 @@ public final class InventoryBackups {
             try {
                 repository.prune(before, keepPerPlayer);
             } catch (Exception failed) {
-                logger.log(Level.WARNING, "Could not clear out the old inventory copies", failed);
+                logger.log(Level.WARNING, "Could not clear out the old inventory backups", failed);
             }
         });
     }

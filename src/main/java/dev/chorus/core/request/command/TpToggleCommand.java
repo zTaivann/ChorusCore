@@ -2,18 +2,18 @@ package dev.chorus.core.request.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import org.bukkit.entity.Player;
 
 /** Turns incoming teleport requests off, and keeps the choice between sessions. */
 public final class TpToggleCommand extends PlayerCommand {
 
-    private final PlayerFlagService flags;
+    private final PlayerPreferenceService preferences;
 
-    public TpToggleCommand(CommandSupport support, PlayerFlagService flags) {
+    public TpToggleCommand(CommandSupport support, PlayerPreferenceService preferences) {
         super(support, "tptoggle", "chorus.tpa.toggle");
-        this.flags = flags;
+        this.preferences = preferences;
     }
 
     @Override
@@ -22,7 +22,7 @@ public final class TpToggleCommand extends PlayerCommand {
             return;
         }
 
-        boolean blocked = flags.toggle(player.getUniqueId(), PlayerFlag.TELEPORTS_BLOCKED);
+        boolean blocked = preferences.toggle(player.getUniqueId(), PlayerPreference.TELEPORTS_BLOCKED);
         settle(player);
         messages.send(player, blocked ? "request.toggle-off" : "request.toggle-on");
     }

@@ -55,18 +55,16 @@ public final class NearCommand extends PlayerCommand {
 
         List<Component> entries = new ArrayList<>(found.size());
         for (Found each : found) {
-            entries.add(messages.render("utility.near-entry",
+            entries.add(messages.render(player, "utility.near-entry",
                     "player", each.player().getName(),
                     "distance", String.valueOf(each.blocks())));
         }
         player.sendMessage(Component.join(
-                JoinConfiguration.separator(messages.render("utility.near-separator")), entries));
+                JoinConfiguration.separator(messages.render(player, "utility.near-separator")), entries));
     }
 
     /**
-     * Walks the world's player list rather than asking for nearby entities: this only ever
-     * cares about players, and getNearbyEntities would sweep every chunk in the box for mobs
-     * and dropped items to throw almost all of them away again.
+     * Players in range, from the world's player list.
      */
     private List<Found> search(Player player, int radius) {
         Location from = player.getLocation();

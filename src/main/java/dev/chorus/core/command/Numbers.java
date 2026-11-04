@@ -34,10 +34,11 @@ public final class Numbers {
     }
 
     /**
-     * An amount of money the way people write one: {@code 5}, {@code 5.50}, {@code 5,50},
-     * {@code $5} or {@code 5€}. Negative when it is not an amount at all.
+     * An amount the way people write one: {@code 5}, {@code 5.50}, {@code 5,50},
+     * {@code $5}, {@code 5€}, or short, {@code 1.5k} or {@code 2M}. Negative when it is not an
+     * amount at all.
      */
-    public static double money(String raw) {
+    public static double amount(String raw) {
         if (raw == null) {
             return -1;
         }
@@ -50,10 +51,31 @@ public final class Numbers {
             end--;
         }
         double value = decimal(raw.substring(start, end).replace(',', '.'), -1);
-        return value >= 0 ? value : -1;
+        if (value < 0) {
+            return -1;
+        }
+        double scaled = value * scale(raw.substring(end));
+        return Double.isFinite(scaled) ? scaled : -1;
     }
 
-    /** Rounded to hundredths, which is how prices and payments have always been kept. */
+    /**
+     * What a letter right after the number multiplies it by: k, m, b or t. {@code 5 mil} and
+     * {@code 5mil} are not a unit, so neither turns into five million.
+     */
+    private static double scale(String after) {
+        if (after.isEmpty() || (after.length() > 1 && Character.isLetter(after.charAt(1)))) {
+            return 1;
+        }
+        return switch (Character.toLowerCase(after.charAt(0))) {
+            case 'k' -> 1e3;
+            case 'm' -> 1e6;
+            case 'b' -> 1e9;
+            case 't' -> 1e12;
+            default -> 1;
+        };
+    }
+
+    /** Rounded to hundredths. */
     public static double cents(double amount) {
         return Math.round(amount * 100.0) / 100.0;
     }

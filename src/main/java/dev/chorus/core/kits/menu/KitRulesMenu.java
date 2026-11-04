@@ -27,7 +27,7 @@ public final class KitRulesMenu {
     private static final int MIN_ROWS = 2;
     private static final int MAX_ROWS = 6;
 
-    /** Where the hint sits on an otherwise empty screen. */
+    /** Where the hint sits in an otherwise empty menu. */
     private static final int EMPTY_SLOT = 4;
 
     private static final Map<Action.Kind, Material> ACTION_ICONS =
@@ -47,7 +47,7 @@ public final class KitRulesMenu {
 
         REQUIREMENT_ICONS.put(Requirement.Kind.PERMISSION, Material.NAME_TAG);
         REQUIREMENT_ICONS.put(Requirement.Kind.PLACEHOLDER, Material.COMPARATOR);
-        REQUIREMENT_ICONS.put(Requirement.Kind.MONEY, Material.GOLD_INGOT);
+        REQUIREMENT_ICONS.put(Requirement.Kind.BALANCE, Material.GOLD_INGOT);
         REQUIREMENT_ICONS.put(Requirement.Kind.PLAYTIME, Material.CLOCK);
         REQUIREMENT_ICONS.put(Requirement.Kind.KIT, Material.CHEST);
     }
@@ -71,38 +71,38 @@ public final class KitRulesMenu {
         List<Rule> rules = editor.rules(kit, list);
         int rows = rows(rules.size());
         Menu menu = new Menu(player.getServer(),
-                messages.render(titleKey(list), "kit", KitEditor.titled(kit)), rows);
+                messages.render(player, titleKey(list), "kit", KitEditor.titled(kit)), rows);
 
         int room = menu.size() - 9;
         for (int slot = 0; slot < Math.min(rules.size(), room); slot++) {
             int index = slot;
             Rule rule = rules.get(slot);
-            menu.setPerClick(slot, entry(list, rule, slot),
+            menu.setPerClick(slot, entry(player, list, rule, slot),
                     (clicker, click) -> clicked(clicker, kit, list, index, rule, click));
         }
 
         if (rules.isEmpty()) {
             menu.set(EMPTY_SLOT, MenuItems.of(settings.disabled(),
-                    messages.render("menu.editor.rule-empty"),
-                    messages.renderLines("menu.editor.rule-empty-lore")));
+                    messages.render(player, "menu.editor.rule-empty"),
+                    messages.renderLines(player, "menu.editor.rule-empty-lore")));
         }
 
         menu.set(menu.size() - 9, MenuItems.of(settings.back(),
-                        messages.render("menu.editor.rule-back"),
-                        messages.renderLines("menu.editor.rule-back-lore",
+                        messages.render(player, "menu.editor.rule-back"),
+                        messages.renderLines(player, "menu.editor.rule-back-lore",
                                 "kit", KitEditor.titled(kit))),
                 clicker -> back.accept(clicker, kit));
 
         menu.set(menu.size() - 5, MenuItems.of(settings.add(),
-                        messages.render("menu.editor.rule-add"),
-                        messages.renderLines(addLoreKey(list))),
+                        messages.render(player, "menu.editor.rule-add"),
+                        messages.renderLines(player, addLoreKey(list))),
                 clicker -> askFor(clicker, kit, list, -1, null));
 
         menu.fill(0, menu.size(), MenuItems.filler(settings.filler()));
         menu.open(player);
     }
 
-    /** As many rows as the lines need, and never the same screen twice for the same list. */
+    /** As many rows as the lines need, and never the same menu twice for the same list. */
     private static int rows(int count) {
         return Math.max(MIN_ROWS, Math.min(MAX_ROWS, (count + 8) / 9 + 1));
     }
@@ -135,7 +135,7 @@ public final class KitRulesMenu {
         if (rule != null) {
             messages.send(player, "menu.editor.rule-current", "line", rule.line());
         }
-        prompts.ask(player, messages.render(askKey(list), "kit", kit),
+        prompts.ask(player, messages.render(player, askKey(list), "kit", kit),
                 typed -> {
                     String line = typed.trim();
                     if (!understood(list, line)) {
@@ -158,7 +158,7 @@ public final class KitRulesMenu {
         if (rule.deny() != null) {
             messages.send(player, "menu.editor.rule-current", "line", rule.deny());
         }
-        prompts.ask(player, messages.render("menu.editor.ask-deny", "kit", kit),
+        prompts.ask(player, messages.render(player, "menu.editor.ask-deny", "kit", kit),
                 typed -> {
                     // "none" puts it back on the general refusal in the messages folder.
                     String deny = typed.equalsIgnoreCase("none") ? null : typed;
@@ -176,25 +176,25 @@ public final class KitRulesMenu {
                 : Action.of(line) != null;
     }
 
-    private ItemStack entry(RuleList list, Rule rule, int index) {
+    private ItemStack entry(Player player, RuleList list, Rule rule, int index) {
         Known known = known(list, rule);
         String number = String.valueOf(index + 1);
 
         if (known == null) {
             return MenuItems.of(Material.BARRIER,
-                    messages.render("menu.editor.rule-unknown", "index", number),
-                    messages.renderLines("menu.editor.rule-unknown-lore", "line", rule.line()));
+                    messages.render(player, "menu.editor.rule-unknown", "index", number),
+                    messages.renderLines(player, "menu.editor.rule-unknown-lore", "line", rule.line()));
         }
 
         return MenuItems.of(known.material(),
-                messages.render("menu.editor.rule-entry", "index", number, "kind", known.name()),
+                messages.render(player, "menu.editor.rule-entry", "index", number, "kind", known.name()),
                 list.denies()
-                        ? messages.renderLines("menu.editor.requirement-entry-lore",
+                        ? messages.renderLines(player, "menu.editor.requirement-entry-lore",
                                 "line", rule.line(),
                                 "deny", rule.deny() == null
-                                        ? messages.plain("menu.editor.rule-deny-default")
+                                        ? messages.plain(player, "menu.editor.rule-deny-default")
                                         : rule.deny())
-                        : messages.renderLines("menu.editor.rule-entry-lore", "line", rule.line()));
+                        : messages.renderLines(player, "menu.editor.rule-entry-lore", "line", rule.line()));
     }
 
     /** What the line turned out to be, or null when it turned out to be nothing. */

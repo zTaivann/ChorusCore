@@ -5,7 +5,7 @@ import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.utility.PortableMenu;
 import org.bukkit.entity.Player;
 
-/** One class behind /craft, /anvil, /smithingtable and the rest of the portable screens. */
+/** One class behind /craft, /anvil, /smithingtable and the rest of the portable menus. */
 public final class MenuCommand extends PlayerCommand {
 
     private final PortableMenu menu;

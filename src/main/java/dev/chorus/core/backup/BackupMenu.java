@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** The backups as screens: the list, one of them laid out, and its ender chest. */
+/** The backup menus: the list, one backup laid out, and its ender chest. */
 public final class BackupMenu {
 
     private static final String RESTORE_PERMISSION = "chorus.items.restore";
@@ -58,54 +58,55 @@ public final class BackupMenu {
     }
 
     /** Everything saved for one player, newest first. */
-    public void openList(Player viewer, Player subject, List<InventorySnapshot> found) {
+    public void openList(Player viewer, Player subject, List<InventoryBackup> found) {
         openList(viewer, subject, found, null);
     }
 
-    /** The same list showing only one kind of copy. */
-    public void openList(Player viewer, Player subject, List<InventorySnapshot> found,
+    /** The same list showing only one kind of backup. */
+    public void openList(Player viewer, Player subject, List<InventoryBackup> found,
                          @Nullable BackupReason only) {
         List<ListMenu.Entry> entries = new ArrayList<>(found.size());
-        for (InventorySnapshot snapshot : found) {
-            BackupReason reason = BackupReason.of(first(snapshot.reason()));
+        for (InventoryBackup backup : found) {
+            BackupReason reason = BackupReason.of(backup.reason());
             if (only != null && reason != only) {
                 continue;
             }
             entries.add(new ListMenu.Entry(
                     ICONS.getOrDefault(reason, Material.PAPER),
-                    messages.render("menu.backups.entry",
-                            "reason", named(reason, detail(snapshot.reason())),
-                            "ago", ago(snapshot)),
-                    lore(snapshot),
-                    clicker -> reopen(clicker, subject, snapshot.id())));
+                    messages.render(viewer, "menu.backups.entry",
+                            "reason", BackupReason.describe(backup.reason(), messages, viewer),
+                            "ago", ago(backup)),
+                    lore(viewer, backup),
+                    clicker -> reopen(clicker, subject, backup.id())));
         }
 
         ListMenu.open(viewer, messages, settings, "menu.backups.title", entries, 0, null,
-                filterButton(subject, found, only), "player", subject.getName());
+                filterButton(viewer, subject, found, only), "player", subject.getName());
     }
 
     /** Cycles to the next reason that has anything under it, then back to showing them all. */
-    private ListMenu.Entry filterButton(Player subject, List<InventorySnapshot> found,
+    private ListMenu.Entry filterButton(Player viewer, Player subject,
+                                        List<InventoryBackup> found,
                                         @Nullable BackupReason only) {
         BackupReason next = nextWith(found, only);
         return new ListMenu.Entry(
                 only == null ? Material.HOPPER : ICONS.getOrDefault(only, Material.PAPER),
-                messages.render("menu.backups.filter",
+                messages.render(viewer, "menu.backups.filter",
                         "filter", only == null
-                                ? messages.plain("menu.backups.filter-all")
-                                : named(only, "")),
-                messages.renderLines("menu.backups.filter-lore",
+                                ? messages.plain(viewer, "menu.backups.filter-all")
+                                : messages.plain(viewer, only.messageKey())),
+                messages.renderLines(viewer, "menu.backups.filter-lore",
                         "next", next == null
-                                ? messages.plain("menu.backups.filter-all")
-                                : named(next, "")),
+                                ? messages.plain(viewer, "menu.backups.filter-all")
+                                : messages.plain(viewer, next.messageKey())),
                 clicker -> openList(clicker, subject, found, next));
     }
 
-    private static @Nullable BackupReason nextWith(List<InventorySnapshot> found,
+    private static @Nullable BackupReason nextWith(List<InventoryBackup> found,
                                                    @Nullable BackupReason from) {
         List<BackupReason> present = new ArrayList<>();
-        for (InventorySnapshot snapshot : found) {
-            BackupReason reason = BackupReason.of(first(snapshot.reason()));
+        for (InventoryBackup backup : found) {
+            BackupReason reason = BackupReason.of(backup.reason());
             if (!present.contains(reason)) {
                 present.add(reason);
             }
@@ -117,41 +118,41 @@ public final class BackupMenu {
         return place + 1 >= present.size() ? null : present.get(place + 1);
     }
 
-    /** Read again on the way in, so a screen left open never shows something already gone. */
+    /** Read again each time it opens. */
     private void reopen(Player viewer, Player subject, long id) {
-        backups.find(id).whenComplete((snapshot, failure) -> {
-            if (failure != null || snapshot == null) {
+        backups.find(id).whenComplete((backup, failure) -> {
+            if (failure != null || backup == null) {
                 messages.send(viewer, "items.restore-gone");
                 return;
             }
-            schedulers.withEntity(viewer, () -> openInventory(viewer, subject, snapshot));
+            schedulers.withEntity(viewer, () -> openInventory(viewer, subject, backup));
         });
     }
 
     /** One backup, laid out the way the player was carrying it. */
-    public void openInventory(Player viewer, Player subject, InventorySnapshot snapshot) {
-        ItemStack[] contents = InventoryCodec.decode(snapshot.contents());
+    public void openInventory(Player viewer, Player subject, InventoryBackup backup) {
+        ItemStack[] contents = InventoryCodec.decode(backup.contents());
         if (contents == null) {
             messages.send(viewer, "items.restore-unreadable");
             return;
         }
 
-        Menu menu = new Menu(viewer.getServer(), messages.render("menu.backups.view-title",
-                "player", subject.getName(), "ago", ago(snapshot)), VIEW_ROWS);
+        Menu menu = new Menu(viewer.getServer(), messages.render(viewer, "menu.backups.view-title",
+                "player", subject.getName(), "ago", ago(backup)), VIEW_ROWS);
         for (int slot = 0; slot < Math.min(contents.length, OFFHAND + 1); slot++) {
             menu.set(slot, contents[slot]);
         }
 
         int nav = menu.size() - 9;
-        menu.set(nav, button(settings.previousPage(), "menu.buttons.back", "menu.buttons.back-lore"),
+        menu.set(nav, button(viewer, settings.previousPage(), "menu.buttons.back", "menu.buttons.back-lore"),
                 clicker -> back(clicker, subject));
-        if (snapshot.hasEnderChest()) {
-            menu.set(nav + 2, button(Material.ENDER_CHEST,
+        if (backup.hasEnderChest()) {
+            menu.set(nav + 2, button(viewer, Material.ENDER_CHEST,
                             "menu.backups.ender", "menu.backups.ender-lore"),
-                    clicker -> openEnderChest(clicker, subject, snapshot));
+                    clicker -> openEnderChest(clicker, subject, backup));
         }
-        restoreButtons(menu, nav, viewer, subject, snapshot);
-        menu.set(nav + 8, button(settings.close(), "menu.buttons.close", "menu.buttons.close-lore"),
+        restoreButtons(menu, nav, viewer, subject, backup);
+        menu.set(nav + 8, button(viewer, settings.close(), "menu.buttons.close", "menu.buttons.close-lore"),
                 Player::closeInventory);
 
         menu.fill(STORAGE + 5, nav, MenuItems.filler(settings.navigationFiller()));
@@ -160,29 +161,29 @@ public final class BackupMenu {
     }
 
     /** The ender chest from the same backup. */
-    public void openEnderChest(Player viewer, Player subject, InventorySnapshot snapshot) {
-        ItemStack[] contents = InventoryCodec.decode(snapshot.enderChest());
+    public void openEnderChest(Player viewer, Player subject, InventoryBackup backup) {
+        ItemStack[] contents = InventoryCodec.decode(backup.enderChest());
         if (contents == null) {
             messages.send(viewer, "items.restore-unreadable");
             return;
         }
 
-        Menu menu = new Menu(viewer.getServer(), messages.render("menu.backups.ender-title",
-                "player", subject.getName(), "ago", ago(snapshot)), ENDER_ROWS);
+        Menu menu = new Menu(viewer.getServer(), messages.render(viewer, "menu.backups.ender-title",
+                "player", subject.getName(), "ago", ago(backup)), ENDER_ROWS);
         for (int slot = 0; slot < Math.min(contents.length, menu.size() - 9); slot++) {
             menu.set(slot, contents[slot]);
         }
 
         int nav = menu.size() - 9;
-        menu.set(nav, button(settings.previousPage(), "menu.buttons.back", "menu.buttons.back-lore"),
-                clicker -> openInventory(clicker, subject, snapshot));
+        menu.set(nav, button(viewer, settings.previousPage(), "menu.buttons.back", "menu.buttons.back-lore"),
+                clicker -> openInventory(clicker, subject, backup));
         if (viewer.hasPermission(RESTORE_PERMISSION)) {
-            menu.set(nav + 4, button(Material.ENDER_CHEST,
+            menu.set(nav + 4, button(viewer, Material.ENDER_CHEST,
                             "menu.backups.restore-ender", "menu.backups.restore-ender-lore"),
-                    clicker -> restore(clicker, subject, snapshot,
+                    clicker -> restore(clicker, subject, backup,
                             EnumSet.of(InventoryBackups.Part.ENDER_CHEST)));
         }
-        menu.set(nav + 8, button(settings.close(), "menu.buttons.close", "menu.buttons.close-lore"),
+        menu.set(nav + 8, button(viewer, settings.close(), "menu.buttons.close", "menu.buttons.close-lore"),
                 Player::closeInventory);
 
         menu.fill(nav, menu.size(), MenuItems.filler(settings.navigationFiller()));
@@ -191,25 +192,25 @@ public final class BackupMenu {
 
     /** The two ways to put a backup back, for anybody allowed to. */
     private void restoreButtons(Menu menu, int nav, Player viewer, Player subject,
-                                InventorySnapshot snapshot) {
+                                InventoryBackup backup) {
         if (!viewer.hasPermission(RESTORE_PERMISSION)) {
             return;
         }
-        menu.set(nav + 4, button(Material.LIME_DYE,
+        menu.set(nav + 4, button(viewer, Material.LIME_DYE,
                         "menu.backups.restore", "menu.backups.restore-lore"),
-                clicker -> restore(clicker, subject, snapshot,
+                clicker -> restore(clicker, subject, backup,
                         EnumSet.of(InventoryBackups.Part.INVENTORY)));
-        menu.set(nav + 5, button(Material.CHEST,
+        menu.set(nav + 5, button(viewer, Material.CHEST,
                         "menu.backups.hand-over", "menu.backups.hand-over-lore"),
-                clicker -> handOver(clicker, subject, snapshot));
-        menu.set(nav + 6, button(Material.EMERALD,
+                clicker -> handOver(clicker, subject, backup));
+        menu.set(nav + 6, button(viewer, Material.EMERALD,
                         "menu.backups.restore-all", "menu.backups.restore-all-lore"),
-                clicker -> restore(clicker, subject, snapshot,
+                clicker -> restore(clicker, subject, backup,
                         EnumSet.allOf(InventoryBackups.Part.class)));
     }
 
     /** Gives the saved items back on top of whatever they are carrying now. */
-    private void handOver(Player viewer, Player subject, InventorySnapshot snapshot) {
+    private void handOver(Player viewer, Player subject, InventoryBackup backup) {
         viewer.closeInventory();
         if (!subject.isOnline()) {
             messages.send(viewer, "error.player-not-found", "player", subject.getName());
@@ -217,7 +218,7 @@ public final class BackupMenu {
         }
 
         schedulers.entity(subject, () -> {
-            int handed = backups.deliver(subject, snapshot, true);
+            int handed = backups.deliver(subject, backup, true);
             if (handed < 0) {
                 messages.send(viewer, "items.restore-unreadable");
                 return;
@@ -230,7 +231,7 @@ public final class BackupMenu {
         });
     }
 
-    private void restore(Player viewer, Player subject, InventorySnapshot snapshot,
+    private void restore(Player viewer, Player subject, InventoryBackup backup,
                          Set<InventoryBackups.Part> parts) {
         viewer.closeInventory();
         if (!subject.isOnline()) {
@@ -240,14 +241,14 @@ public final class BackupMenu {
 
         schedulers.entity(subject, () -> {
             Set<InventoryBackups.Part> done =
-                    backups.restore(subject, snapshot, parts, viewer.getName());
+                    backups.restore(subject, backup, parts, viewer.getName());
             if (done.isEmpty()) {
                 messages.send(viewer, "items.restore-unreadable");
                 return;
             }
 
             messages.send(viewer, "items.restored",
-                    "player", subject.getName(), "ago", ago(snapshot));
+                    "player", subject.getName(), "ago", ago(backup));
             if (!viewer.equals(subject)) {
                 messages.send(subject, "items.restore-received");
             }
@@ -265,59 +266,32 @@ public final class BackupMenu {
                 }));
     }
 
-    private List<Component> lore(InventorySnapshot snapshot) {
-        String key = snapshot.killer() != null
+    private List<Component> lore(Player viewer, InventoryBackup backup) {
+        String key = backup.killer() != null
                 ? "menu.backups.entry-killed-lore"
-                : snapshot.cause() != null
+                : backup.cause() != null
                         ? "menu.backups.entry-death-lore"
                         : "menu.backups.entry-lore";
 
-        return messages.renderLines(key,
-                "killer", snapshot.killer() == null ? "" : snapshot.killer(),
-                "cause", snapshot.cause() == null ? "" : snapshot.cause(),
-                "actor", snapshot.actor(),
-                "world", snapshot.world(),
-                "x", String.valueOf(snapshot.x()),
-                "y", String.valueOf(snapshot.y()),
-                "z", String.valueOf(snapshot.z()),
-                "level", String.valueOf(snapshot.level()),
-                "health", String.valueOf(Math.round(snapshot.health())),
-                "food", String.valueOf(snapshot.food()));
+        return messages.renderLines(viewer, key,
+                "killer", backup.killer() == null ? "" : backup.killer(),
+                "cause", backup.cause() == null ? "" : backup.cause(),
+                "actor", backup.actor(),
+                "world", backup.world(),
+                "x", String.valueOf(backup.x()),
+                "y", String.valueOf(backup.y()),
+                "z", String.valueOf(backup.z()),
+                "level", String.valueOf(backup.level()),
+                "health", String.valueOf(Math.round(backup.health())),
+                "food", String.valueOf(backup.food()));
     }
 
-    private ItemStack button(Material material, String nameKey, String loreKey) {
-        return MenuItems.of(material, messages.render(nameKey),
-                messages.renderLines(loreKey));
+    private ItemStack button(Player viewer, Material material, String nameKey, String loreKey) {
+        return MenuItems.of(material, messages.render(viewer, nameKey),
+                messages.renderLines(viewer, loreKey));
     }
 
-    private static String ago(InventorySnapshot snapshot) {
-        return Durations.format(System.currentTimeMillis() - snapshot.takenAt());
-    }
-
-    /** The reason without whatever was appended to it, such as the kit's name. */
-    private static String first(String reason) {
-        int space = reason.indexOf(' ');
-        return space < 0 ? reason : reason.substring(0, space);
-    }
-
-    /** And only what was appended: the kit, or the world they left. */
-    private static String detail(String reason) {
-        int space = reason.indexOf(' ');
-        return space < 0 ? "" : reason.substring(space + 1);
-    }
-
-    /** What the reason is called on screen. */
-    private String named(BackupReason reason, String detail) {
-        String name = messages.plain(switch (reason) {
-            case DEATH -> "menu.backups.reason-death";
-            case JOIN -> "menu.backups.reason-join";
-            case QUIT -> "menu.backups.reason-quit";
-            case WORLD -> "menu.backups.reason-world";
-            case CLEAR -> "menu.backups.reason-clear";
-            case KIT -> "menu.backups.reason-kit";
-            case RESTORE -> "menu.backups.reason-restore";
-            case MANUAL -> "menu.backups.reason-manual";
-        });
-        return detail.isEmpty() ? name : name + " " + detail;
+    private static String ago(InventoryBackup backup) {
+        return Durations.format(System.currentTimeMillis() - backup.takenAt());
     }
 }

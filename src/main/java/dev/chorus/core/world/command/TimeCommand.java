@@ -54,7 +54,7 @@ public final class TimeCommand extends ChorusCommand {
         messages.send(sender, "world.time-set",
                 "time", args[0].toLowerCase(Locale.ROOT),
                 "world", worlds.size() == 1 ? worlds.get(0).getName()
-                        : messages.plain("world.every-world"));
+                        : messages.plain(sender, "world.every-world"));
     }
 
     private void show(CommandSender sender) {

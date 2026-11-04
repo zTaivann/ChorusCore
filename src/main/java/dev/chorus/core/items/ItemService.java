@@ -30,7 +30,7 @@ public final class ItemService {
         return TextFormat.upright(typed(author, raw));
     }
 
-    /** A typed line of lore, drawn grey rather than the purple the game falls back to. */
+    /** A typed line of lore, grey unless it sets a colour. */
     public Component lore(Player author, String raw) {
         return TextFormat.asLore(typed(author, raw));
     }

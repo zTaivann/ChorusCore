@@ -1,12 +1,14 @@
 package dev.chorus.core.custom;
 
 import dev.chorus.core.command.CooldownScope;
+import dev.chorus.core.command.DailyLimit;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,8 @@ class CustomDefinitionTest {
                 permission-message: '<red>Vote on the website first.'
                 cooldown-group: Travel
                 cooldown-scope: server
+                uses-per-day: 1
+                uses-reset-at: '06:00'
                 messages: [ 'Thanks!' ]
                 requires:
                   - 'playtime: 3600'
@@ -37,6 +41,7 @@ class CustomDefinitionTest {
         assertEquals("<red>Vote on the website first.", vote.permissionMessage());
         assertEquals("travel", vote.cooldownGroup());
         assertEquals(CooldownScope.SERVER, vote.cooldownScope());
+        assertEquals(new DailyLimit(1, LocalTime.of(6, 0)), vote.daily());
         assertEquals(List.of(Requirement.Kind.PLAYTIME),
                 vote.requires().stream().map(Requirement::kind).toList());
         assertEquals(List.of(Action.Kind.TITLE),
@@ -54,6 +59,7 @@ class CustomDefinitionTest {
         assertEquals("", plain.permissionMessage());
         assertEquals("", plain.cooldownGroup());
         assertEquals(CooldownScope.PLAYER, plain.cooldownScope());
+        assertEquals(DailyLimit.NONE, plain.daily());
         assertTrue(plain.requires().isEmpty());
         assertTrue(plain.onSuccess().isEmpty());
         assertFalse(plain.log());

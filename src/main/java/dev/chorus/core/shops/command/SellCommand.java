@@ -53,7 +53,7 @@ public final class SellCommand extends PlayerCommand {
         }
 
         String item = material.name().toLowerCase(Locale.ROOT);
-        double each = worth.of(material);
+        double each = worth.of(player, material);
         if (each <= 0) {
             messages.send(player, "shops.no-worth", "item", item);
             return;
@@ -94,7 +94,7 @@ public final class SellCommand extends PlayerCommand {
     private void sellEverything(Player player) {
         List<Material> kinds = new ArrayList<>();
         for (ItemStack stack : player.getInventory().getStorageContents()) {
-            if (stack != null && !stack.hasItemMeta() && worth.sellable(stack.getType())
+            if (stack != null && !stack.hasItemMeta() && worth.of(player, stack.getType()) > 0
                     && !kinds.contains(stack.getType())) {
                 kinds.add(stack.getType());
             }
@@ -112,7 +112,7 @@ public final class SellCommand extends PlayerCommand {
         for (Material material : kinds) {
             int carrying = ShopService.count(player, material);
             int taken = ShopService.take(player, material, carrying);
-            paid += worth.of(material) * taken;
+            paid += worth.of(player, material) * taken;
             sold += taken;
         }
         if (sold == 0 || !economy.deposit(player, paid)) {

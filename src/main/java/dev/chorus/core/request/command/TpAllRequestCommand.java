@@ -2,8 +2,8 @@ package dev.chorus.core.request.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import dev.chorus.core.request.TeleportRequest;
 import dev.chorus.core.request.TeleportRequestService;
 import dev.chorus.core.teleport.TeleportService;
@@ -14,14 +14,14 @@ public final class TpAllRequestCommand extends PlayerCommand {
 
     private final TeleportRequestService requests;
     private final TeleportService teleports;
-    private final PlayerFlagService flags;
+    private final PlayerPreferenceService preferences;
 
     public TpAllRequestCommand(CommandSupport support, TeleportRequestService requests,
-                               TeleportService teleports, PlayerFlagService flags) {
+                               TeleportService teleports, PlayerPreferenceService preferences) {
         super(support, "tpaall", "chorus.tpa.all");
         this.requests = requests;
         this.teleports = teleports;
-        this.flags = flags;
+        this.preferences = preferences;
     }
 
     @Override
@@ -39,10 +39,10 @@ public final class TpAllRequestCommand extends PlayerCommand {
             if (other.equals(player) || !player.canSee(other)) {
                 continue;
             }
-            if (flags.isSet(other.getUniqueId(), PlayerFlag.TELEPORTS_BLOCKED)) {
+            if (preferences.isSet(other.getUniqueId(), PlayerPreference.TELEPORTS_BLOCKED)) {
                 continue;
             }
-            if (flags.isSet(other.getUniqueId(), PlayerFlag.TELEPORTS_AUTOMATIC)) {
+            if (preferences.isSet(other.getUniqueId(), PlayerPreference.TELEPORTS_AUTOMATIC)) {
                 teleports.teleport(other, player.getLocation(), rules(), name());
                 came++;
                 continue;

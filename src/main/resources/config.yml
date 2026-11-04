@@ -5,39 +5,25 @@
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
-# This file only holds things the whole plugin shares. Everything else has its own file:
+# Other files:
 #
-#   aliases.yml           extra names for the commands
-#   palette.yml           the colours every line is written in
-#   messages/             every line the plugin sends, one file per part of it
-#   messages/menus.yml    every word that appears on a screen
-#   messages/es/          the same in Spanish, and a folder per language after it
-#   modules/homes.yml     /home /sethome /delhome /homes
-#   modules/warps.yml     /warp /warps /setwarp /delwarp
-#   modules/spawn.yml     /spawn /setspawn
-#   modules/teleport.yml  /tpa /tpahere /tpaccept /tpdeny /tpcancel /tptoggle /back
-#   modules/utility.yml   /heal /feed /fly /god /ping /fix /trash and the portable screens
-#   modules/economy.yml   /pay /balance /baltop /eco /paylog
-#   modules/chat.yml      /msg /reply /socialspy
-#   modules/players.yml   /afk /seen /playtime /whois /list /ptime /pweather
-#   modules/items.yml     /hat /condense /clearinventory and the rest of the item tools
-#   modules/kits.yml      /kit /kits, and the kits themselves
-#   modules/staff.yml     /tp /vanish /gamemode /freeze /sudo /lockdown and the rest
-#   modules/custom-commands.yml   the /discord and /rules of your server
+#   aliases.yml           command aliases
+#   palette.yml           colour names used in messages and menus
+#   messages/             every message, one file per module
+#   messages/menus.yml    menu text
+#   messages/es/          Spanish translation
+#   modules/              one file per module, with its commands
 #
-# /chorus reload re-reads all of them. Only the storage section and aliases.yml
-# need a full server restart.
+# /chorus reload reloads everything except storage and aliases.yml, which need
+# a restart.
 
-# ── Startup ──────────────────────────────────────────────────────────────
-#
-# The name in the console at startup, and a line for the database, the economy
-# and PlaceholderAPI. false prints one line instead.
+# ── Startup ───────────────────────────────────────────────────────────────
+# false prints a single line at startup instead of the banner.
 startup-banner: true
 
-# ── Storage ──────────────────────────────────────────────────────────────
+# ── Storage ───────────────────────────────────────────────────────────────
 storage:
-  # sqlite -> a single file in this folder, nothing to set up.
-  # mysql  -> MySQL or MariaDB, for sharing data between servers.
+  # sqlite or mysql (MySQL or MariaDB).
   type: sqlite
 
   # sqlite only. Relative to plugins/ChorusCore/.
@@ -51,119 +37,88 @@ storage:
     username: root
     password: ''
     pool-size: 8
-    # Appended to the connection URL.
+    # Added to the connection URL.
     properties:
       useSSL: false
       characterEncoding: utf8
 
-# ── Economy ──────────────────────────────────────────────────────────────
-#
-# ChorusCore keeps its own balances, so /pay and /balance work on a server with
-# nothing else installed. Vault is only a bridge: with it there, the same money
-# is offered to every other plugin, and another economy plugin can take over.
+# ── Economy ───────────────────────────────────────────────────────────────
 economy:
-  # false switches prices off entirely and leaves /pay and /balance saying so.
+  # false disables prices, /pay and /balance.
   enabled: true
 
-  # Where the money lives.
-  #   auto   the built-in ledger, unless another economy plugin has registered
-  #          with Vault, in which case that one wins and everybody agrees.
-  #   self   the built-in ledger, whatever else is installed.
-  #   vault  another plugin only. With no Vault every price is ignored.
-  #   off    the same as enabled: false.
+  # Where balances are kept.
+  #   auto   ChorusCore, or another economy plugin through Vault if there is one.
+  #   self   always ChorusCore.
+  #   vault  only another economy plugin through Vault.
+  #   off    same as enabled: false.
   provider: auto
 
-  # What a brand new player starts with.
+  # Balance of a player who joins for the first time. More with
+  # chorus.economy.starting.<amount> (the highest wins).
   starting-balance: 0.0
-
-  # A balance is never taken below or above these.
   minimum-balance: 0.0
   maximum-balance: 1000000000000.0
 
-  # How money is written. Only used by the built-in ledger; another economy
-  # plugin formats its own.
+  # Only used when ChorusCore keeps the balances.
   currency:
     symbol: "$"
     # true writes 100$ instead of $100.
     suffix: false
-    # Decimal places, 0 to 4.
+    # 0 to 4.
     decimals: 2
-    # The words that go with an amount, for the lines that read "5 coins".
+    # 1,234.50 by default. For 1.234,50 swap them. '' writes no thousands separator.
+    thousands-separator: ','
+    decimal-separator: '.'
+    # true writes large amounts short: 1.5K, 2.25M. Typing 5k or 2m works either way.
+    short-form: false
+    # Letters for thousands, millions, billions and trillions.
+    short-units: [ K, M, B, T ]
     singular: coin
     plural: coins
 
-# ── Language ─────────────────────────────────────────────────────────────
-# Other languages are folders inside messages/: messages/es/, messages/fr/ and so
-# on. A translation only writes down the lines it translates, in as many or as few
-# files as it likes; anything it leaves out comes from English, so one is never out
-# of date, only incomplete. Making the folder and running /chorus reload is all it
-# takes.
+# ── Language ──────────────────────────────────────────────────────────────
+# A language is a folder in messages/, such as messages/es/. Lines it does not
+# translate are shown in English.
 language:
-  # The language everybody gets, by the name of its folder. Empty is English,
-  # which is the messages folder itself.
+  # Folder name of the language everyone gets. Empty is English.
   default: ''
 
-  # true sends each player the translation that matches their own Minecraft
-  # language instead, falling back to the one above when there is none for it.
+  # true gives each player the language of their Minecraft client when there
+  # is a folder for it.
   per-player: false
 
-# ── Confirmations ────────────────────────────────────────────────────────
+# ── Confirmations ─────────────────────────────────────────────────────────
 confirmations:
-  # Seconds to run a command again to confirm it, for the ones that cannot be
-  # taken back: /clearinventory, /delhome, /delwarp, /sweep of a whole world
-  # and a payment over the threshold in modules/economy.yml.
-  #
-  # 0, as it ships, asks for nothing and runs them straight away. Raise it to
-  # put a second step in front of them. chorus.bypass.confirm always skips it.
+  # Seconds to type a command again to confirm it. Applies to /clearinventory,
+  # /delhome, /delwarp, /sweep of a whole world and large payments (see
+  # modules/economy.yml). 0 asks for no confirmation.
+  # chorus.bypass.confirm skips it.
   seconds: 0
 
-# ── Metrics ──────────────────────────────────────────────────────────────
-# Sends the server version, the storage type and how many modules are on to
-# bStats. No player data.
+# ── Metrics ───────────────────────────────────────────────────────────────
+# Anonymous usage stats on bStats.
 metrics: true
 
-# ── Staff log ────────────────────────────────────────────────────────────
+# ── Staff log ─────────────────────────────────────────────────────────────
+# Records /freeze, /sudo, /lockdown, /tempfly, notes, /eco and every command
+# with log: true. Read it with /stafflog.
 staff-log:
-  # Writes down freezing and unfreezing, /sudo, /lockdown, /tempfly, notes,
-  # every /eco, and every use of a command with log: true. Read it in game
-  # with /stafflog.
   enabled: true
 
-  # Entries older than this are dropped when the server starts. 0 keeps them
-  # for ever.
+  # Entries older than this are deleted at startup. 0 keeps them forever.
   keep-days: 60
 
-  # How many entries one /stafflog prints. Maximum 50.
+  # Entries per /stafflog page. Up to 50.
   page-size: 10
 
-# ── Updates ──────────────────────────────────────────────────────────────
-# A plain request for a version number, once at startup and once a day after
-# that. Nothing is downloaded and nothing is installed: it says a newer one
-# exists and that is all.
-#
-# Nothing about this server is sent. Not the address, not the player count,
-# not even the version being run. Everything about it also fails quietly, so
-# a site that is down or a server with no way out never puts a line in the
-# console.
+# ── Updates ───────────────────────────────────────────────────────────────
+# Checks once a day for a new version and says so in the console.
 updates:
   check: true
 
-  # Where to ask.
-  #   modrinth  a project on modrinth.com
-  #   hangar    a project on hangar.papermc.io
-  #   spigot    a resource on spigotmc.org, by its number
-  #   plain     a page of your own that answers with nothing but a version
-  #
-  # A site with no public version endpoint, BuiltByBit among them, needs plain.
-  source: spigot
+  # Where you downloaded ChorusCore: modrinth, spigot or builtbybit.
+  source: modrinth
 
-  # The project on that site. For spigot this is the number in the resource
-  # URL. Leave it empty to switch the check off without setting check: false.
-  project: '138794'
-
-  # Only read when source is plain.
-  url: ''
-
-  # Tells anybody holding chorus.updates as they join. The console is told
-  # either way.
+  # Also tells players with chorus.updates when they join.
   notify-staff: true

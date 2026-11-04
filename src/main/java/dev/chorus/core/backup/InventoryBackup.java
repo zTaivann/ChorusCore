@@ -22,12 +22,12 @@ import java.util.UUID;
  * @param cause       what killed them, for a death, or null
  * @param killer      who killed them, for a death by a player, or null
  */
-public record InventorySnapshot(long id, UUID owner, long takenAt, String reason, String actor,
+public record InventoryBackup(long id, UUID owner, long takenAt, String reason, String actor,
                                 String contents, String enderChest, int level, float experience,
                                 double health, int food, String world, int x, int y, int z,
                                 @Nullable String cause, @Nullable String killer) {
 
-    /** Whether there is anything in the ender chest worth opening a screen for. */
+    /** Whether the ender chest has anything in it. */
     public boolean hasEnderChest() {
         return !enderChest.isEmpty();
     }

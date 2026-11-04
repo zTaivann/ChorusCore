@@ -3,7 +3,7 @@ package dev.chorus.core.warp;
 import dev.chorus.core.command.CommandRules;
 import org.jetbrains.annotations.Nullable;
 
-/** What a single warp costs, who may use it and how it looks. */
+/** The price of a single warp, who may use it and how it looks. */
 public record WarpDetails(String warp, @Nullable String icon, @Nullable String permission,
                           double price, int cooldownSeconds, @Nullable String description,
                           @Nullable String section, long uses) {

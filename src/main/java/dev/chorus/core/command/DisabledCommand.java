@@ -2,7 +2,7 @@ package dev.chorus.core.command;
 
 import org.bukkit.command.CommandSender;
 
-/** Stands in for the commands of a module that is switched off. */
+/** Stands in for the commands of a disabled module. */
 public final class DisabledCommand extends ChorusCommand {
 
     public DisabledCommand(CommandSupport support, String name) {

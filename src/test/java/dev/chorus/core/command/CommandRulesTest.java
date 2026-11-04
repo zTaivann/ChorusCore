@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -159,7 +160,7 @@ class CommandRulesTest {
                   log: false
                 fly:
                   requires:
-                    - 'money: 500'
+                    - 'balance: 500'
                     - condition: 'placeholder: %player_level% >= 10'
                       deny: '<red>Level 10 first.'
                   on-success:
@@ -170,7 +171,7 @@ class CommandRulesTest {
                   log: true
                 """, "fly");
 
-        assertEquals(List.of(Requirement.Kind.MONEY, Requirement.Kind.PLACEHOLDER),
+        assertEquals(List.of(Requirement.Kind.BALANCE, Requirement.Kind.PLACEHOLDER),
                 rules.requires().stream().map(Requirement::kind).toList());
         assertEquals("<red>Level 10 first.", rules.requires().get(1).denyMessage());
         assertEquals(List.of(Action.Kind.ACTIONBAR),
@@ -194,7 +195,7 @@ class CommandRulesTest {
         assertEquals(List.of(Requirement.Kind.PERMISSION),
                 fly.requires().stream().map(Requirement::kind).toList());
         assertEquals(1, fly.onSuccess().size(), "what it does not write comes from the defaults");
-        assertEquals(List.of(Requirement.Kind.MONEY),
+        assertEquals(List.of(Requirement.Kind.BALANCE),
                 read(yaml, "heal").requires().stream().map(Requirement::kind).toList());
     }
 
@@ -202,7 +203,7 @@ class CommandRulesTest {
     void aLineThePluginDoesNotKnowIsSkipped() throws InvalidConfigurationException {
         CommandRules rules = read("""
                 fly:
-                  requires: [ 'mony: 5', 'money: 5' ]
+                  requires: [ 'mony: 5', 'balance: 5' ]
                   on-success: [ 'mesage: hi', 'message: hi' ]
                 """, "fly");
 
@@ -245,6 +246,28 @@ class CommandRulesTest {
     }
 
     @Test
+    void whenThePriceIsTakenIsReadAndAWrongValueKeepsTheDefault()
+            throws InvalidConfigurationException {
+        String yaml = """
+                defaults:
+                  charge-on: use
+                home:
+                  charge-on: Success
+                  refund-on-cancel: false
+                warp:
+                  charge-on: later
+                """;
+
+        assertEquals(ChargeOn.SUCCESS, read(yaml, "home").chargeOn());
+        assertFalse(read(yaml, "home").refundOnCancel());
+        assertEquals(ChargeOn.USE, read(yaml, "spawn").chargeOn(), "from the defaults");
+        assertEquals(ChargeOn.USE, read(yaml, "warp").chargeOn(),
+                "a value that does not exist changes nothing");
+        assertTrue(read(yaml, "spawn").refundOnCancel());
+        assertEquals(ChargeOn.SUCCESS, read("fly:\n  enabled: true\n", "fly").chargeOn());
+    }
+
+    @Test
     void aHomeOrAWarpKeepsEverythingButWhatItCosts() throws InvalidConfigurationException {
         CommandRules rules = read("""
                 fly:
@@ -252,12 +275,18 @@ class CommandRulesTest {
                   cooldown-seconds: 5
                   cooldown-group: travel
                   cooldown-scope: world
+                  uses-per-day: 3
+                  charge-on: use
+                  refund-on-cancel: false
                   log: true
                   on-success: [ 'actionbar: Done' ]
                 """, "fly").costing(99, 60);
 
+        assertEquals(ChargeOn.USE, rules.chargeOn());
+        assertFalse(rules.refundOnCancel());
         assertEquals("travel", rules.cooldownGroup());
         assertEquals(CooldownScope.WORLD, rules.cooldownScope());
+        assertEquals(3, rules.daily().uses());
         assertEquals(99, rules.price());
         assertEquals(60, rules.cooldownSeconds());
         assertTrue(rules.log());

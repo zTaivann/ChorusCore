@@ -62,7 +62,7 @@ public final class MailService {
         return Queries.run(() -> repository.unread(recipient), worker, mainThread);
     }
 
-    /** @return false when the inbox is already full, so nothing is quietly dropped. */
+    /** @return false when the inbox is full. */
     public CompletableFuture<Boolean> send(UUID recipient, String sender, String body) {
         long now = System.currentTimeMillis();
         return Queries.run(() -> {
@@ -89,7 +89,7 @@ public final class MailService {
         return Queries.run(() -> repository.clear(recipient, id), worker, mainThread);
     }
 
-    /** Runs at startup, so a server that has been going for years is not carrying everything. */
+    /** Deletes old mail. Runs at startup. */
     public void prune() {
         int days = keepDays;
         worker.execute(() -> {

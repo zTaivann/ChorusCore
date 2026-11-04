@@ -8,8 +8,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 
 /**
- * How a list menu looks. The bottom row is always the navigation strip, so a menu of three
- * rows shows eighteen entries per page and nothing ever moves under the cursor.
+ * How a list menu looks. The bottom row holds the page buttons.
  */
 public record MenuSettings(boolean enabled, int rows, Material icon, @Nullable Material filler,
                            @Nullable Material navigationFiller, Material previousPage,
@@ -50,12 +49,12 @@ public record MenuSettings(boolean enabled, int rows, Material icon, @Nullable M
         return size() - 1;
     }
 
-    /** The free spot on the navigation row, for a screen with a control of its own. */
+    /** The free spot on the navigation row, for a menu with a control of its own. */
     public int controlSlot() {
         return size() - 3;
     }
 
-    /** Only drawn on a screen that was opened from another one. */
+    /** Only drawn in a menu that was opened from another one. */
     public int backSlot() {
         return size() - 7;
     }

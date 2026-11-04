@@ -68,7 +68,7 @@ class PlayerPurgeTest {
 
     @Test
     void aTableThatWasNeverMadeIsNotAnError() throws IOException, SQLException {
-        // Homes, mail and the rest belong to modules that may never have been switched on.
+        // Homes, mail and the rest belong to modules that may never have been enabled.
         try (TempStorage bare = TempStorage.open()) {
             assertEquals(0, new PlayerPurge(bare).run(CUTOFF, Set.of(), true).players());
         }

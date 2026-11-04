@@ -146,7 +146,7 @@ public final class EditSignCommand extends PlayerCommand {
         messages.send(player, "items.sign-pasted");
     }
 
-    /** Counted from one on screen, from zero in the block. -1 for anything else. */
+    /** Counted from one for players, from zero in the block. -1 for anything else. */
     private static int line(String raw) {
         int typed = Numbers.integer(raw, -1);
         return typed < 1 || typed > LINES ? -1 : typed - 1;

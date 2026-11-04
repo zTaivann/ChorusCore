@@ -5,28 +5,71 @@
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
-# The command block options are the same everywhere. modules/utility.yml lists
-# them in full.
+# ── Command options ───────────────────────────────────────────────────────
+#
+# Each command uses the `defaults` block plus whatever its own block changes.
+#
+#   enabled             false disables the command.
+#   warmup-seconds      seconds to stand still before a teleport.
+#   cooldown-seconds    seconds before the same player can use it again.
+#   cooldown-group      commands with the same group share one cooldown.
+#   cooldown-scope      who the cooldown applies to: player, world or server.
+#   uses-per-day        uses allowed per day. 0 = no limit.
+#   uses-reset-at       time the daily uses reset, in quotes: '04:00'.
+#   price               price of each use. 0 = free. Needs an economy.
+#   discounts           percent off the price for players with a permission. The
+#                       biggest one the player has counts.
+#                         discounts:
+#                           - 'group.vip: 25'
+#   price-item          items it also costs, as the item and how many: 'diamond 2'.
+#                       '' = none. Renamed or enchanted items do not count.
+#   charge-on           when the price is taken: success (once it works) or use
+#                       (as soon as it is typed, before the warmup).
+#   refund-on-cancel    true gives back a price taken on use if the teleport is
+#                       cancelled.
+#   worlds              worlds it works in. [ ] = all, [ '!event' ] = all but event.
+#   sound               key, volume (0-10) and pitch (0.5-2). Empty key = silent.
+#   particle            name (such as PORTAL), count, spread, height and speed.
+#   permission          permission needed instead of the usual one. '' = everyone.
+#   permission-message  message for players without that permission.
+#   messages            messages for this command only, by their key in messages/:
+#                         messages:
+#                           error.no-permission: '<red>VIP only.'
+#   requires            conditions: permission, placeholder, balance, playtime
+#                       (seconds) or kit. placeholder compares with >=, <=, ==,
+#                       !=, >, < or contains.
+#                         requires:
+#                           - 'balance: 500'
+#                           - condition: 'placeholder: %player_level% >= 10'
+#                             deny: '<red>Reach level 10 first.'
+#   on-success          actions when the command works.
+#   on-fail             actions when the command fails.
+#                         on-success:
+#                           - 'message: <green>Done.'
+#                           - 'actionbar: <green>Done'
+#                           - 'title: <gold>Title;<gray>Subtitle'
+#                           - 'sound: entity.player.levelup 1 1.4'
+#                           - 'broadcast: <gray>%player% used /%command%.'
+#                           - 'console: give %player% bread 1'
+#                           - 'player: spawn'
+#                           - 'close'
+#   log                 true saves every use to /stafflog.
+#
+# Bypass: chorus.teleport.instant (warmup), chorus.bypass.cooldown (cooldown
+# and uses-per-day), chorus.bypass.price, chorus.bypass.worlds.
 #
 # ── Signs ─────────────────────────────────────────────────────────────────
 #
-# Four lines. The first says which way the trade goes, the rest say what and
-# how much:
+# Server shop signs:
 #
-#   [Buy]        the server sells to the player
-#   64           how many change hands at once
-#   diamond      what they are
-#   250          the total price for that many
+#   [Buy]        the player buys        [Sell]       the player sells
+#   64           amount                 32
+#   diamond      item                   iron_ingot
+#   250          total price            40           (empty = price in worth.yml)
 #
-#   [Sell]       the server buys from the player
-#   32
-#   iron_ingot
-#   40           leave this line empty to use the worth list below
-#
-# Making one needs chorus.shops.create; using one needs chorus.shops.use.
-# These are the server's own shops, so nothing runs out of stock.
+# Placing: chorus.shops.create. Using: chorus.shops.use.
 
-# Switches off every command in this file at once.
+# false disables this whole module.
 enabled: true
 
 # ── Settings ──────────────────────────────────────────────────────────────
@@ -35,99 +78,50 @@ shops:
   signs: true
 
   # ── Chest shops ─────────────────────────────────────────────────────────
-  #
-  # Shops players run themselves. Put a sign on a chest, barrel or trapped chest with
-  # [Shop] on the first line while holding what you want to trade, and the price is
-  # asked for in chat. Write "buy" on the second line to make a shop that buys instead.
-  #
-  # The container, its sign and the other half of a double chest are all protected: they
-  # cannot be broken, exploded, pushed by a piston, merged into by a second chest or
-  # drained by a hopper.
+  # Player shops: a sign with [Shop] on line 1 on a chest or barrel, while holding
+  # the item. The price is asked in chat. "buy" on line 2 makes a shop that buys.
   chest:
     enabled: true
 
-    # Shops per player. Raise it for a rank with chorus.shops.chest.limit.<number>.
+    # Shops per player. More with chorus.shops.chest.limit.<number>.
     default-limit: 5
 
-    # The item turning slowly above the chest, so you can see what a shop sells without
-    # reading the sign. It is never written to the world file, so one can never be left
-    # behind by a crash, and it cannot be picked up, merged or sucked into a hopper.
+    # Limit per world, on top of default-limit. Example: world_nether: 2
+    world-limits: { }
+
+    # Shows the item floating above the chest.
     display: true
 
-    # What making one costs. 0 is free.
+    # Price to create one. 0 = free.
     creation-cost: 0.0
 
-    # Stops a hopper emptying a shop without anybody paying for anything.
+    # Stops hoppers taking items from shops.
     protect-hoppers: true
 
-    # The most one item may be priced at, so a mistyped price cannot empty somebody.
+    # Highest price per item.
     max-price: 1000000.0
 
-    # How far from the shop a trade may still be finished, in blocks.
+    # Blocks a player can be from the shop to finish a trade.
     reach: 8
 
-  # Every price below is multiplied by this when something is sold. 0.8 pays
-  # eighty per cent, which is the usual way to keep money from piling up.
-  sell-multiplier: 1.0
-
-  # What the server pays for each item, for /sell and for a [Sell] sign with no
-  # price on it. An item that is not listed cannot be sold at all.
-  # Add your own with /setworth <item> <price>, which writes back to this file.
-  worth:
-    coal: 2.0
-    charcoal: 1.0
-    raw_iron: 4.0
-    iron_ingot: 6.0
-    raw_gold: 8.0
-    gold_ingot: 12.0
-    raw_copper: 2.0
-    copper_ingot: 3.0
-    redstone: 2.0
-    lapis_lazuli: 3.0
-    quartz: 4.0
-    diamond: 60.0
-    emerald: 40.0
-    netherite_scrap: 200.0
-    wheat: 1.0
-    carrot: 1.0
-    potato: 1.0
-    beetroot: 1.0
-    sugar_cane: 1.0
-    melon_slice: 0.5
-    pumpkin: 2.0
-    oak_log: 1.5
-    spruce_log: 1.5
-    birch_log: 1.5
-    jungle_log: 1.5
-    acacia_log: 1.5
-    dark_oak_log: 1.5
-    cobblestone: 0.2
-    stone: 0.4
-    sand: 0.3
-    gravel: 0.3
-    obsidian: 5.0
-    rotten_flesh: 0.5
-    bone: 1.0
-    string: 1.0
-    gunpowder: 3.0
-    ender_pearl: 10.0
-    blaze_rod: 12.0
-    leather: 2.0
-    beef: 2.0
-    porkchop: 2.0
-    chicken: 2.0
+  # What the server pays for each item is in worth.yml.
 
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 
-  # Everything below inherits this and overrides only what it needs.
   defaults:
     enabled: true
     warmup-seconds: 0
     cooldown-seconds: 0
     cooldown-group: ''
     cooldown-scope: player
+    uses-per-day: 0
+    uses-reset-at: '00:00'
     price: 0.0
+    discounts: [ ]
+    price-item: ''
+    charge-on: success
+    refund-on-cancel: true
     worlds: [ ]
     sound:
       key: ui.button.click
@@ -145,7 +139,6 @@ commands:
     on-fail: [ ]
     log: false
 
-  # The signs borrow this sound, since a sign is another way of running it.
   sell:
     enabled: true
     sound:

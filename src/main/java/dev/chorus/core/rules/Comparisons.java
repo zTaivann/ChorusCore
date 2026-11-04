@@ -70,7 +70,7 @@ final class Comparisons {
                 filled.substring(at + operator.length()).trim()};
     }
 
-    /** A currency sign is dropped, since a balance placeholder often carries one. */
+    /** A number, ignoring a $ sign, or null. */
     private static @Nullable Double number(String raw) {
         double value = Numbers.decimal(raw.replace(',', '.').replace("$", ""), Double.NaN);
         return Double.isNaN(value) ? null : value;

@@ -134,7 +134,8 @@ class MessagesTest {
                 .filter(messages::isString)
                 .filter(MessagesTest::isLore)
                 .filter(key -> messages.getString(key, "").contains("<newline>"))
-                .filter(key -> sources.contains("render(\"" + key + "\""))
+                .filter(key -> Pattern.compile("render\\((?:[a-z]+, )?\"" + Pattern.quote(key) + "\"")
+                        .matcher(sources).find())
                 .toList();
 
         assertEquals(List.of(), wrong,

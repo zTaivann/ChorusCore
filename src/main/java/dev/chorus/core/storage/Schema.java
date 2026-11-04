@@ -18,8 +18,7 @@ public final class Schema {
 
     /**
      * Runs whichever of {@code steps} this database has not run yet, in order, and records
-     * how far it got. The whole upgrade is one transaction: a step that fails leaves the
-     * database exactly as it was, rather than half changed with nothing to say so.
+     * how far it got. The whole upgrade is one transaction.
      */
     public static void apply(Storage storage, String component, List<String> steps)
             throws SQLException {

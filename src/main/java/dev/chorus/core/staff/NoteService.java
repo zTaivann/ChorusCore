@@ -7,7 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-/** Notes are read rarely and written rarely, so nothing here is cached. */
+/** Staff notes, read from the database each time. */
 public final class NoteService {
 
     private static final int MAX_LENGTH = 250;

@@ -64,7 +64,7 @@ public final class WarpListCommand extends ChorusCommand {
             return;
         }
 
-        // The console has no screen to open, so it always gets the written list.
+        // The console has no menu to open, so it always gets the written list.
         if (warps.settings().menu().enabled() && sender instanceof Player player) {
             openMenu(player, visible);
         } else {
@@ -100,18 +100,18 @@ public final class WarpListCommand extends ChorusCommand {
             return;
         }
         if (warps.settings().menu().enabled() && sender instanceof Player player) {
-            openGrid(player, inside, "menu.warps.section-title", null,
+            openWarps(player, inside, "menu.warps.section-title", null,
                     "section", section(inside.get(0)));
         } else {
             sendList(sender, inside);
         }
     }
 
-    /** The grid, or a screen of sections when the warps are grouped into any. */
+    /** The warp menu, or a menu of sections when the warps are grouped into any. */
     private void openMenu(Player player, List<NamedLocation> visible) {
         Map<String, List<NamedLocation>> sections = group(visible);
         if (sections.size() < 2) {
-            openGrid(player, visible, "menu.warps.title", null);
+            openWarps(player, visible, "menu.warps.title", null);
             return;
         }
 
@@ -119,28 +119,28 @@ public final class WarpListCommand extends ChorusCommand {
         for (Map.Entry<String, List<NamedLocation>> group : sections.entrySet()) {
             List<NamedLocation> inside = group.getValue();
             String name = group.getKey().isEmpty()
-                    ? messages.plain("menu.warps.section-loose")
+                    ? messages.plain(player, "menu.warps.section-loose")
                     : group.getKey();
             entries.add(new ListMenu.Entry(
                     icon(details.of(inside.get(0).name())),
-                    messages.render("menu.warps.section", "section", name),
-                    messages.renderLines("menu.warps.section-lore",
+                    messages.render(player, "menu.warps.section", "section", name),
+                    messages.renderLines(player, "menu.warps.section-lore",
                             "count", String.valueOf(inside.size())),
-                    clicker -> openGrid(clicker, inside, "menu.warps.section-title",
+                    clicker -> openWarps(clicker, inside, "menu.warps.section-title",
                             back -> openMenu(back, visible), "section", name)));
         }
         ListMenu.open(player, messages, warps.settings().menu(), "menu.warps.title", entries, 0);
     }
 
-    private void openGrid(Player player, List<NamedLocation> group, String titleKey,
+    private void openWarps(Player player, List<NamedLocation> group, String titleKey,
                           @Nullable Consumer<Player> back, String... titleValues) {
         List<ListMenu.Entry> entries = new ArrayList<>(group.size());
         for (NamedLocation warp : group) {
             WarpDetails detail = details.of(warp.name());
             entries.add(new ListMenu.Entry(
                     icon(detail),
-                    messages.render("menu.warps.entry", "warp", warp.name()),
-                    lore(warp, detail),
+                    messages.render(player, "menu.warps.entry", "warp", warp.name()),
+                    lore(player, warp, detail),
                     clicker -> {
                         clicker.closeInventory();
                         clicker.performCommand("warp " + warp.name());
@@ -161,20 +161,20 @@ public final class WarpListCommand extends ChorusCommand {
         return sections;
     }
 
-    private List<Component> lore(NamedLocation warp, WarpDetails detail) {
+    private List<Component> lore(Player player, NamedLocation warp, WarpDetails detail) {
         List<Component> lore = new ArrayList<>(6);
         if (detail.description() != null) {
-            lore.add(messages.render("menu.warps.lore-description",
+            lore.add(messages.render(player, "menu.warps.lore-description",
                     "description", detail.description()));
         }
-        lore.add(messages.render("menu.warps.lore-world", "world", warp.worldName()));
-        lore.add(messages.render("menu.warps.lore-location",
+        lore.add(messages.render(player, "menu.warps.lore-world", "world", warp.worldName()));
+        lore.add(messages.render(player, "menu.warps.lore-location",
                 "x", round(warp.x()), "y", round(warp.y()), "z", round(warp.z())));
         if (detail.uses() > 0) {
-            lore.add(messages.render("menu.warps.lore-uses", "uses", String.valueOf(detail.uses())));
+            lore.add(messages.render(player, "menu.warps.lore-uses", "uses", String.valueOf(detail.uses())));
         }
-        lore.add(messages.render("menu.warps.lore-divider"));
-        lore.add(messages.render("menu.warps.lore-action"));
+        lore.add(messages.render(player, "menu.warps.lore-divider"));
+        lore.add(messages.render(player, "menu.warps.lore-action"));
         return lore;
     }
 
@@ -188,30 +188,30 @@ public final class WarpListCommand extends ChorusCommand {
                 messages.send(sender, "warp.list.section", "section", group.getKey());
             }
             sender.sendMessage(Component.join(
-                    JoinConfiguration.separator(messages.render("warp.list.separator")),
-                    line(group.getValue())));
+                    JoinConfiguration.separator(messages.render(sender, "warp.list.separator")),
+                    line(sender, group.getValue())));
         }
     }
 
-    private List<Component> line(List<NamedLocation> group) {
+    private List<Component> line(CommandSender sender, List<NamedLocation> group) {
         List<Component> entries = new ArrayList<>(group.size());
         for (NamedLocation warp : group) {
-            entries.add(messages.render("warp.list.entry", "warp", warp.name())
+            entries.add(messages.render(sender, "warp.list.entry", "warp", warp.name())
                     .clickEvent(ClickEvent.runCommand("/warp " + warp.name()))
-                    .hoverEvent(HoverEvent.showText(hover(warp))));
+                    .hoverEvent(HoverEvent.showText(hover(sender, warp))));
         }
         return entries;
     }
 
-    private Component hover(NamedLocation warp) {
+    private Component hover(CommandSender sender, NamedLocation warp) {
         WarpDetails detail = details.of(warp.name());
         if (detail.description() != null) {
-            return messages.render("warp.list.hover-description",
+            return messages.render(sender, "warp.list.hover-description",
                     "warp", warp.name(),
                     "description", detail.description(),
                     "world", warp.worldName());
         }
-        return messages.render("warp.list.hover",
+        return messages.render(sender, "warp.list.hover",
                 "warp", warp.name(),
                 "world", warp.worldName(),
                 "x", round(warp.x()),

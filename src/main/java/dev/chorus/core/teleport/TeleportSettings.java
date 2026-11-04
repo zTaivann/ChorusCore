@@ -3,7 +3,7 @@ package dev.chorus.core.teleport;
 import org.bukkit.configuration.ConfigurationSection;
 
 /**
- * Rules that hold for every teleport. The wait itself is per command and lives with that
+ * Rules that hold for every teleport. The warmup itself is per command and lives with that
  * command's other rules, since /home and /warp rarely want the same one.
  */
 public record TeleportSettings(boolean cancelOnMove, boolean cancelOnDamage,

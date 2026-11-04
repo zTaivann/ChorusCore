@@ -13,8 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Reads the figure the server already keeps rather than tracking its own, so it never drifts
- * from what the vanilla statistics screen shows. It is per server, not per network.
+ * The play time from the server's own statistics.
  */
 public final class PlaytimeCommand extends ChorusCommand {
 

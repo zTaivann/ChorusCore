@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** The ledger is money, so the table under it is worth checking properly. */
@@ -74,6 +75,21 @@ class BalanceStorageTest {
         repository.delete(owner);
 
         assertTrue(repository.all().isEmpty());
+    }
+
+    @Test
+    void aHiddenAccountStaysHiddenWhenItsBalanceChanges() throws SQLException {
+        UUID owner = UUID.randomUUID();
+        repository.save(owner, "Notch", 10);
+        repository.hide(owner, true);
+        repository.save(owner, "Notch", 25);
+
+        BalanceRepository.Account account = repository.all().get(0);
+        assertTrue(account.hidden());
+        assertEquals(25, account.balance(), 1e-9);
+
+        repository.hide(owner, false);
+        assertFalse(repository.all().get(0).hidden());
     }
 
     @Test

@@ -1,0 +1,74 @@
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │                                                                        │
+# │   W O R T H                                                            │
+# │   what the server pays for items  -  /sell  /worth  [Sell] signs       │
+# │                                                                        │
+# └────────────────────────────────────────────────────────────────────────┘
+#
+# Prices are per item. Items with no price cannot be sold.
+# /setworth <item> <price> writes under worth. /chorus reload applies changes.
+
+# ── One item each ─────────────────────────────────────────────────────────
+# 0 means it cannot be sold, even if a group names it.
+worth:
+  coal: 2.0
+  charcoal: 1.0
+  raw_iron: 4.0
+  iron_ingot: 6.0
+  raw_gold: 8.0
+  gold_ingot: 12.0
+  raw_copper: 2.0
+  copper_ingot: 3.0
+  redstone: 2.0
+  lapis_lazuli: 3.0
+  quartz: 4.0
+  diamond: 60.0
+  emerald: 40.0
+  netherite_scrap: 200.0
+  melon_slice: 0.5
+  pumpkin: 2.0
+  cobblestone: 0.2
+  stone: 0.4
+  sand: 0.3
+  gravel: 0.3
+  obsidian: 5.0
+  rotten_flesh: 0.5
+  bone: 1.0
+  string: 1.0
+  gunpowder: 3.0
+  ender_pearl: 10.0
+  blaze_rod: 12.0
+  leather: 2.0
+  beef: 2.0
+  porkchop: 2.0
+  chicken: 2.0
+
+# ── Groups ────────────────────────────────────────────────────────────────
+# Several items at one price. * stands for any part of a name: '*_log' is
+# every log. A price under worth wins over a group, and the first group
+# that names an item wins over the ones after it.
+groups:
+  crops:
+    price: 1.0
+    items: [ wheat, carrot, potato, beetroot, sugar_cane ]
+  logs:
+    price: 1.5
+    items: [ '*_log' ]
+
+# ── Multipliers ───────────────────────────────────────────────────────────
+# What is paid is the price times every multiplier that applies.
+
+# For everyone. 0.8 pays 80%.
+sell-multiplier: 1.0
+
+# For some items. A group name from above counts for every item in it, and
+# an item named on its own wins over its group.
+#   item-multipliers:
+#     diamond: 0.5
+#     logs: 2.0
+item-multipliers: { }
+
+# For players with a permission. The biggest one the player has counts.
+#   permission-multipliers:
+#     - 'group.vip: 1.25'
+permission-multipliers: [ ]

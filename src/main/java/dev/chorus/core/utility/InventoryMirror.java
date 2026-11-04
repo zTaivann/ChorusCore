@@ -46,7 +46,7 @@ public final class InventoryMirror implements InventoryHolder {
     private final ItemStack filler;
     private final Inventory inventory;
 
-    /** Set by an edit until it has been written back, so a refresh in between cannot undo it. */
+    /** Set by an edit until it is written back; refreshes wait for it. */
     private volatile boolean edited;
 
     InventoryMirror(Server server, Player target, Kind kind, boolean editable,

@@ -82,7 +82,7 @@ public final class HomeCommand extends PlayerCommand {
             settle(player);
             messages.send(player, whose.equals(player) ? "home.teleported" : "home.teleported-other",
                     "home", home.name(), "player", whose.getName());
-        });
+        }, chargeUpfront(player));
     }
 
     private String requested(Player player, String[] args) {

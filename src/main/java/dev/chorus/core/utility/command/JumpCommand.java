@@ -39,6 +39,6 @@ public final class JumpCommand extends PlayerCommand {
         teleports.teleport(player, destination, rules(), name(), () -> {
             settle(player);
             messages.send(player, "utility.jump-done");
-        });
+        }, chargeUpfront(player));
     }
 }

@@ -93,9 +93,7 @@ final class SqlKitRepository implements KitRepository {
     }
 
     /**
-     * The count arrived after the first release. It defaults to one rather than zero, so a
-     * row written before it existed reads as what it was: somebody who had taken the kit,
-     * at least once.
+     * The claim count, added after the first release. Older rows default to one.
      */
     private static String addTimes(SqlDialect dialect) {
         return switch (dialect) {
@@ -104,7 +102,7 @@ final class SqlKitRepository implements KitRepository {
         };
     }
 
-    /** Counted in the database rather than read and written back, so two claims never race. */
+    /** Counted in the database in one statement. */
     private static String upsert(SqlDialect dialect) {
         return switch (dialect) {
             case SQLITE -> """

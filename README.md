@@ -5,7 +5,7 @@ own, mail, private messages, sign shops, chest shops, staff tools, item tools, k
 controls and the usual utilities. 138 commands across 14 modules, every one of them
 switchable, priced, restricted to the worlds you choose and themed from its own config file.
 
-One jar runs on **1.18.2 through 26.2**, on Paper and on Folia.
+One jar runs on **1.18.2 through 26.3**, on Paper and on Folia.
 
 ## Documentation
 

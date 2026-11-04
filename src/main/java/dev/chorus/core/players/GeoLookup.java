@@ -97,9 +97,9 @@ public final class GeoLookup {
         return text.replaceAll("[^\\p{L} .'-]", "");
     }
 
-    /** Nobody outside can tell you where a private address is, so nothing is sent for one. */
+    /** Private, local and malformed addresses are never looked up. */
     private static boolean isLocal(String address) {
-        // Anything that is not written as an address is never sent, and never looked up.
+
         if (!LITERAL.matcher(address).matches()) {
             return true;
         }

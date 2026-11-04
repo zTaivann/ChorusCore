@@ -10,12 +10,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** A paginated grid of clickable entries, used by /homes and /warps. */
+/** A paginated menu of clickable entries, used by /homes and /warps. */
 public final class ListMenu {
 
     /**
-     * One line of the grid. The icon is a whole item rather than a bare material, so an
-     * entry can carry whatever was chosen for it: a named sword stays a named sword.
+     * One entry of the menu, with a full item as its icon.
      */
     public record Entry(ItemStack icon, Component display, List<Component> lore,
                         Consumer<Player> action) {
@@ -36,9 +35,9 @@ public final class ListMenu {
     }
 
     /**
-     * The same with a way back, for a screen that was opened from another one.
+     * The same with a way back, for a menu that was opened from another one.
      *
-     * @param back        what the back button does, or null for a screen that is the first one.
+     * @param back        what the back button does, or null for a menu that is the first one.
      * @param titleValues anything else the title names, beyond the page it is on.
      */
     public static void open(Player viewer, Messages messages, MenuSettings settings,
@@ -48,7 +47,7 @@ public final class ListMenu {
     }
 
     /**
-     * The same with one button of the screen's own, such as the filter on the backup list.
+     * The same with one button of the menu's own, such as the filter on the backup list.
      *
      * @param control what goes in the free spot on the navigation row, or null.
      */
@@ -68,7 +67,7 @@ public final class ListMenu {
         System.arraycopy(titleValues, 0, values, 4, titleValues.length);
 
         Menu menu = new Menu(viewer.getServer(),
-                messages.render(titleKey, values), settings.rows());
+                messages.render(viewer, titleKey, values), settings.rows());
 
         int first = current * perPage;
         for (int index = 0; index < perPage && first + index < entries.size(); index++) {
@@ -78,21 +77,21 @@ public final class ListMenu {
         }
 
         if (current > 0) {
-            menu.set(settings.previousSlot(), button(messages, settings.previousPage(),
+            menu.set(settings.previousSlot(), button(viewer, messages, settings.previousPage(),
                             "menu.buttons.previous", "menu.buttons.previous-lore", current),
                     clicker -> open(clicker, messages, settings, titleKey, entries,
                             current - 1, back, control, titleValues));
         }
         if (current < pages - 1) {
-            menu.set(settings.nextSlot(), button(messages, settings.nextPage(),
+            menu.set(settings.nextSlot(), button(viewer, messages, settings.nextPage(),
                             "menu.buttons.next", "menu.buttons.next-lore", current + 2),
                     clicker -> open(clicker, messages, settings, titleKey, entries,
                             current + 1, back, control, titleValues));
         }
         if (back != null) {
             menu.set(settings.backSlot(), MenuItems.of(settings.previousPage(),
-                            messages.render("menu.buttons.back"),
-                            List.of(messages.render("menu.buttons.back-lore"))),
+                            messages.render(viewer, "menu.buttons.back"),
+                            List.of(messages.render(viewer, "menu.buttons.back-lore"))),
                     back);
         }
         if (control != null) {
@@ -101,8 +100,8 @@ public final class ListMenu {
                     control.action());
         }
         menu.set(settings.closeSlot(), MenuItems.of(settings.close(),
-                        messages.render("menu.buttons.close"),
-                        List.of(messages.render("menu.buttons.close-lore"))),
+                        messages.render(viewer, "menu.buttons.close"),
+                        List.of(messages.render(viewer, "menu.buttons.close-lore"))),
                 Player::closeInventory);
 
         menu.fill(0, settings.previousSlot(), MenuItems.filler(settings.filler()));
@@ -111,9 +110,10 @@ public final class ListMenu {
         menu.open(viewer);
     }
 
-    private static org.bukkit.inventory.ItemStack button(Messages messages, Material material,
-                                                         String nameKey, String loreKey, int page) {
-        return MenuItems.of(material, messages.render(nameKey),
-                List.of(messages.render(loreKey, "page", String.valueOf(page))));
+    private static org.bukkit.inventory.ItemStack button(Player viewer, Messages messages,
+                                                         Material material, String nameKey,
+                                                         String loreKey, int page) {
+        return MenuItems.of(material, messages.render(viewer, nameKey),
+                List.of(messages.render(viewer, loreKey, "page", String.valueOf(page))));
     }
 }

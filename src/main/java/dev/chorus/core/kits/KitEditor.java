@@ -55,7 +55,7 @@ public final class KitEditor {
         return setItems(name, from.getInventory().getStorageContents());
     }
 
-    /** The same, from a screen the items were laid out in rather than from a rucksack. */
+    /** The same, from the items laid out in the editor menu. */
     public Result setItems(String name, ItemStack[] contents) {
         List<Map<String, Object>> written = KitWriter.describe(contents);
 
@@ -109,7 +109,7 @@ public final class KitEditor {
 
     /** What a list holds, unparsed. */
     public List<Rule> rules(String name, RuleList list) {
-        // Asked for without a default, so the copy in the jar cannot answer for the file.
+        // No default, so the jar's copy is not used.
         return read(config.data().get(ROOT + name + "." + list.path(), null));
     }
 
@@ -192,8 +192,8 @@ public final class KitEditor {
     private static Object parse(String setting, String value) {
         return switch (setting) {
             case "cooldown", "maxclaims" -> (int) Math.min(Integer.MAX_VALUE,
-                    Math.max(0, Numbers.money(value)));
-            case "price" -> Math.max(0, Numbers.money(value));
+                    Math.max(0, Numbers.amount(value)));
+            case "price" -> Math.max(0, Numbers.amount(value));
             case "onetime", "autoarmor", "clearinventory", "placeholders" ->
                     Boolean.parseBoolean(value);
             case "lore" -> List.of(value.split("\\|"));

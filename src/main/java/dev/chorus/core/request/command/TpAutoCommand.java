@@ -2,18 +2,18 @@ package dev.chorus.core.request.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import org.bukkit.entity.Player;
 
 /** Accepts every teleport request on arrival instead of asking. */
 public final class TpAutoCommand extends PlayerCommand {
 
-    private final PlayerFlagService flags;
+    private final PlayerPreferenceService preferences;
 
-    public TpAutoCommand(CommandSupport support, PlayerFlagService flags) {
+    public TpAutoCommand(CommandSupport support, PlayerPreferenceService preferences) {
         super(support, "tpauto", "chorus.tpa.auto");
-        this.flags = flags;
+        this.preferences = preferences;
     }
 
     @Override
@@ -22,9 +22,9 @@ public final class TpAutoCommand extends PlayerCommand {
             return;
         }
 
-        boolean automatic = flags.toggle(player.getUniqueId(), PlayerFlag.TELEPORTS_AUTOMATIC);
-        if (automatic && flags.isSet(player.getUniqueId(), PlayerFlag.TELEPORTS_BLOCKED)) {
-            flags.toggle(player.getUniqueId(), PlayerFlag.TELEPORTS_BLOCKED);
+        boolean automatic = preferences.toggle(player.getUniqueId(), PlayerPreference.TELEPORTS_AUTOMATIC);
+        if (automatic && preferences.isSet(player.getUniqueId(), PlayerPreference.TELEPORTS_BLOCKED)) {
+            preferences.toggle(player.getUniqueId(), PlayerPreference.TELEPORTS_BLOCKED);
         }
 
         settle(player);

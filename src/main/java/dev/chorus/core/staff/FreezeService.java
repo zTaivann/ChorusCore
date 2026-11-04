@@ -102,7 +102,7 @@ public final class FreezeService implements Listener {
         for (UUID playerId : frozen) {
             Player player = plugin.getServer().getPlayer(playerId);
             if (player != null) {
-                player.sendActionBar(messages.render("staff.freeze-reminder"));
+                player.sendActionBar(messages.render(player, "staff.freeze-reminder"));
             }
         }
     }

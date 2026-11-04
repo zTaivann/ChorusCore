@@ -69,7 +69,7 @@ public record ShopSign(boolean buying, int amount, Material material, double pri
     }
 
     private static double price(String raw) {
-        return Numbers.money(raw);
+        return Numbers.amount(raw);
     }
 
     private static String plain(Component line) {

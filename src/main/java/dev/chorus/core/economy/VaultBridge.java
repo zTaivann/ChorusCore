@@ -8,8 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * The ledger offered to the rest of the server through Vault, so a shop or job plugin can
- * spend the same money these commands do.
+ * The ChorusCore ledger offered to other plugins through Vault.
  */
 @SuppressWarnings("deprecation")
 public final class VaultBridge implements net.milkbowl.vault.economy.Economy {
@@ -129,7 +128,7 @@ public final class VaultBridge implements net.milkbowl.vault.economy.Economy {
             return refused(player, "Cannot withdraw a negative amount");
         }
         if (!balances.withdraw(player, amount)) {
-            return refused(player, "Not enough money");
+            return refused(player, "Not enough balance");
         }
         return new EconomyResponse(amount, getBalance(player),
                 EconomyResponse.ResponseType.SUCCESS, null);

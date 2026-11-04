@@ -70,7 +70,7 @@ public final class QuickShopImport {
                        double price, int type, boolean unlimited) {
     }
 
-    /** Everything the reading pass writes into or reads from, so the loop stays one line. */
+    /** What the reading pass reads and writes. */
     private record Into(ShopImportReport report, ChestShopRepository shops,
                         Map<String, ChestShop> existing, Map<UUID, String> names,
                         boolean dryRun, boolean overwrite) {
@@ -234,9 +234,8 @@ public final class QuickShopImport {
     }
 
     /**
-     * QuickShop writes the owner as a plain id on most rows, and on some as an id with
-     * something in front of it. Anything that is not a readable id is left alone rather than
-     * guessed at, since guessing means handing somebody else's shop to the wrong player.
+     * The owner's id, which QuickShop writes plain or with something in front of it. Null
+     * when there is no readable id.
      */
     private static @Nullable UUID ownerOf(@Nullable String raw) {
         if (raw == null || raw.isBlank()) {
@@ -310,7 +309,7 @@ public final class QuickShopImport {
         return flat.length() <= SNIPPET ? flat : flat.substring(0, SNIPPET) + "...";
     }
 
-    /** The names Chorus already knows, so the signs read as names rather than as ids. */
+    /** The player names Chorus knows, by id. */
     private Map<UUID, String> knownNames() {
         Map<UUID, String> names = new HashMap<>();
         try (Connection connection = storage.connection();

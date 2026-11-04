@@ -54,6 +54,7 @@ public final class EconomyModule implements ChorusModule {
         config = plugin.configs().get(CONFIG);
         EconomySettings settings = readSettings();
         service = new EconomyService(settings);
+        rank(settings);
 
         PaymentRepository payments = new SqlPaymentRepository(plugin.storage());
         try {
@@ -66,13 +67,13 @@ public final class EconomyModule implements ChorusModule {
         log.prune();
 
         Economy economy = plugin.economy();
-        commands.add(plugin.register(new PayCommand(support, economy, service, log, plugin.flags(),
+        commands.add(plugin.register(new PayCommand(support, economy, service, log, plugin.preferences(),
                 plugin.confirmations(), plugin.getLogger())));
-        commands.add(plugin.register(new PayToggleCommand(support, plugin.flags())));
+        commands.add(plugin.register(new PayToggleCommand(support, plugin.preferences())));
         commands.add(plugin.register(new BalanceCommand(support, economy)));
         commands.add(plugin.register(new BalanceTopCommand(support, economy, service, plugin.balances())));
         commands.add(plugin.register(new EcoCommand(support, economy, plugin.balances(),
-                plugin.profiles(), plugin.audit())));
+                plugin.profiles(), plugin.staffLog())));
         commands.add(plugin.register(new PayLogCommand(support, log, economy)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 
@@ -86,8 +87,15 @@ public final class EconomyModule implements ChorusModule {
         }
         EconomySettings settings = readSettings();
         service.apply(settings);
+        rank(settings);
         log.apply(settings);
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
+    }
+
+    private void rank(EconomySettings settings) {
+        if (plugin.balances() != null) {
+            plugin.balances().rankingSeconds(settings.topRefreshSeconds());
+        }
     }
 
     private EconomySettings readSettings() {

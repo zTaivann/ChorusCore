@@ -53,7 +53,7 @@ public final class SetHomeCommand extends PlayerCommand {
         }
 
         String world = player.getWorld().getName();
-        int worldLimit = homes.settings().limitIn(world);
+        int worldLimit = homes.settings().worldLimits().in(world);
         if (!replacing && worldLimit >= 0 && homes.countIn(playerId, world) >= worldLimit) {
             messages.send(player, "home.world-limit-reached",
                     "world", world, "limit", String.valueOf(worldLimit));

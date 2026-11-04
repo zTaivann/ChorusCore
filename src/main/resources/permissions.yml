@@ -5,10 +5,7 @@
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
-# Read in game with /chorus permissions, which marks the ones you hold.
-#
-# Nothing is read from this file at startup. Every node is checked in code; this is
-# the list, so a permissions plugin can be set up without reading the wiki.
+# /chorus permissions shows which ones you have.
 
 core:
   - chorus.admin
@@ -21,6 +18,7 @@ bypass:
   - chorus.bypass.cooldown
   - chorus.bypass.price
   - chorus.bypass.restrictions
+  - chorus.bypass.tax
   - chorus.bypass.worlds
 
 homes:
@@ -80,6 +78,7 @@ economy:
   - chorus.economy.balance
   - chorus.economy.balance.others
   - chorus.economy.baltop
+  - chorus.economy.baltop.hidden
   - chorus.economy.pay
   - chorus.economy.paylog
   - chorus.economy.paylog.others
@@ -225,8 +224,9 @@ world:
   - chorus.world.unlimited
   - chorus.world.weather
 
-# One node per home, kit, warp, world or sign, so these cannot be listed.
+# One node per home, kit, warp, world or sign.
 families:
+  - chorus.economy.starting.<amount>
   - chorus.home.limit.<number>
   - chorus.items.enchant.<enchantment>
   - chorus.items.give.item.<material>

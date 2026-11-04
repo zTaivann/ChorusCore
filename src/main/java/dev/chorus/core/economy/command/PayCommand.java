@@ -9,8 +9,8 @@ import dev.chorus.core.economy.Economy;
 import dev.chorus.core.economy.EconomyService;
 import dev.chorus.core.economy.EconomySettings;
 import dev.chorus.core.economy.PaymentLog;
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,21 +21,23 @@ import java.util.logging.Logger;
 
 public final class PayCommand extends PlayerCommand {
 
+    private static final String TAX_BYPASS = "chorus.bypass.tax";
+
     private final Economy economy;
     private final EconomyService service;
     private final PaymentLog log;
-    private final PlayerFlagService flags;
+    private final PlayerPreferenceService preferences;
     private final Confirmations confirmations;
     private final Logger logger;
 
     public PayCommand(CommandSupport support, Economy economy, EconomyService service,
-                      PaymentLog log, PlayerFlagService flags, Confirmations confirmations,
+                      PaymentLog log, PlayerPreferenceService preferences, Confirmations confirmations,
                       Logger logger) {
         super(support, "pay", "chorus.economy.pay");
         this.economy = economy;
         this.service = service;
         this.log = log;
-        this.flags = flags;
+        this.preferences = preferences;
         this.confirmations = confirmations;
         this.logger = logger;
     }
@@ -60,7 +62,7 @@ public final class PayCommand extends PlayerCommand {
             messages.send(player, "economy.pay-self");
             return;
         }
-        if (flags.isSet(target.getUniqueId(), PlayerFlag.PAYMENTS_BLOCKED)) {
+        if (preferences.isSet(target.getUniqueId(), PlayerPreference.PAYMENTS_BLOCKED)) {
             messages.send(player, "economy.pay-refused", "player", target.getName());
             return;
         }
@@ -103,16 +105,18 @@ public final class PayCommand extends PlayerCommand {
             return;
         }
 
+        double tax = player.hasPermission(TAX_BYPASS) ? 0 : settings.taxOn(amount);
+        double received = Numbers.cents(amount - tax);
         if (!economy.withdraw(player, amount)) {
             messages.send(player, "economy.transfer-failed");
             return;
         }
-        if (!economy.deposit(target, amount)) {
-            // The money already left the sender, so it has to go back before anyone is told.
+        if (received > 0 && !economy.deposit(target, received)) {
+            // Refund the sender.
             if (!economy.deposit(player, amount)) {
                 logger.severe("Took " + amount + " from " + player.getName() + " for a payment to "
                         + target.getName() + ", but neither the payment nor the refund went "
-                        + "through. That money needs restoring by hand.");
+                        + "through. That payment needs restoring by hand.");
             }
             messages.send(player, "economy.transfer-failed");
             return;
@@ -120,16 +124,22 @@ public final class PayCommand extends PlayerCommand {
 
         settle(player);
         rules().feedback().play(target);
-        log.record(player, target, amount);
+        log.record(player, target, received);
 
-        String formatted = economy.format(amount);
-        messages.send(player, "economy.pay-sent", "player", target.getName(), "amount", formatted);
-        messages.send(target, "economy.pay-received", "player", player.getName(), "amount", formatted);
+        String paid = economy.format(amount);
+        String got = economy.format(received);
+        if (tax > 0) {
+            messages.send(player, "economy.pay-sent-taxed", "player", target.getName(),
+                    "amount", paid, "tax", economy.format(tax), "received", got);
+        } else {
+            messages.send(player, "economy.pay-sent", "player", target.getName(), "amount", paid);
+        }
+        messages.send(target, "economy.pay-received", "player", player.getName(), "amount", got);
     }
 
-    /** Zero for anything that is not a positive amount of money. */
+    /** Zero for anything that is not a positive amount. */
     private static double parseAmount(String raw) {
-        return Math.max(0, Numbers.cents(Numbers.money(raw)));
+        return Math.max(0, Numbers.cents(Numbers.amount(raw)));
     }
 
     @Override

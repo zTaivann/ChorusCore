@@ -10,29 +10,29 @@ public interface BackupRepository {
 
     void createTables() throws SQLException;
 
-    void save(InventorySnapshot snapshot) throws SQLException;
+    void save(InventoryBackup backup) throws SQLException;
 
     /** Newest first, which is the order somebody asking for one wants them in. */
-    List<InventorySnapshot> findFor(UUID owner, int limit) throws SQLException;
+    List<InventoryBackup> findFor(UUID owner, int limit) throws SQLException;
 
-    /** One by its row, for a screen that was opened before somebody clicked restore. */
+    /** One by its row, for a menu that was opened before somebody clicked restore. */
     @Nullable
-    InventorySnapshot find(long id) throws SQLException;
+    InventoryBackup find(long id) throws SQLException;
 
-    /** The newest copies from anybody, for the times a report does not name who. */
-    List<InventorySnapshot> recent(int limit) throws SQLException;
+    /** The newest backups from anybody, for the times a report does not name who. */
+    List<InventoryBackup> recent(int limit) throws SQLException;
 
     /** Anything older than the cutoff, and anything past the limit a player may keep. */
     void prune(long before, int keepPerPlayer) throws SQLException;
 
     /** Leaves a restore waiting for a player who is not here to receive it. */
-    void queue(UUID owner, long snapshot, String parts, String actor) throws SQLException;
+    void queue(UUID owner, long backupId, String parts, String actor) throws SQLException;
 
     /** Takes whatever was waiting for this player, clearing it at the same time. */
     @Nullable
     Waiting takeWaiting(UUID owner) throws SQLException;
 
     /** A restore somebody set up while its owner was offline. */
-    record Waiting(long snapshot, String parts, String actor) {
+    record Waiting(long backupId, String parts, String actor) {
     }
 }

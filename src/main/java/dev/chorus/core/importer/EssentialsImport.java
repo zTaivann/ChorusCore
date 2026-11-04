@@ -42,12 +42,12 @@ public final class EssentialsImport {
 
     private final Storage storage;
     private final Path essentials;
-    private final @Nullable ConfigFile shopsConfig;
+    private final @Nullable ConfigFile worthConfig;
 
-    public EssentialsImport(Storage storage, Path essentials, @Nullable ConfigFile shopsConfig) {
+    public EssentialsImport(Storage storage, Path essentials, @Nullable ConfigFile worthConfig) {
         this.storage = storage;
         this.essentials = essentials;
-        this.shopsConfig = shopsConfig;
+        this.worthConfig = worthConfig;
     }
 
     public boolean isPresent() {
@@ -211,8 +211,8 @@ public final class EssentialsImport {
         if (!data.contains("money")) {
             return;
         }
-        double money = money(data.get("money"));
-        if (money < 0) {
+        double amount = amount(data.get("money"));
+        if (amount < 0) {
             report.problem("the balance of " + owner + " is not a number");
             return;
         }
@@ -223,7 +223,7 @@ public final class EssentialsImport {
 
         report.balance();
         if (!dryRun) {
-            balances.save(owner, name.isEmpty() ? owner.toString() : name, money);
+            balances.save(owner, name.isEmpty() ? owner.toString() : name, amount);
         }
     }
 
@@ -324,7 +324,7 @@ public final class EssentialsImport {
 
     private void worth(ImportReport report, boolean dryRun, boolean overwrite) {
         File file = essentials.resolve("worth.yml").toFile();
-        if (!file.isFile() || shopsConfig == null) {
+        if (!file.isFile() || worthConfig == null) {
             return;
         }
 
@@ -346,20 +346,20 @@ public final class EssentialsImport {
                 continue;
             }
 
-            String path = "shops.worth." + material.name().toLowerCase(Locale.ROOT);
-            if (shopsConfig.data().contains(path) && !overwrite) {
+            String path = "worth." + material.name().toLowerCase(Locale.ROOT);
+            if (worthConfig.data().contains(path, true) && !overwrite) {
                 report.skip();
                 continue;
             }
 
             report.price();
             if (!dryRun) {
-                shopsConfig.data().set(path, price);
+                worthConfig.data().set(path, price);
                 changed = true;
             }
         }
         if (changed) {
-            shopsConfig.save();
+            worthConfig.save();
         }
     }
 
@@ -391,8 +391,8 @@ public final class EssentialsImport {
         return -1;
     }
 
-    /** Essentials has written money as a string for years, and as a number before that. */
-    private static double money(@Nullable Object value) {
+    /** Essentials has written the balance as a string for years, and as a number before that. */
+    private static double amount(@Nullable Object value) {
         if (value instanceof Number number) {
             return number.doubleValue();
         }
@@ -412,11 +412,7 @@ public final class EssentialsImport {
         return name.isEmpty() ? where.getString("world", "") : name;
     }
 
-    /**
-     * The world's real id when the server has it loaded, and one made from the name when it
-     * does not. A world that is not loaded now may be loaded later, and the name is what the
-     * plugin looks it up by.
-     */
+    /** The world's id when it is loaded, otherwise one made from its name. */
     private static UUID worldId(String name) {
         World world = Bukkit.getWorld(name);
         return world != null ? world.getUID()

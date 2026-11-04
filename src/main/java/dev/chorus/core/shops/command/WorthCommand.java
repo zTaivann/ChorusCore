@@ -46,7 +46,7 @@ public final class WorthCommand extends PlayerCommand {
         }
 
         String item = material.name().toLowerCase(Locale.ROOT);
-        double each = worth.of(material);
+        double each = worth.of(player, material);
         if (each <= 0) {
             messages.send(player, "shops.no-worth", "item", item);
             return;
@@ -64,7 +64,7 @@ public final class WorthCommand extends PlayerCommand {
                 "total", economy.format(each * amount));
     }
 
-    /** What they are holding, or one, so /worth always answers something useful. */
+    /** The amount held, or one. */
     private static int carried(Player player, Material material) {
         int carrying = ShopService.count(player, material);
         return carrying > 0 ? carrying : 1;

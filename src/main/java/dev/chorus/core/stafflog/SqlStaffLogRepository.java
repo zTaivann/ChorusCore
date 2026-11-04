@@ -1,4 +1,4 @@
-package dev.chorus.core.audit;
+package dev.chorus.core.stafflog;
 
 import dev.chorus.core.storage.Schema;
 import dev.chorus.core.storage.SqlDialect;
@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class SqlAuditRepository implements AuditRepository {
+public final class SqlStaffLogRepository implements StaffLogRepository {
 
     private static final String INSERT = """
             INSERT INTO chorus_staff_log (actor, action, subject, detail, done_at)
@@ -36,7 +36,7 @@ public final class SqlAuditRepository implements AuditRepository {
     private final Storage storage;
     private final List<String> steps;
 
-    public SqlAuditRepository(Storage storage) {
+    public SqlStaffLogRepository(Storage storage) {
         this.storage = storage;
         this.steps = List.of(createTable(storage.dialect()),
                 "CREATE INDEX chorus_staff_log_done_at ON chorus_staff_log (done_at)");
@@ -48,7 +48,7 @@ public final class SqlAuditRepository implements AuditRepository {
     }
 
     @Override
-    public void record(AuditEntry entry) throws SQLException {
+    public void record(StaffLogEntry entry) throws SQLException {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(INSERT)) {
             statement.setString(1, entry.actor());
@@ -61,7 +61,7 @@ public final class SqlAuditRepository implements AuditRepository {
     }
 
     @Override
-    public List<AuditEntry> findRecent(@Nullable String name, int limit) throws SQLException {
+    public List<StaffLogEntry> findRecent(@Nullable String name, int limit) throws SQLException {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(
                      name == null ? SELECT_ALL : SELECT_FOR_NAME)) {
@@ -74,9 +74,9 @@ public final class SqlAuditRepository implements AuditRepository {
             }
 
             try (ResultSet rows = statement.executeQuery()) {
-                List<AuditEntry> entries = new ArrayList<>();
+                List<StaffLogEntry> entries = new ArrayList<>();
                 while (rows.next()) {
-                    entries.add(new AuditEntry(
+                    entries.add(new StaffLogEntry(
                             rows.getString("actor"),
                             rows.getString("action"),
                             rows.getString("subject"),

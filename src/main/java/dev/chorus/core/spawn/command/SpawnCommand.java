@@ -64,7 +64,7 @@ public final class SpawnCommand extends PlayerCommand {
         teleports.teleport(player, destination, rules(), name(), () -> {
             settle(player);
             messages.send(player, "spawn.teleported");
-        });
+        }, chargeUpfront(player));
     }
 
     @Override

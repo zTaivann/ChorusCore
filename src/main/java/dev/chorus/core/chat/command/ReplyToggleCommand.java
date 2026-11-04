@@ -2,18 +2,18 @@ package dev.chorus.core.chat.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import org.bukkit.entity.Player;
 
 /** {@code /rtoggle}: which end of a conversation {@code /reply} answers. */
 public final class ReplyToggleCommand extends PlayerCommand {
 
-    private final PlayerFlagService flags;
+    private final PlayerPreferenceService preferences;
 
-    public ReplyToggleCommand(CommandSupport support, PlayerFlagService flags) {
+    public ReplyToggleCommand(CommandSupport support, PlayerPreferenceService preferences) {
         super(support, "rtoggle", "chorus.chat.reply");
-        this.flags = flags;
+        this.preferences = preferences;
     }
 
     @Override
@@ -22,7 +22,7 @@ public final class ReplyToggleCommand extends PlayerCommand {
             return;
         }
 
-        boolean toSender = flags.toggle(player.getUniqueId(), PlayerFlag.REPLY_TO_SENDER);
+        boolean toSender = preferences.toggle(player.getUniqueId(), PlayerPreference.REPLY_TO_SENDER);
         settle(player);
         messages.send(player, toSender ? "chat.rtoggle-sender" : "chat.rtoggle-recipient");
     }

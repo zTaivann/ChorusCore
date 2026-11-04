@@ -46,7 +46,7 @@ public final class KitCommand extends PlayerCommand {
         }
 
         Kit kit = found.get();
-        // Reported as missing rather than forbidden, so /kit lists nobody else's kits.
+        // Reported as missing, not forbidden.
         if (!kit.allowed(player)) {
             messages.send(player, "kits.unknown", "kit", args[0]);
             return;

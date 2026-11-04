@@ -76,6 +76,10 @@ public final class ChestShopListener implements Listener {
         this.settings = updated;
     }
 
+    public ChestShopSettings settings() {
+        return settings;
+    }
+
     // ── Making one ────────────────────────────────────────────────────────────
 
     @EventHandler(ignoreCancelled = true)
@@ -121,6 +125,15 @@ public final class ChestShopListener implements Listener {
             messages.send(player, "shops.chest-limit", "limit", String.valueOf(limit));
             return;
         }
+        String world = container.getWorld().getName();
+        int worldLimit = settings.worldLimits().in(world);
+        if (worldLimit >= 0 && !player.hasPermission(ADMIN_PERMISSION)
+                && shops.ownedBy(player.getUniqueId(), world) >= worldLimit) {
+            event.setCancelled(true);
+            messages.send(player, "shops.chest-limit-world",
+                    "limit", String.valueOf(worldLimit), "world", world);
+            return;
+        }
 
         String mode = plain(event.line(1));
         boolean selling = !mode.equals("buy") && !mode.equals("buying");
@@ -136,7 +149,7 @@ public final class ChestShopListener implements Listener {
         Block sign = event.getBlock();
         messages.send(player, "shops.chest-ask-price",
                 "item", ChestShopSign.itemName(template));
-        prompts.ask(player, messages.render("shops.chest-ask-price-prompt"),
+        prompts.ask(player, messages.render(player, "shops.chest-ask-price-prompt"),
                 typed -> {
                     double typedPrice = price(typed.trim());
                     if (typedPrice < 0) {
@@ -164,15 +177,15 @@ public final class ChestShopListener implements Listener {
                     "max", economy.format(settings.maxPrice()));
             return;
         }
-        double cost = settings.creationCost();
-        if (cost > 0 && !player.hasPermission(ADMIN_PERMISSION)) {
-            if (!economy.has(player, cost)) {
+        double creationPrice = settings.creationCost();
+        if (creationPrice > 0 && !player.hasPermission(ADMIN_PERMISSION)) {
+            if (!economy.has(player, creationPrice)) {
                 messages.send(player, "economy.insufficient",
-                        "price", economy.format(cost),
+                        "price", economy.format(creationPrice),
                         "balance", economy.format(economy.balance(player)));
                 return;
             }
-            economy.withdraw(player, cost);
+            economy.withdraw(player, creationPrice);
         }
 
         ChestShop shop = shops.create(player, container, template, price, selling, unlimited);
@@ -245,7 +258,7 @@ public final class ChestShopListener implements Listener {
                 "price", economy.format(shop.price()),
                 "item", ChestShopSign.itemName(template));
         messages.send(player, shop.selling() ? "shops.chest-info-stock" : "shops.chest-info-room",
-                "amount", amountWord(shop, stock, template));
+                "amount", amountWord(player, shop, stock, template));
         if (owner) {
             messages.send(player, "shops.chest-info-yours");
         }
@@ -274,7 +287,7 @@ public final class ChestShopListener implements Listener {
         messages.send(player, shop.selling() ? "shops.chest-ask-buy" : "shops.chest-ask-sell",
                 "amount", String.valueOf(most));
 
-        prompts.ask(player, messages.render("shops.chest-ask-amount"),
+        prompts.ask(player, messages.render(player, "shops.chest-ask-amount"),
                 typed -> finish(player, shop, template, typed.trim()),
                 () -> messages.send(player, "shops.chest-cancelled"));
     }
@@ -329,11 +342,11 @@ public final class ChestShopListener implements Listener {
                     shop.selling() ? "shops.chest-bought" : "shops.chest-sold",
                     "amount", String.valueOf(trade.amount()),
                     "item", item,
-                    "price", economy.format(trade.money()));
+                    "price", economy.format(trade.total()));
             case NO_STOCK -> messages.send(player, "shops.chest-empty");
             case NO_SPACE -> messages.send(player, "shops.no-room", "item", item);
-            case NO_MONEY -> messages.send(player, "economy.insufficient",
-                    "price", economy.format(trade.money()),
+            case NO_BALANCE -> messages.send(player, "economy.insufficient",
+                    "price", economy.format(trade.total()),
                     "balance", economy.format(economy.balance(player)));
             case NOTHING_CARRIED -> messages.send(player, "shops.none-carried", "item", item);
             case SHOP_FULL -> messages.send(player, "shops.chest-full");
@@ -353,10 +366,10 @@ public final class ChestShopListener implements Listener {
                 "player", buyer.getName(),
                 "amount", String.valueOf(trade.amount()),
                 "item", ChestShopSign.itemName(template),
-                "price", economy.format(trade.money()));
+                "price", economy.format(trade.total()));
     }
 
-    /** The most this player could trade right now: stock, room and money all considered. */
+    /** The most this player could trade right now: stock, room and balance all considered. */
     private int most(Player player, ChestShop shop, Inventory stock, ItemStack template) {
         int stackLimit = template.getMaxStackSize() * 36;
         if (shop.selling()) {
@@ -377,9 +390,10 @@ public final class ChestShopListener implements Listener {
         return Math.max(0, Math.min(Math.min(carrying, room), Math.min(payable, stackLimit)));
     }
 
-    private String amountWord(ChestShop shop, @Nullable Inventory stock, ItemStack template) {
+    private String amountWord(Player player, ChestShop shop, @Nullable Inventory stock,
+                              ItemStack template) {
         if (shop.unlimited() || stock == null) {
-            return messages.plain("shops.chest-unlimited");
+            return messages.plain(player, "shops.chest-unlimited");
         }
         int count = shop.selling()
                 ? ChestShopTrade.count(stock, template)
@@ -467,7 +481,7 @@ public final class ChestShopListener implements Listener {
         }
     }
 
-    /** The owner has just been rearranging their stock, so the sign is out of date. */
+    /** Updates the sign after the owner changes the stock. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onClose(InventoryCloseEvent event) {
         Location where = event.getInventory().getLocation();
@@ -580,7 +594,7 @@ public final class ChestShopListener implements Listener {
 
     /** Negative when the line is not a price, which is how "ask me" is said. */
     private static double price(String raw) {
-        return Numbers.cents(Numbers.money(raw));
+        return Numbers.cents(Numbers.amount(raw));
     }
 
     private static String plain(Component line) {

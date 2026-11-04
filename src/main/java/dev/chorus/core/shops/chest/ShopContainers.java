@@ -72,7 +72,7 @@ public final class ShopContainers {
         return sign.getRelative(BlockFace.DOWN);
     }
 
-    /** Every sign fixed to a container, so the price on them can be kept in step. */
+    /** Every sign fixed to a container. */
     public static List<Block> signsOn(Block container) {
         List<Block> signs = new ArrayList<>(2);
         for (BlockFace face : AROUND) {

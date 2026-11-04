@@ -84,8 +84,9 @@ class CommandConfigTest {
                     Resources.section(module, "commands").getConfigurationSection("defaults");
             assertNotNull(defaults, path + " has no defaults block");
             for (String option : List.of("enabled", "warmup-seconds", "cooldown-seconds",
-                    "cooldown-group", "cooldown-scope", "price", "worlds", "sound.key",
-                    "sound.volume", "sound.pitch", "particle.name", "particle.count",
+                    "cooldown-group", "cooldown-scope", "uses-per-day", "uses-reset-at", "price",
+                    "discounts", "price-item", "charge-on", "refund-on-cancel", "worlds",
+                    "sound.key", "sound.volume", "sound.pitch", "particle.name", "particle.count",
                     "particle.spread", "particle.height", "particle.speed", "permission-message",
                     "requires", "on-success", "on-fail", "log")) {
                 assertTrue(defaults.contains(option), path + " defaults are missing " + option);

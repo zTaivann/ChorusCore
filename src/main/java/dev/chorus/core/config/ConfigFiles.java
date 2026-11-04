@@ -8,8 +8,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 /**
- * Every config file the plugin has opened, so that a reload can refresh them all without
- * the core needing to know which modules exist.
+ * Every config file the plugin has opened.
  */
 public final class ConfigFiles {
 

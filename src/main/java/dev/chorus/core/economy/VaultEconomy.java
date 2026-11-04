@@ -1,7 +1,9 @@
 package dev.chorus.core.economy;
 
+import dev.chorus.core.locale.Messages;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
@@ -42,7 +44,7 @@ public final class VaultEconomy implements Economy, Listener {
             RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> registration =
                     server.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
             if (registration == null) {
-                // Vault on its own holds no money: something has to register an economy behind it.
+                // Vault on its own keeps no balances: an economy plugin has to register behind it.
                 reason = "Vault is installed but no economy plugin has registered with it, "
                         + "so every price is ignored";
             } else {
@@ -61,6 +63,17 @@ public final class VaultEconomy implements Economy, Listener {
     @Override
     public String status() {
         return status;
+    }
+
+    @Override
+    public String status(Messages messages, CommandSender reader) {
+        net.milkbowl.vault.economy.Economy current = provider;
+        if (current != null) {
+            return messages.plain(reader, "core.economy-vault", "provider", current.getName());
+        }
+        return messages.plain(reader, server.getPluginManager().isPluginEnabled("Vault")
+                ? "core.economy-vault-empty"
+                : "core.economy-vault-missing");
     }
 
     @Override

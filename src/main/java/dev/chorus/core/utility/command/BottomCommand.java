@@ -34,7 +34,7 @@ public final class BottomCommand extends PlayerCommand {
             settle(player);
             messages.send(player, "utility.bottom-teleported",
                     "y", String.valueOf(destination.getBlockY()));
-        });
+        }, chargeUpfront(player));
     }
 
     private static @Nullable Location lowestStanding(Location from) {

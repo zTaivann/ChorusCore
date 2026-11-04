@@ -5,14 +5,11 @@
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
-# The real name on the left always works; anything you list is added on top of it.
-# An alias another plugin already owns is skipped. Leave a list empty for no extra
-# names at all.
+# Extra names for each command. An alias another plugin uses is skipped.
+# Vanilla commands are replaced: /clear runs /clearinventory, and the original
+# is still /minecraft:clear.
 #
-# A name the server itself answers to is taken over: /clear reaches /clearinventory.
-# The original stays available as /minecraft:clear.
-#
-# Changing this file needs a server restart, not /chorus reload.
+# Changes need a restart.
 
 # Core
 chorus: [ choruscore ]
@@ -85,7 +82,7 @@ msgtoggle: [ togglemsg, msgblock ]
 rtoggle: [ replytoggle ]
 ignore: [ block, mute ]
 
-# Utility, second batch
+# Utility
 speed: [ walkspeed ]
 top: [ ]
 jump: [ jumpto ]

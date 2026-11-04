@@ -51,7 +51,7 @@ class PendingRestoreStorageTest {
 
         BackupRepository.Waiting waiting = repository.takeWaiting(owner);
         assertNotNull(waiting);
-        assertEquals(42, waiting.snapshot());
+        assertEquals(42, waiting.backupId());
         assertEquals("INVENTORY,STATS", waiting.parts());
         assertEquals("Notch", waiting.actor());
 
@@ -66,7 +66,7 @@ class PendingRestoreStorageTest {
 
         BackupRepository.Waiting waiting = repository.takeWaiting(owner);
         assertNotNull(waiting);
-        assertEquals(2, waiting.snapshot(), "the newest decision should be the one that stands");
+        assertEquals(2, waiting.backupId(), "the newest decision should be the one that stands");
         assertNull(repository.takeWaiting(owner), "only one can ever be waiting");
     }
 
@@ -83,11 +83,11 @@ class PendingRestoreStorageTest {
     @Test
     void aBackupSurvivesBeingWrittenAndRead() throws SQLException {
         UUID owner = UUID.randomUUID();
-        repository.save(new InventorySnapshot(0, owner, 1234, "death", "Notch",
+        repository.save(new InventoryBackup(0, owner, 1234, "death", "Notch",
                 "contents", "ender", 30, 0.5f, 14, 18, "world", 1, 64, -2,
                 "fall", "Herobrine"));
 
-        InventorySnapshot found = repository.findFor(owner, 10).get(0);
+        InventoryBackup found = repository.findFor(owner, 10).get(0);
         assertEquals("death", found.reason());
         assertEquals(30, found.level());
         assertEquals(14, found.health(), 1e-9);

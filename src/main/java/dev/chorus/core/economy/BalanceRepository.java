@@ -13,8 +13,11 @@ public interface BalanceRepository {
 
     void save(UUID player, String name, double balance) throws SQLException;
 
+    /** Leaves an account out of /baltop, or puts it back. */
+    void hide(UUID player, boolean hidden) throws SQLException;
+
     void delete(UUID player) throws SQLException;
 
-    record Account(UUID player, String name, double balance) {
+    record Account(UUID player, String name, double balance, boolean hidden) {
     }
 }

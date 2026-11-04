@@ -12,10 +12,6 @@ libraries:
   - org.xerial:sqlite-jdbc:${sqlite}
   - org.mariadb.jdbc:mariadb-java-client:${mariadb}
 
-# No permission or aliases here on purpose.
-#   permission -> Bukkit would refuse the command itself and print its own message
-#                 instead of the one in the messages folder. Every command checks in code.
-#   aliases    -> they all live in aliases.yml so there is one place to edit them.
 commands:
   chorus:
     description: Core administration.
@@ -143,10 +139,10 @@ commands:
     usage: /enderchest
 
   pay:
-    description: Send money to another player.
+    description: Pay another player from your balance.
     usage: /pay [player] [amount]
   balance:
-    description: Show a money balance.
+    description: Show a balance.
     usage: /balance [player]
   baltop:
     description: Show the richest players online.
@@ -298,7 +294,7 @@ commands:
     description: Show what staff have been doing.
     usage: /stafflog [player]
   afk:
-    description: Mark yourself away.
+    description: Mark yourself as AFK.
     usage: /afk
   seen:
     description: Show when a player was last online.
@@ -310,8 +306,8 @@ commands:
     description: Show everything known about a player.
     usage: /whois [player]
   nick:
-    description: Change the name a player is shown by.
-    usage: /nick [player] [name|off]
+    description: Change the nickname of a player.
+    usage: /nick [player] [nickname|off]
   realname:
     description: Show the username behind a nickname.
     usage: /realname [nickname]
@@ -640,7 +636,7 @@ permissions:
     description: Messages from this player are never ignored.
     default: op
   chorus.chat.spy:
-    description: Allows /socialspy and receiving the copies.
+    description: Allows /socialspy and seeing the private messages of others.
     default: op
   chorus.utility.speed:
     description: Allows /speed.
@@ -1001,7 +997,7 @@ permissions:
     description: Allows reading another player's mail.
     default: op
   chorus.players.whois.country:
-    description: Adds the country to /whois when GeoIP is switched on.
+    description: Adds the country to /whois when GeoIP is enabled.
     default: op
   chorus.shops.chest.use:
     description: Allows trading at a chest shop and /shop.

@@ -22,9 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 /**
- * Keeps the homes of everyone online in memory so that reading them costs nothing, and
- * pushes every change to the database before the cache is touched. Writing first means a
- * player is never told a home was saved when it was not.
+ * The homes of everyone online, in memory. Every change is saved before the cache changes.
  */
 public final class HomeService implements HomeApi, LoginData.Part {
 
@@ -91,8 +89,7 @@ public final class HomeService implements HomeApi, LoginData.Part {
     }
 
     /**
-     * The player's home when they have exactly one, for a bare /home. Kept apart from
-     * {@link #list} so the common case does not copy and sort a list to read one entry.
+     * The player's home when they have exactly one, for a bare /home.
      */
     public Optional<Home> onlyHome(UUID owner) {
         Map<String, Home> homes = cache.get(owner);

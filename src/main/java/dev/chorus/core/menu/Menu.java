@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-/** A read-only screen of clickable icons. */
+/** A read-only menu of clickable icons. */
 public final class Menu implements InventoryHolder {
 
     private final Inventory inventory;
@@ -41,7 +41,7 @@ public final class Menu implements InventoryHolder {
         setPerClick(slot, item, (player, click) -> action.accept(player));
     }
 
-    /** For the screens where a right click means something different from a left one. */
+    /** For the menus where a right click means something different from a left one. */
     public void setPerClick(int slot, ItemStack item, BiConsumer<Player, ClickType> action) {
         inventory.setItem(slot, item);
         actions.put(slot, action);

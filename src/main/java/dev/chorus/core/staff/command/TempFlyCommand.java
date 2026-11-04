@@ -1,11 +1,11 @@
 package dev.chorus.core.staff.command;
 
-import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Durations;
 import dev.chorus.core.command.Numbers;
 import dev.chorus.core.staff.TempFlyService;
+import dev.chorus.core.stafflog.StaffLog;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,12 +20,12 @@ public final class TempFlyCommand extends ChorusCommand {
     private static final int MAX_MINUTES = 1440;
 
     private final TempFlyService flights;
-    private final AuditLog audit;
+    private final StaffLog staffLog;
 
-    public TempFlyCommand(CommandSupport support, TempFlyService flights, AuditLog audit) {
+    public TempFlyCommand(CommandSupport support, TempFlyService flights, StaffLog staffLog) {
         super(support, "tempfly", "chorus.staff.tempfly");
         this.flights = flights;
-        this.audit = audit;
+        this.staffLog = staffLog;
     }
 
     @Override
@@ -55,7 +55,7 @@ public final class TempFlyCommand extends ChorusCommand {
                 messages.send(sender, "staff.tempfly-none", "player", target.getName());
                 return;
             }
-            audit.record(sender, "tempfly-off", target.getName(), null);
+            staffLog.record(sender, "tempfly-off", target.getName(), null);
             messages.send(sender, "staff.tempfly-taken", "player", target.getName());
             messages.send(target, "staff.tempfly-expired");
             return;
@@ -63,7 +63,7 @@ public final class TempFlyCommand extends ChorusCommand {
 
         int seconds = (int) TimeUnit.MINUTES.toSeconds(minutes);
         flights.grant(target, seconds);
-        audit.record(sender, "tempfly-on", target.getName(), minutes + "m");
+        staffLog.record(sender, "tempfly-on", target.getName(), minutes + "m");
 
         String time = Durations.format(TimeUnit.MINUTES.toMillis(minutes));
         messages.send(sender, "staff.tempfly-given", "player", target.getName(), "time", time);

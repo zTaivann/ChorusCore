@@ -43,14 +43,10 @@ public final class TopCommand extends PlayerCommand {
             settle(player);
             messages.send(player, "utility.top-teleported",
                     "y", String.valueOf(destination.getBlockY()));
-        });
+        }, chargeUpfront(player));
     }
 
-    /**
-     * Walks down from the top of the world for the first solid block with room to stand on
-     * it. Starting from {@code getHighestBlockYAt} alone would put a player inside whatever
-     * is directly above, such as leaves or a roof.
-     */
+    /** The first solid block from the top of the world with room to stand. */
     private static Location highestStanding(Location from) {
         World world = from.getWorld();
         int x = from.getBlockX();

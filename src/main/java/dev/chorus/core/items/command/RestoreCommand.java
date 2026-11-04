@@ -1,8 +1,9 @@
 package dev.chorus.core.items.command;
 
 import dev.chorus.core.backup.BackupMenu;
+import dev.chorus.core.backup.BackupReason;
 import dev.chorus.core.backup.InventoryBackups;
-import dev.chorus.core.backup.InventorySnapshot;
+import dev.chorus.core.backup.InventoryBackup;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Durations;
@@ -21,7 +22,7 @@ import java.util.UUID;
 public final class RestoreCommand extends ChorusCommand {
 
     /**
-     * Enough to open the screen and look. Putting something back needs
+     * Enough to open the menu and look. Putting something back needs
      * {@code chorus.items.restore}, which plugin.yml gives this one along with.
      */
     private static final String VIEW_PERMISSION = "chorus.items.restore.view";
@@ -70,7 +71,7 @@ public final class RestoreCommand extends ChorusCommand {
         });
     }
 
-    /** The newest copies from anybody, for a report that does not name who. */
+    /** The newest backups from anybody, for a report that does not name who. */
     private void recent(CommandSender sender) {
         if (!ready(sender)) {
             return;
@@ -88,12 +89,12 @@ public final class RestoreCommand extends ChorusCommand {
             settle(sender);
             messages.send(sender, "items.restore-recent-header",
                     "count", String.valueOf(found.size()));
-            for (InventorySnapshot snapshot : found) {
+            for (InventoryBackup backup : found) {
                 messages.send(sender, "items.restore-recent-entry",
-                        "player", snapshot.actor(),
-                        "reason", snapshot.reason(),
-                        "world", snapshot.world(),
-                        "ago", Durations.format(System.currentTimeMillis() - snapshot.takenAt()));
+                        "player", ownerName(sender, backup),
+                        "reason", BackupReason.describe(backup.reason(), messages, sender),
+                        "world", backup.world(),
+                        "ago", Durations.format(System.currentTimeMillis() - backup.takenAt()));
             }
             messages.send(sender, "items.restore-usage");
         });
@@ -145,16 +146,16 @@ public final class RestoreCommand extends ChorusCommand {
     }
 
     private void restore(CommandSender sender, UUID owner, String name,
-                         InventorySnapshot snapshot) {
+                         InventoryBackup backup) {
         if (!sender.hasPermission(RESTORE_PERMISSION)) {
             messages.send(sender, "error.no-permission");
             return;
         }
 
-        String ago = Durations.format(System.currentTimeMillis() - snapshot.takenAt());
+        String ago = Durations.format(System.currentTimeMillis() - backup.takenAt());
         Player target = sender.getServer().getPlayer(owner);
         if (target == null) {
-            backups.queue(owner, snapshot.id(), EnumSet.allOf(InventoryBackups.Part.class),
+            backups.queue(owner, backup.id(), EnumSet.allOf(InventoryBackups.Part.class),
                     sender.getName());
             settle(sender);
             messages.send(sender, "items.restore-queued", "player", name, "ago", ago);
@@ -163,7 +164,7 @@ public final class RestoreCommand extends ChorusCommand {
 
         // Done to the player, so it runs on the thread that owns them.
         onPlayer(target, () -> {
-            if (backups.restore(target, snapshot,
+            if (backups.restore(target, backup,
                     EnumSet.allOf(InventoryBackups.Part.class), sender.getName()).isEmpty()) {
                 messages.send(sender, "items.restore-unreadable");
                 return;
@@ -177,16 +178,16 @@ public final class RestoreCommand extends ChorusCommand {
         });
     }
 
-    private void list(CommandSender sender, String name, List<InventorySnapshot> found) {
+    private void list(CommandSender sender, String name, List<InventoryBackup> found) {
         messages.send(sender, "items.restore-header",
                 "player", name, "count", String.valueOf(found.size()));
         for (int index = 0; index < found.size(); index++) {
-            InventorySnapshot snapshot = found.get(index);
+            InventoryBackup backup = found.get(index);
             messages.send(sender, "items.restore-entry",
                     "number", String.valueOf(index + 1),
-                    "reason", snapshot.reason(),
-                    "actor", snapshot.actor(),
-                    "ago", Durations.format(System.currentTimeMillis() - snapshot.takenAt()));
+                    "reason", BackupReason.describe(backup.reason(), messages, sender),
+                    "actor", backup.actor(),
+                    "ago", Durations.format(System.currentTimeMillis() - backup.takenAt()));
         }
         messages.send(sender, "items.restore-footer", "player", name);
     }
@@ -198,6 +199,12 @@ public final class RestoreCommand extends ChorusCommand {
         }
         int typed = Numbers.integer(args[1], 0);
         return typed < 1 ? -1 : typed - 1;
+    }
+
+    /** Whose inventory it was, by the name the server remembers. */
+    private static String ownerName(CommandSender sender, InventoryBackup backup) {
+        String name = sender.getServer().getOfflinePlayer(backup.owner()).getName();
+        return name == null ? backup.owner().toString() : name;
     }
 
     @Override

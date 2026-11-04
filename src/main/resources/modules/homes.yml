@@ -5,170 +5,94 @@
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
-# ── How a command block works ──────────────────────────────────────────────
+# ── Command options ───────────────────────────────────────────────────────
 #
-# Every command reads the `defaults` block first and then its own, so a command
-# only writes down what it does differently. Add any of these options to any
-# command to override it:
+# Each command uses the `defaults` block plus whatever its own block changes.
 #
-#   enabled           false makes the command answer that it is switched off.
-#                     The `enabled` at the top of this file does the same for
-#                     the whole module at once.
+#   enabled             false disables the command.
+#   warmup-seconds      seconds to stand still before a teleport.
+#   cooldown-seconds    seconds before the same player can use it again.
+#   cooldown-group      commands with the same group share one cooldown.
+#   cooldown-scope      who the cooldown applies to: player, world or server.
+#   uses-per-day        uses allowed per day. 0 = no limit.
+#   uses-reset-at       time the daily uses reset, in quotes: '04:00'.
+#   price               price of each use. 0 = free. Needs an economy.
+#   discounts           percent off the price for players with a permission. The
+#                       biggest one the player has counts.
+#                         discounts:
+#                           - 'group.vip: 25'
+#   price-item          items it also costs, as the item and how many: 'diamond 2'.
+#                       '' = none. Renamed or enchanted items do not count.
+#   charge-on           when the price is taken: success (once it works) or use
+#                       (as soon as it is typed, before the warmup).
+#   refund-on-cancel    true gives back a price taken on use if the teleport is
+#                       cancelled.
+#   worlds              worlds it works in. [ ] = all, [ '!event' ] = all but event.
+#   sound               key, volume (0-10) and pitch (0.5-2). Empty key = silent.
+#   particle            name (such as PORTAL), count, spread, height and speed.
+#   permission          permission needed instead of the usual one. '' = everyone.
+#   permission-message  message for players without that permission.
+#   messages            messages for this command only, by their key in messages/:
+#                         messages:
+#                           error.no-permission: '<red>VIP only.'
+#   requires            conditions: permission, placeholder, balance, playtime
+#                       (seconds) or kit. placeholder compares with >=, <=, ==,
+#                       !=, >, < or contains.
+#                         requires:
+#                           - 'balance: 500'
+#                           - condition: 'placeholder: %player_level% >= 10'
+#                             deny: '<red>Reach level 10 first.'
+#   on-success          actions when the command works.
+#   on-fail             actions when the command fails.
+#                         on-success:
+#                           - 'message: <green>Done.'
+#                           - 'actionbar: <green>Done'
+#                           - 'title: <gold>Title;<gray>Subtitle'
+#                           - 'sound: entity.player.levelup 1 1.4'
+#                           - 'broadcast: <gray>%player% used /%command%.'
+#                           - 'console: give %player% bread 1'
+#                           - 'player: spawn'
+#                           - 'close'
+#   log                 true saves every use to /stafflog.
 #
-#   warmup-seconds    how long the player stands still before the teleport
-#                     happens. Only means anything for commands that teleport.
-#                     Moving or taking damage during the wait cancels it and
-#                     nothing is charged. chorus.teleport.instant skips it.
-#
-#   cooldown-seconds  how long before that player may use the command again.
-#                     Only starts once the command actually succeeded.
-#                     chorus.bypass.cooldown ignores it.
-#
-#   cooldown-group    a name for commands that wait as one. Using any command in
-#                     the group starts the wait for all of them, for as long as
-#                     the one used says. It works across files, so /home, /warp
-#                     and /spawn can share one wait:
-#
-#                       home:
-#                         cooldown-seconds: 30
-#                         cooldown-group: travel
-#
-#                     A command with no cooldown-seconds takes no part. Empty
-#                     keeps the command's own wait.
-#
-#   cooldown-scope    who the wait holds back once somebody starts it:
-#                       player  only the player who used it. The usual.
-#                       world   everyone in the world it was used in.
-#                       server  everyone on the server.
-#                     world and server suit things there should only be one of
-#                     at a time, such as a broadcast or an event. Commands that
-#                     share a cooldown-group should share a scope as well.
-#
-#   price             what it costs, through Vault. 0 is free. Without an
-#                     economy plugin the price is ignored.
-#                     chorus.bypass.price never pays.
-#
-#   worlds            the worlds the command works in. An empty list is everywhere.
-#                     A name on its own is the only place it works; a name with !
-#                     in front is the one place it does not:
-#                       worlds: [ world, world_nether ]   only those two
-#                       worlds: [ '!event' ]              everywhere but there
-#                     chorus.bypass.worlds ignores it.
-#
-#   sound.key         a Minecraft sound name, for example entity.enderman.teleport.
-#                     Empty for silence. A name the client does not know simply
-#                     plays nothing, so a typo can never break anything.
-#   sound.volume      0 to 10. Doubles as the distance others hear it from.
-#   sound.pitch       0.5 to 2. Higher is squeakier.
-#
-#   particle.name     a Bukkit particle name, for example PORTAL. Empty for none.
-#                     Mojang renamed several of these, so both the old and the
-#                     new spelling are accepted and the right one is picked for
-#                     your version. Safe on every supported version: PORTAL,
-#                     REVERSE_PORTAL, FLAME, SOUL_FIRE_FLAME, CLOUD, END_ROD,
-#                     DRAGON_BREATH, HEART, CRIT, ELECTRIC_SPARK, GLOW, NOTE,
-#                     SNOWFLAKE, ASH.
-#   particle.count    how many. 0 means none.
-#   particle.spread   how far they scatter sideways, in blocks.
-#   particle.height   how tall the burst is, in blocks.
-#   particle.speed    how fast they drift. Keep it small.
-#
-#   messages          lines this command says instead of the ones in the messages
-#                     folder, by the same keys. A blank one silences that line:
-#
-#                       messages:
-#                         error.no-permission: '<red>Buy VIP to use this.'
-#
-#   permission        the permission it takes, in place of its own. '' lets
-#                     everyone use it. Set it on a command, not in defaults.
-#                     Extras such as the .others node keep their own names.
-#   permission-message
-#                     what somebody without that permission is told. Empty
-#                     keeps the line from the messages folder.
-#
-#   requires          what has to be true before the command runs. Each one is
-#                     written type: value, and takes either shape:
-#
-#                       requires:
-#                         - 'money: 500'
-#                         - condition: 'placeholder: %player_level% >= 10'
-#                           deny: '<red>Come back at level 10.'
-#
-#                     The types are permission, placeholder, money, playtime
-#                     (in seconds) and kit (a kit they must have taken).
-#                     placeholder takes anything PlaceholderAPI knows, compared
-#                     with >=, <=, ==, !=, >, < or contains. Without a deny line
-#                     they get error.command-requirement from the messages folder.
-#
-#   on-success        what happens once the command has worked. For a teleport
-#                     that is on arrival.
-#   on-fail           what happens when it is refused: no permission, the wrong
-#                     world, a requirement, the cooldown or the price.
-#
-#                     Both are written type: value, run in the order listed:
-#
-#                       on-success:
-#                         - 'message: <green>Done.'
-#                         - 'actionbar: <green>Done'
-#                         - 'title: <gold>Welcome;<gray>back'
-#                         - 'sound: entity.player.levelup 1 1.4'
-#                         - 'broadcast: <gray>%player% used /%command%.'
-#                         - 'console: give %player% bread 1'
-#                         - 'player: spawn'
-#                         - 'close'
-#
-#                     console runs as the server. %player% and %command% work in
-#                     all of them, as does anything PlaceholderAPI knows.
-#
-#   log               true writes every use into the staff log, with whatever
-#                     was typed after the command. Read it with /stafflog.
-#                     Needs staff-log.enabled in config.yml.
-#
-# Teleport commands show their particles twice: once where the player left from
-# and once where they arrive.
+# Bypass: chorus.teleport.instant (warmup), chorus.bypass.cooldown (cooldown
+# and uses-per-day), chorus.bypass.price, chorus.bypass.worlds.
 
-# Switches off every command in this file at once.
+# false disables this whole module.
 enabled: true
 
 # ── Settings ──────────────────────────────────────────────────────────────
 homes:
-  # Used when /home or /sethome is typed with no name.
+  # Home name used when none is typed.
   default-name: home
 
-  # When a player has exactly one home and types a bare /home, go to that home
-  # even if it is not called 'home'. Off means always use default-name.
+  # With only one home, /home goes to it whatever its name.
   fallback-to-only-home: true
 
-  # Homes for a player with no limit permission.
-  # Grant more with chorus.home.limit.<number>, for example chorus.home.limit.10
-  # The highest number a player holds wins. chorus.home.unlimited removes the cap.
-  # A wildcard such as chorus.home.limit.* carries no number and cannot raise it.
+  # Homes per player. More with chorus.home.limit.<number> (the highest wins).
+  # chorus.home.unlimited removes the limit.
   default-limit: 3
 
-  # Names accept letters, numbers, hyphens and underscores.
+  # Letters, numbers, - and _ only.
   max-name-length: 16
 
-  # Added to the price of /sethome for every home the player already has, so the
-  # first is whatever the command block says and each one after costs more.
-  # 0 turns it off. Moving a home you already have is never surcharged.
+  # Extra price of /sethome for each home the player already has. 0 = none.
   price-per-home: 0.0
 
-  # A cap for one world on top of the overall one, for the worlds where homes
-  # should be rare. A world that is not listed has no cap of its own.
+  # Limit per world, on top of default-limit.
   world-limits:
     world_nether: 1
     world_the_end: 1
 
-  # /homes opens a clickable grid instead of printing a line of names.
+  # false shows /homes as a chat list instead of a menu.
   menu:
     enabled: true
-    # 2 to 6. The bottom row is always navigation, so 3 rows shows 18 a page.
+    # 2 to 6. The last row holds the page buttons.
     rows: 3
-    # The item each home is shown as.
     icon: LIME_BED
-    # Fills the content area. Leave empty for a plain window.
+    # Background item. Empty for none.
     filler: ''
-    # Fills the navigation row, to set it apart from the entries above.
+    # Background of the button row.
     navigation-filler: GRAY_STAINED_GLASS_PANE
     previous-page: ARROW
     next-page: ARROW
@@ -177,14 +101,19 @@ homes:
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 
-  # Everything below inherits this and overrides only what it needs.
   defaults:
     enabled: true
     warmup-seconds: 0
     cooldown-seconds: 0
     cooldown-group: ''
     cooldown-scope: player
+    uses-per-day: 0
+    uses-reset-at: '00:00'
     price: 0.0
+    discounts: [ ]
+    price-item: ''
+    charge-on: success
+    refund-on-cancel: true
     worlds: [ ]
     sound:
       key: ui.button.click

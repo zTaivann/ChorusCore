@@ -2,7 +2,7 @@ package dev.chorus.core.economy;
 
 import java.util.Locale;
 
-/** Where the money comes from. */
+/** Which economy keeps the balances. */
 public enum EconomyMode {
 
     /** The built-in ledger, unless another economy plugin has registered with Vault. */

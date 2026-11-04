@@ -26,7 +26,7 @@ public final class AfkCommand extends PlayerCommand {
         settle(player);
     }
 
-    /** Plain text: a reason goes out to everybody, so it carries no colours of its own. */
+    /** The reason, as plain text. */
     private static String reason(String[] args) {
         if (args.length == 0) {
             return "";

@@ -1,10 +1,10 @@
 package dev.chorus.core.command;
 
-import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.platform.Schedulers;
+import dev.chorus.core.stafflog.StaffLog;
 
-/** What every command needs, bundled so constructors stay readable. */
+/** What every command needs. */
 public record CommandSupport(Messages messages, ActionGuard guard, Schedulers schedulers,
-                             AuditLog audit) {
+                             StaffLog staffLog) {
 }

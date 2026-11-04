@@ -1,8 +1,8 @@
 package dev.chorus.core.utility.powertool;
 
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -29,15 +29,15 @@ public final class PowertoolListener implements Listener {
     private static final String SUBJECT = "%player%";
 
     private final Powertools powertools;
-    private final PlayerFlagService flags;
+    private final PlayerPreferenceService preferences;
     private final Messages messages;
 
     /** Whoever is in the middle of a powertool, so one that clicks cannot call itself. */
     private final Set<UUID> running = ConcurrentHashMap.newKeySet();
 
-    public PowertoolListener(Powertools powertools, PlayerFlagService flags, Messages messages) {
+    public PowertoolListener(Powertools powertools, PlayerPreferenceService preferences, Messages messages) {
         this.powertools = powertools;
-        this.flags = flags;
+        this.preferences = preferences;
         this.messages = messages;
     }
 
@@ -67,7 +67,7 @@ public final class PowertoolListener implements Listener {
     private void fire(Player player, Material material, @Nullable String subject,
                       Cancellable event) {
         if (material.isAir() || !player.hasPermission(PERMISSION)
-                || flags.isSet(player.getUniqueId(), PlayerFlag.POWERTOOLS_OFF)) {
+                || preferences.isSet(player.getUniqueId(), PlayerPreference.POWERTOOLS_OFF)) {
             return;
         }
 

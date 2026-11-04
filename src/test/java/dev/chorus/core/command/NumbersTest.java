@@ -11,20 +11,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class NumbersTest {
 
     @Test
-    void moneyIsReadTheWayPeopleWriteIt() {
-        assertEquals(5, Numbers.money("5"));
-        assertEquals(5.5, Numbers.money("5.50"));
-        assertEquals(5.5, Numbers.money("5,50"));
-        assertEquals(5, Numbers.money("$5"));
-        assertEquals(5, Numbers.money("5€"));
+    void anAmountIsReadTheWayPeopleWriteIt() {
+        assertEquals(5, Numbers.amount("5"));
+        assertEquals(5.5, Numbers.amount("5.50"));
+        assertEquals(5.5, Numbers.amount("5,50"));
+        assertEquals(5, Numbers.amount("$5"));
+        assertEquals(5, Numbers.amount("5€"));
+    }
+
+    @Test
+    void aShortAmountIsMultipliedOut() {
+        assertEquals(1500, Numbers.amount("1.5k"));
+        assertEquals(2_000_000, Numbers.amount("2M"));
+        assertEquals(3_000_000_000d, Numbers.amount("$3b"));
+        assertEquals(1e12, Numbers.amount("1T"));
+        assertEquals(5, Numbers.amount("5 k"), "a space in between is not a unit");
+        assertEquals(5, Numbers.amount("5mil"), "a word is not a unit");
+        assertEquals(5, Numbers.amount("5 coins"));
     }
 
     @Test
     void anythingThatIsNotAnAmountIsRefused() {
         for (String raw : List.of("-5", "NaN", "Infinity", "-Infinity", "1e999", "abc", "", "5.5.5")) {
-            assertTrue(Numbers.money(raw) < 0, raw);
+            assertTrue(Numbers.amount(raw) < 0, raw);
         }
-        assertTrue(Numbers.money(null) < 0);
+        assertTrue(Numbers.amount(null) < 0);
     }
 
     @Test

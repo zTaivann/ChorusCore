@@ -112,7 +112,7 @@ public final class AutoSweep {
         return found;
     }
 
-    /** For the startup line, so a server owner can see it is on without opening the file. */
+    /** For the startup summary. */
     public String describe() {
         return enabled
                 ? "every " + minutes + " minutes, " + target.label().toLowerCase(Locale.ROOT)

@@ -34,6 +34,7 @@ public final class TeleportService implements TeleportApi, Listener {
     private static final String DEATH_PERMISSION = "chorus.back.ondeath";
 
     private static final long TICKS_PER_SECOND = 20L;
+    private static final Runnable NOTHING = () -> { };
 
     private final Plugin plugin;
     private final Messages messages;
@@ -67,8 +68,7 @@ public final class TeleportService implements TeleportApi, Listener {
         SAFE,
 
         /**
-         * Exactly where asked, whatever is there. For coordinates somebody typed a second
-         * ago, where moving them would be answering a question they did not ask.
+         * Exactly where asked, whatever is there. For typed coordinates.
          */
         EXACT
     }
@@ -85,16 +85,33 @@ public final class TeleportService implements TeleportApi, Listener {
 
     public void teleport(Player player, Location destination, CommandRules rules, String cause,
                          Landing landing, Runnable arrived) {
-        schedulers.withEntity(player, () -> begin(player, destination, rules, cause, landing, arrived));
+        teleport(player, destination, rules, cause, landing, arrived, NOTHING);
+    }
+
+    public void teleport(Player player, Location destination, CommandRules rules, String cause,
+                         Runnable arrived, Runnable cancelled) {
+        teleport(player, destination, rules, cause, Landing.SAFE, arrived, cancelled);
+    }
+
+    /**
+     * @param arrived   runs once the player is there
+     * @param cancelled runs instead when they never get there: they moved, were hurt or left
+     *                  during the warmup, an addon stopped it, or there was nowhere safe to land
+     */
+    public void teleport(Player player, Location destination, CommandRules rules, String cause,
+                         Landing landing, Runnable arrived, Runnable cancelled) {
+        schedulers.withEntity(player,
+                () -> begin(player, destination, rules, cause, landing, arrived, cancelled));
     }
 
     /** On the player's own thread, wherever the teleport was asked for. */
     private void begin(Player player, Location destination, CommandRules rules, String cause,
-                       Landing landing, Runnable arrived) {
+                       Landing landing, Runnable arrived, Runnable cancelled) {
         // Addons get their say before anything is charged or any wait begins.
         ChorusTeleportEvent event = new ChorusTeleportEvent(player, destination, cause);
         plugin.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) {
+            cancelled.run();
             return;
         }
         Location target = event.getDestination();
@@ -103,7 +120,7 @@ public final class TeleportService implements TeleportApi, Listener {
 
         int warmup = player.hasPermission(INSTANT_PERMISSION) ? 0 : rules.warmupSeconds();
         if (warmup == 0) {
-            move(player, target, rules, landing, arrived);
+            move(player, target, rules, landing, arrived, cancelled);
             return;
         }
 
@@ -113,15 +130,15 @@ public final class TeleportService implements TeleportApi, Listener {
             if (finished != null) {
                 finished.cancelCountdown();
             }
-            move(player, target, rules, landing, arrived);
+            move(player, target, rules, landing, arrived, cancelled);
         }, warmup * TICKS_PER_SECOND);
 
         pending.put(player.getUniqueId(),
-                new Pending(task, countdown(player, warmup), player.getLocation()));
+                new Pending(task, countdown(player, warmup), player.getLocation(), cancelled));
     }
 
     /**
-     * The overload addons get: a wait in seconds and nothing else. Everything the plugin's
+     * The overload addons get: a warmup in seconds and nothing else. Everything the plugin's
      * own commands do beyond that comes from their config block.
      */
     @Override
@@ -177,7 +194,10 @@ public final class TeleportService implements TeleportApi, Listener {
     }
 
     public void shutdown() {
-        pending.values().forEach(Pending::cancelAll);
+        pending.values().forEach(waiting -> {
+            waiting.cancelAll();
+            waiting.cancelled().run();
+        });
         pending.clear();
         history.clear();
         protectedUntil.clear();
@@ -225,13 +245,13 @@ public final class TeleportService implements TeleportApi, Listener {
 
     /** Checks the ground at the destination once it has loaded, on the region that owns it. */
     private void move(Player player, Location destination, CommandRules rules, Landing landing,
-                      Runnable arrived) {
+                      Runnable arrived, Runnable cancelled) {
         // Creative and spectator: no fall to take and no wall to suffocate in.
         GameMode mode = player.getGameMode();
         boolean unstoppable = mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR;
 
         if (landing == Landing.EXACT || unstoppable || !settings.safeLanding()) {
-            commit(player, destination, rules, arrived);
+            commit(player, destination, rules, arrived, cancelled);
             return;
         }
 
@@ -241,6 +261,7 @@ public final class TeleportService implements TeleportApi, Listener {
         destination.getWorld().getChunkAtAsync(destination).whenComplete((loaded, failure) -> {
             if (failure != null) {
                 messages.send(player, "teleport.failed");
+                cancelled.run();
                 return;
             }
             schedulers.region(destination, () -> {
@@ -248,19 +269,22 @@ public final class TeleportService implements TeleportApi, Listener {
                         destination, settings.safeLandingRadius(), needsFloor);
                 schedulers.withEntity(player, () -> {
                     if (!player.isOnline()) {
+                        cancelled.run();
                         return;
                     }
                     if (safe == null) {
                         messages.send(player, "teleport.unsafe");
+                        cancelled.run();
                         return;
                     }
-                    commit(player, safe, rules, arrived);
+                    commit(player, safe, rules, arrived, cancelled);
                 });
             });
         });
     }
 
-    private void commit(Player player, Location destination, CommandRules rules, Runnable arrived) {
+    private void commit(Player player, Location destination, CommandRules rules, Runnable arrived,
+                        Runnable cancelled) {
         Location origin = player.getLocation();
         if (settings.rememberPreviousLocation()) {
             remember(player.getUniqueId(), origin);
@@ -275,6 +299,7 @@ public final class TeleportService implements TeleportApi, Listener {
                         arrived.run();
                     } else {
                         messages.send(player, "teleport.failed");
+                        cancelled.run();
                     }
                 }));
     }
@@ -348,7 +373,7 @@ public final class TeleportService implements TeleportApi, Listener {
         return schedulers.entityTimer(player, () -> {
             long remaining = (deadline - System.currentTimeMillis() + 999) / 1000;
             if (remaining > 0) {
-                player.sendActionBar(messages.render("teleport.warmup-countdown",
+                player.sendActionBar(messages.render(player, "teleport.warmup-countdown",
                         "seconds", String.valueOf(remaining)));
             }
         }, 0L, TICKS_PER_SECOND);
@@ -360,16 +385,15 @@ public final class TeleportService implements TeleportApi, Listener {
             return;
         }
         waiting.cancelAll();
-        if (reason == null) {
-            return;
-        }
-        Player player = plugin.getServer().getPlayer(playerId);
+        Player player = reason == null ? null : plugin.getServer().getPlayer(playerId);
         if (player != null) {
             messages.send(player, reason);
         }
+        waiting.cancelled().run();
     }
 
-    private record Pending(ChorusTask task, @Nullable ChorusTask countdown, Location origin) {
+    private record Pending(ChorusTask task, @Nullable ChorusTask countdown, Location origin,
+                           Runnable cancelled) {
 
         boolean coversSameBlock(Location other) {
             return origin.getWorld() == other.getWorld()

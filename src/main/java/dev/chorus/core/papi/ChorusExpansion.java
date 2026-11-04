@@ -35,7 +35,7 @@ public final class ChorusExpansion extends PlaceholderExpansion {
         return api.version();
     }
 
-    /** The plugin outlives a PlaceholderAPI reload, so the expansion should not be dropped. */
+    /** Kept through a PlaceholderAPI reload. */
     @Override
     public boolean persist() {
         return true;

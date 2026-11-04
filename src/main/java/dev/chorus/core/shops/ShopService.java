@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 
-/** Moving items and money in the same breath. */
+/** Moving items and balances in the same breath. */
 public final class ShopService {
 
     private final Economy economy;

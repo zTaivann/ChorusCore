@@ -2,8 +2,8 @@ package dev.chorus.core.request.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import dev.chorus.core.request.TeleportRequest;
 import dev.chorus.core.request.TeleportRequestService;
 import dev.chorus.core.teleport.TeleportService;
@@ -25,17 +25,17 @@ public final class TeleportRequestCommand extends PlayerCommand {
 
     private final TeleportRequestService requests;
     private final TeleportRequest.Direction direction;
-    private final PlayerFlagService flags;
+    private final PlayerPreferenceService preferences;
     private final TeleportService teleports;
 
     public TeleportRequestCommand(CommandSupport support, TeleportRequestService requests,
                                   TeleportRequest.Direction direction, String name,
-                                  String permission, PlayerFlagService flags,
+                                  String permission, PlayerPreferenceService preferences,
                                   TeleportService teleports) {
         super(support, name, permission);
         this.requests = requests;
         this.direction = direction;
-        this.flags = flags;
+        this.preferences = preferences;
         this.teleports = teleports;
     }
 
@@ -55,7 +55,7 @@ public final class TeleportRequestCommand extends PlayerCommand {
             messages.send(player, "request.self");
             return;
         }
-        if (flags.isSet(target.getUniqueId(), PlayerFlag.TELEPORTS_BLOCKED)
+        if (preferences.isSet(target.getUniqueId(), PlayerPreference.TELEPORTS_BLOCKED)
                 && !player.hasPermission(IGNORE_TOGGLE_PERMISSION)) {
             messages.send(player, "request.blocked", "player", target.getName());
             return;
@@ -64,7 +64,7 @@ public final class TeleportRequestCommand extends PlayerCommand {
             return;
         }
 
-        if (flags.isSet(target.getUniqueId(), PlayerFlag.TELEPORTS_AUTOMATIC)) {
+        if (preferences.isSet(target.getUniqueId(), PlayerPreference.TELEPORTS_AUTOMATIC)) {
             accept(player, target);
             return;
         }
@@ -85,7 +85,7 @@ public final class TeleportRequestCommand extends PlayerCommand {
                         ? "request.received"
                         : "request.received-here",
                 "player", player.getName());
-        target.sendMessage(buttons(player.getName()));
+        target.sendMessage(buttons(target, player.getName()));
     }
 
     /** Nobody is asked: the target has already said yes to everything. */
@@ -100,20 +100,20 @@ public final class TeleportRequestCommand extends PlayerCommand {
         teleports.teleport(traveller, anchor.getLocation(), rules(), name());
     }
 
-    /** One clickable line, so nobody has to type a name back to answer. */
-    private Component buttons(String from) {
-        Component accept = messages.render("request.button-accept")
+    /** One clickable line to accept or deny. */
+    private Component buttons(Player reader, String from) {
+        Component accept = messages.render(reader, "request.button-accept")
                 .clickEvent(ClickEvent.runCommand("/tpaccept " + from))
                 .hoverEvent(HoverEvent.showText(
-                        messages.render("request.button-accept-hover", "player", from)));
-        Component deny = messages.render("request.button-deny")
+                        messages.render(reader, "request.button-accept-hover", "player", from)));
+        Component deny = messages.render(reader, "request.button-deny")
                 .clickEvent(ClickEvent.runCommand("/tpdeny " + from))
                 .hoverEvent(HoverEvent.showText(
-                        messages.render("request.button-deny-hover", "player", from)));
+                        messages.render(reader, "request.button-deny-hover", "player", from)));
 
         return messages.prefix()
                 .append(accept)
-                .append(messages.render("request.button-separator"))
+                .append(messages.render(reader, "request.button-separator"))
                 .append(deny);
     }
 

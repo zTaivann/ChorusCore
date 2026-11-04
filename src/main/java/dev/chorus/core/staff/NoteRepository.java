@@ -10,7 +10,7 @@ interface NoteRepository {
 
     void add(StaffNote note) throws SQLException;
 
-    /** Oldest first, so a player's history reads in the order it happened. */
+    /** Oldest first. */
     List<StaffNote> findFor(UUID subject) throws SQLException;
 
     int clear(UUID subject) throws SQLException;

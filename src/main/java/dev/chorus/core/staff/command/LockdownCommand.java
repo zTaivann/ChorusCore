@@ -1,9 +1,9 @@
 package dev.chorus.core.staff.command;
 
-import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.staff.LockdownService;
+import dev.chorus.core.stafflog.StaffLog;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -19,12 +19,12 @@ public final class LockdownCommand extends ChorusCommand {
     private static final String BYPASS_PERMISSION = "chorus.staff.lockdown.bypass";
 
     private final LockdownService lockdown;
-    private final AuditLog audit;
+    private final StaffLog staffLog;
 
-    public LockdownCommand(CommandSupport support, LockdownService lockdown, AuditLog audit) {
+    public LockdownCommand(CommandSupport support, LockdownService lockdown, StaffLog staffLog) {
         super(support, "lockdown", "chorus.staff.lockdown");
         this.lockdown = lockdown;
-        this.audit = audit;
+        this.staffLog = staffLog;
     }
 
     @Override
@@ -48,7 +48,7 @@ public final class LockdownCommand extends ChorusCommand {
 
         if (action.equals("off")) {
             lockdown.open();
-            audit.record(sender, "lockdown-off", null, null);
+            staffLog.record(sender, "lockdown-off", null, null);
             announce(sender, "staff.lockdown-opened");
             return;
         }
@@ -57,7 +57,7 @@ public final class LockdownCommand extends ChorusCommand {
                 ? String.join(" ", Arrays.copyOfRange(args, 1, args.length))
                 : "";
         lockdown.close(reason);
-        audit.record(sender, "lockdown-on", null, reason.isEmpty() ? null : reason);
+        staffLog.record(sender, "lockdown-on", null, reason.isEmpty() ? null : reason);
         announce(sender, "staff.lockdown-closed");
     }
 

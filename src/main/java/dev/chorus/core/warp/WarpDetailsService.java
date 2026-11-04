@@ -51,7 +51,7 @@ public final class WarpDetailsService {
         write(() -> repository.save(details), details.warp());
     }
 
-    /** Counted in memory and written through, so the number survives a restart. */
+    /** Counted in memory and saved. */
     public void countUse(String warp) {
         save(of(warp).used());
     }

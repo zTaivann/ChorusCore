@@ -2,7 +2,6 @@ package dev.chorus.core.staff;
 
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
-import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
@@ -19,6 +18,7 @@ import dev.chorus.core.staff.command.TempFlyCommand;
 import dev.chorus.core.staff.command.TpAllCommand;
 import dev.chorus.core.staff.command.TpPosCommand;
 import dev.chorus.core.staff.command.VanishCommand;
+import dev.chorus.core.stafflog.StaffLog;
 import dev.chorus.core.teleport.TeleportService;
 import org.bukkit.GameMode;
 
@@ -88,7 +88,7 @@ public final class StaffModule implements ChorusModule {
             throw new IllegalStateException("The staff notes table could not be created", exception);
         }
         NoteService notes = new NoteService(noteStore, plugin.worker(), plugin.mainThread());
-        AuditLog audit = plugin.audit();
+        StaffLog staffLog = plugin.staffLog();
 
         commands.add(plugin.register(new TeleportToCommand(support, teleports)));
         commands.add(plugin.register(new TeleportHereCommand(support, teleports)));
@@ -100,12 +100,12 @@ public final class StaffModule implements ChorusModule {
         commands.add(plugin.register(new GameModeCommand(support, "gms", GameMode.SURVIVAL)));
         commands.add(plugin.register(new GameModeCommand(support, "gma", GameMode.ADVENTURE)));
         commands.add(plugin.register(new GameModeCommand(support, "gmsp", GameMode.SPECTATOR)));
-        commands.add(plugin.register(new FreezeCommand(support, freezes, audit)));
-        commands.add(plugin.register(new SudoCommand(support, audit)));
-        commands.add(plugin.register(new LockdownCommand(support, lockdown, audit)));
-        commands.add(plugin.register(new TempFlyCommand(support, flights, audit)));
-        commands.add(plugin.register(new NoteCommand(support, notes, audit)));
-        commands.add(plugin.register(new StaffLogCommand(support, audit)));
+        commands.add(plugin.register(new FreezeCommand(support, freezes, staffLog)));
+        commands.add(plugin.register(new SudoCommand(support, staffLog)));
+        commands.add(plugin.register(new LockdownCommand(support, lockdown, staffLog)));
+        commands.add(plugin.register(new TempFlyCommand(support, flights, staffLog)));
+        commands.add(plugin.register(new NoteCommand(support, notes, staffLog)));
+        commands.add(plugin.register(new StaffLogCommand(support, staffLog)));
 
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }

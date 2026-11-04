@@ -68,7 +68,7 @@ class MessageFolderTest {
     void anEmptyFolderIsFilledAndRead() {
         Messages messages = load();
 
-        assertEquals("You are not allowed to do that.",
+        assertEquals("You do not have permission to do that.",
                 withoutPrefix(messages, "error.no-permission"));
         assertTrue(new File(dataFolder, "messages/core.yml").isFile(),
                 "the folder should have been written out");
@@ -127,7 +127,7 @@ class MessageFolderTest {
         command.override(Map.of("error.no-permission", "<red>Buy VIP."));
 
         assertEquals("Buy VIP.", PLAIN.serialize(command.render("error.no-permission")));
-        assertEquals("You are not allowed to do that.",
+        assertEquals("You do not have permission to do that.",
                 withoutPrefix(messages, "error.no-permission"));
     }
 

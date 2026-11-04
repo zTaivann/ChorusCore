@@ -71,7 +71,7 @@ public record ParticleCue(@Nullable Particle particle, int count, double spread,
         if (particle == null || count <= 0 || world == null) {
             return;
         }
-        // Lift the burst to chest height so it wraps the player instead of pooling at their feet.
+        // Raised to chest height.
         world.spawnParticle(particle, where.clone().add(0, height / 2, 0),
                 count, spread, height / 2, spread, speed);
     }

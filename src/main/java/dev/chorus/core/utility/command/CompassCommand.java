@@ -11,8 +11,10 @@ public final class CompassCommand extends PlayerCommand {
 
     /** Clockwise from south, which is where Minecraft starts counting yaw. */
     private static final List<String> POINTS = List.of(
-            "south", "south-west", "west", "north-west",
-            "north", "north-east", "east", "south-east");
+            "utility.compass-points.south", "utility.compass-points.south-west",
+            "utility.compass-points.west", "utility.compass-points.north-west",
+            "utility.compass-points.north", "utility.compass-points.north-east",
+            "utility.compass-points.east", "utility.compass-points.south-east");
 
     private static final float ARC = 360f / 8;
 
@@ -31,7 +33,7 @@ public final class CompassCommand extends PlayerCommand {
         int point = Math.round(yaw / ARC) % POINTS.size();
 
         messages.send(player, "utility.compass",
-                "direction", POINTS.get(point),
+                "direction", messages.plain(player, POINTS.get(point)),
                 "degrees", String.valueOf(Math.round(yaw)));
     }
 }

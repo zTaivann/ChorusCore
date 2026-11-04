@@ -1,10 +1,10 @@
 package dev.chorus.core.staff.command;
 
-import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.staff.NoteService;
 import dev.chorus.core.staff.StaffNote;
+import dev.chorus.core.stafflog.StaffLog;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -26,12 +26,12 @@ public final class NoteCommand extends ChorusCommand {
             DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
 
     private final NoteService notes;
-    private final AuditLog audit;
+    private final StaffLog staffLog;
 
-    public NoteCommand(CommandSupport support, NoteService notes, AuditLog audit) {
+    public NoteCommand(CommandSupport support, NoteService notes, StaffLog staffLog) {
         super(support, "note", "chorus.staff.note");
         this.notes = notes;
-        this.audit = audit;
+        this.staffLog = staffLog;
     }
 
     @Override
@@ -69,7 +69,7 @@ public final class NoteCommand extends ChorusCommand {
         settle(sender);
         notes.add(new StaffNote(subject.getUniqueId(), name, sender.getName(), text,
                 System.currentTimeMillis()));
-        audit.record(sender, "note", name, text);
+        staffLog.record(sender, "note", name, text);
         messages.send(sender, "staff.note-added", "player", name);
     }
 
@@ -110,7 +110,7 @@ public final class NoteCommand extends ChorusCommand {
                 messages.send(sender, "staff.note-none", "player", name);
                 return;
             }
-            audit.record(sender, "note-clear", name, removed + " notes");
+            staffLog.record(sender, "note-clear", name, String.valueOf(removed));
             messages.send(sender, "staff.note-cleared",
                     "player", name, "count", String.valueOf(removed));
         });

@@ -83,13 +83,13 @@ public final class ChatModule implements ChorusModule, Listener {
         plugin.register(new MailListener(mail, plugin.messages()));
 
         plugin.register(this);
-        commands.add(plugin.register(new MessageCommand(support, chat, plugin.flags(), ignores)));
-        commands.add(plugin.register(new ReplyCommand(support, chat, plugin.flags(), ignores)));
+        commands.add(plugin.register(new MessageCommand(support, chat, plugin.preferences(), ignores)));
+        commands.add(plugin.register(new ReplyCommand(support, chat, plugin.preferences(), ignores)));
         commands.add(plugin.register(new SocialSpyCommand(support, chat)));
-        commands.add(plugin.register(new MessageToggleCommand(support, plugin.flags())));
+        commands.add(plugin.register(new MessageToggleCommand(support, plugin.preferences())));
         commands.add(plugin.register(new IgnoreCommand(support, ignores)));
         commands.add(plugin.register(new MailCommand(support, mail, plugin.profiles())));
-        commands.add(plugin.register(new ReplyToggleCommand(support, plugin.flags())));
+        commands.add(plugin.register(new ReplyToggleCommand(support, plugin.preferences())));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
     }
 

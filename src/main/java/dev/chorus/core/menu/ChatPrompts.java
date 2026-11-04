@@ -69,7 +69,7 @@ public final class ChatPrompts implements Listener {
         messages.send(player, "core.prompt-cancel");
     }
 
-    /** First of all listeners, so an answer never reaches a chat plugin or another player. */
+    /** Lowest priority, so the answer is not sent to chat. */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();

@@ -145,7 +145,7 @@ public final class ChestShopDisplays {
         }
     }
 
-    /** Takes them all away, for when the setting is switched off while the server is up. */
+    /** Takes them all away, for when the setting is disabled while the server is up. */
     public void clear() {
         for (String key : List.copyOf(shown.keySet())) {
             hide(key);
@@ -174,7 +174,7 @@ public final class ChestShopDisplays {
         }
     }
 
-    /** Worked out from the numbers, so looking at an unloaded shop never loads its chunk. */
+    /** Worked out from the coordinates without loading the chunk. */
     private static @Nullable Location displayPoint(ChestShop shop) {
         Location where = shop.location();
         return where == null ? null : where.add(0.5, HEIGHT, 0.5);

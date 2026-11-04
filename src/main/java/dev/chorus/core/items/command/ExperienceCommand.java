@@ -142,7 +142,7 @@ public final class ExperienceCommand extends ChorusCommand {
         return null;
     }
 
-    /** Both halves at once, so a level is never set without the progress that goes with it. */
+    /** Sets the level and the progress together. */
     private static void setTotal(Player player, int points) {
         player.setLevel(0);
         player.setExp(0);

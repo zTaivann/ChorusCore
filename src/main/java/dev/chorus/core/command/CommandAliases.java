@@ -25,7 +25,7 @@ public final class CommandAliases {
      *         ours that should answer to it.
      */
     public static Map<String, String> apply(JavaPlugin plugin, ConfigFile file,
-                                            List<String> commands, Set<String> switchedOff) {
+                                            List<String> commands, Set<String> disabledCommands) {
         CommandMap map = plugin.getServer().getCommandMap();
         String fallbackPrefix = plugin.getName().toLowerCase(Locale.ROOT);
         Map<String, String> taken = new HashMap<>();
@@ -39,7 +39,7 @@ public final class CommandAliases {
 
             List<String> aliases = clean(file.data().getStringList(name), name);
 
-            boolean live = !switchedOff.contains(name);
+            boolean live = !disabledCommands.contains(name);
             boolean freed = live && takeOverBuiltIn(map, name, command);
             if (live) {
                 for (String alias : aliases) {

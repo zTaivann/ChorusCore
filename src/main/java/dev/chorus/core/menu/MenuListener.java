@@ -34,7 +34,7 @@ public final class MenuListener implements Listener {
             } else {
                 palette.putOn(event.getCurrentItem());
             }
-            // Cancelling makes the client redraw what it had, so the screen is sent again.
+            // Cancelling makes the client redraw what it had, so the menu is sent again.
             player.updateInventory();
         }
     }

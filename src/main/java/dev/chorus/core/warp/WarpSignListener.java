@@ -120,7 +120,7 @@ public final class WarpSignListener implements org.bukkit.event.Listener {
             against.feedback().play(player);
             details.countUse(warp);
             messages.send(player, "warp.teleported", "warp", warp);
-        });
+        }, support.guard().chargeUpfront(player, cooldownKey, against));
     }
 
     /** Signs grew a back side in 1.20. The front is read, and the newer method is not on 1.18. */

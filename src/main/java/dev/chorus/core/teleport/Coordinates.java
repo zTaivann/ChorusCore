@@ -32,7 +32,7 @@ public final class Coordinates {
         if (x == null || y == null || z == null) {
             return null;
         }
-        // Keep the direction they were already facing rather than snapping them north.
+        // Keeps the direction they were facing.
         return new Location(world, x, y, z, origin.getYaw(), origin.getPitch());
     }
 

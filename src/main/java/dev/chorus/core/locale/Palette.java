@@ -30,6 +30,15 @@ public final class Palette {
     /** Tags with nothing to close. Closing one of these would put a stray tag in the line. */
     private static final Set<String> UNCLOSEABLE = Set.of("reset", "newline", "br");
 
+    /** Earlier names, still accepted, mapped to the current ones. */
+    private static final Map<String, String> RENAMED = Map.of(
+            "screen-homes", "menu-homes",
+            "screen-warps", "menu-warps",
+            "screen-kits", "menu-kits",
+            "screen-backups", "menu-backups",
+            "screen-disposal", "menu-disposal",
+            "heading-money", "heading-economy");
+
     private final Map<String, Entry> colours;
 
     /** One name: what it opens, and what closes it again. */
@@ -41,13 +50,23 @@ public final class Palette {
     }
 
     public static Palette read(ConfigurationSection data, Consumer<String> onProblem) {
-        Map<String, String> raw = new HashMap<>();
-        for (String key : data.getKeys(false)) {
-            String value = data.getString(key);
-            if (value != null && !value.isBlank()) {
-                raw.put(key.toLowerCase(Locale.ROOT), value.trim());
+        Map<String, String> own = values(data);
+        RENAMED.forEach((old, now) -> {
+            String kept = own.get(old);
+            if (kept != null && !own.containsKey(now)) {
+                own.put(now, kept);
             }
-        }
+        });
+
+        ConfigurationSection bundled = data.getDefaultSection();
+        Map<String, String> raw = bundled == null ? new HashMap<>() : values(bundled);
+        raw.putAll(own);
+        RENAMED.forEach((old, now) -> {
+            String value = raw.get(now);
+            if (value != null) {
+                raw.putIfAbsent(old, value);
+            }
+        });
         if (raw.isEmpty()) {
             return EMPTY;
         }
@@ -58,6 +77,17 @@ public final class Palette {
             resolved.put(name, new Entry(open, closingFor(open)));
         }
         return new Palette(Map.copyOf(resolved));
+    }
+
+    private static Map<String, String> values(ConfigurationSection section) {
+        Map<String, String> values = new HashMap<>();
+        for (String key : section.getKeys(false)) {
+            String value = section.getString(key);
+            if (value != null && !value.isBlank()) {
+                values.put(key.toLowerCase(Locale.ROOT), value.trim());
+            }
+        }
+        return values;
     }
 
     /** The names this palette knows, so an unknown one can be told apart from a typo. */

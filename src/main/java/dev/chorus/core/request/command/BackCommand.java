@@ -56,7 +56,7 @@ public final class BackCommand extends PlayerCommand {
         teleports.teleport(player, destination, rules(), name(), () -> {
             settle(player);
             messages.send(player, "back.teleported");
-        });
+        }, chargeUpfront(player));
     }
 
 

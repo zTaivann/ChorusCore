@@ -1,8 +1,8 @@
 package dev.chorus.core.staff.command;
 
-import dev.chorus.core.audit.AuditLog;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.stafflog.StaffLog;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,16 +11,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
-/** Runs a command as somebody else, with their permissions rather than yours. */
+/** Runs a command as somebody else, with their permissions. */
 public final class SudoCommand extends ChorusCommand {
 
     private static final String EXEMPT_PERMISSION = "chorus.staff.sudo.exempt";
 
-    private final AuditLog audit;
+    private final StaffLog staffLog;
 
-    public SudoCommand(CommandSupport support, AuditLog audit) {
+    public SudoCommand(CommandSupport support, StaffLog staffLog) {
         super(support, "sudo", "chorus.staff.sudo");
-        this.audit = audit;
+        this.staffLog = staffLog;
     }
 
     @Override
@@ -51,7 +51,7 @@ public final class SudoCommand extends ChorusCommand {
 
         settle(sender);
         // Written down before it runs.
-        audit.record(sender, "sudo", target.getName(), command);
+        staffLog.record(sender, "sudo", target.getName(), command);
 
         messages.send(sender, "staff.sudo-ran", "player", target.getName(), "command", command);
         onPlayer(target, () -> target.performCommand(command));

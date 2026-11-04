@@ -23,9 +23,8 @@ import java.util.Locale;
 public final class WarpSetCommand extends ChorusCommand {
 
     /**
-     * Each setting with the shape of its value and the line that explains it. The message
-     * key is written out rather than built from the name, so the check that every line in
-     * the messages folder is reachable can see all six.
+     * Each setting with the shape of its value and its message key. The keys are written out
+     * in full for the test that finds unused messages.
      */
     private record Setting(String name, String value, String help) {
     }
@@ -38,16 +37,16 @@ public final class WarpSetCommand extends ChorusCommand {
             new Setting("description", "<text>", "warp.settings-help-description"),
             new Setting("section", "<name>", "warp.settings-help-section"));
 
-    /** One clickable line per setting, rather than a wall of pipes nobody can read in chat. */
+    /** One clickable line per setting. */
     private void help(CommandSender sender) {
         messages.send(sender, "warp.settings-help-header");
         for (Setting entry : SETTINGS) {
             String usage = "/warpset <warp> " + entry.name() + " " + entry.value();
-            sender.sendMessage(messages.render("warp.settings-help-line",
+            sender.sendMessage(messages.render(sender, "warp.settings-help-line",
                             "usage", usage,
-                            "what", messages.plain(entry.help()))
+                            "what", messages.plain(sender, entry.help()))
                     .clickEvent(ClickEvent.suggestCommand("/warpset "))
-                    .hoverEvent(HoverEvent.showText(messages.render("warp.settings-help-hover"))));
+                    .hoverEvent(HoverEvent.showText(messages.render(sender, "warp.settings-help-hover"))));
         }
         messages.send(sender, "warp.settings-help-footer");
     }
@@ -122,7 +121,7 @@ public final class WarpSetCommand extends ChorusCommand {
         if (clearing) {
             return current.withPrice(WarpDetails.INHERIT_PRICE);
         }
-        double amount = Numbers.money(value);
+        double amount = Numbers.amount(value);
         if (amount < 0) {
             messages.send(sender, "warp.settings-bad-number", "value", value);
             return null;

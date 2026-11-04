@@ -6,6 +6,7 @@ import dev.chorus.core.command.Numbers;
 import dev.chorus.core.economy.Balances;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.economy.EconomyService;
+import dev.chorus.core.economy.EconomySetup;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -49,16 +50,15 @@ public final class BalanceTopCommand extends ChorusCommand {
         }
 
         int size = service.settings().topSize();
-        int page = Math.max(1, args.length > 0 ? Numbers.integer(args[0], 1) : 1);
-        int total = ledger == null ? onlineCount(sender) : ledger.size();
-        int pages = Math.max(1, (total + size - 1) / size);
-        if (page > pages) {
-            page = pages;
+        List<Entry> shown = ledger == null ? online(sender) : ranked();
+        if (service.settings().topHideEmpty()) {
+            shown = shown.stream().filter(entry -> entry.balance() > 0).toList();
         }
-
-        List<Entry> entries = ledger == null
-                ? online(sender, size, (page - 1) * size)
-                : ranked(size, (page - 1) * size);
+        int total = shown.size();
+        int pages = Math.max(1, (total + size - 1) / size);
+        int page = Math.min(pages, Math.max(1, args.length > 0 ? Numbers.integer(args[0], 1) : 1));
+        int from = Math.min((page - 1) * size, total);
+        List<Entry> entries = shown.subList(from, Math.min(from + size, total));
 
         settle(sender);
         if (entries.isEmpty()) {
@@ -96,39 +96,27 @@ public final class BalanceTopCommand extends ChorusCommand {
         messages.send(sender, "economy.baltop-refreshed");
     }
 
-    private List<Entry> ranked(int size, int offset) {
-        List<Entry> entries = new ArrayList<>(size);
-        for (Balances.Ranked account : ledger.top(size, offset)) {
+    private List<Entry> ranked() {
+        List<Balances.Ranked> ranking = ledger.ranking();
+        List<Entry> entries = new ArrayList<>(ranking.size());
+        for (Balances.Ranked account : ranking) {
             entries.add(new Entry(account.name(), account.balance()));
         }
         return entries;
     }
 
-    private List<Entry> online(CommandSender sender, int size, int offset) {
+    /** With another plugin keeping the balances, only the players online can be ranked. */
+    private List<Entry> online(CommandSender sender) {
         List<Entry> entries = new ArrayList<>();
         for (Player player : sender.getServer().getOnlinePlayers()) {
-            if (sender instanceof Player viewer && !viewer.canSee(player)) {
+            if ((sender instanceof Player viewer && !viewer.canSee(player))
+                    || player.hasPermission(EconomySetup.BALTOP_HIDDEN)) {
                 continue;
             }
             entries.add(new Entry(player.getName(), economy.balance(player)));
         }
         entries.sort(Comparator.comparingDouble(Entry::balance).reversed());
-
-        int from = Math.min(offset, entries.size());
-        return entries.subList(from, Math.min(from + size, entries.size()));
-    }
-
-    private static int onlineCount(CommandSender sender) {
-        if (!(sender instanceof Player viewer)) {
-            return sender.getServer().getOnlinePlayers().size();
-        }
-        int count = 0;
-        for (Player player : sender.getServer().getOnlinePlayers()) {
-            if (viewer.canSee(player)) {
-                count++;
-            }
-        }
-        return count;
+        return entries;
     }
 
     @Override

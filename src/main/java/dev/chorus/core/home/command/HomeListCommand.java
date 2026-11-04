@@ -62,15 +62,15 @@ public final class HomeListCommand extends PlayerCommand {
         for (Home home : owned) {
             entries.add(new ListMenu.Entry(
                     icon(home),
-                    messages.render("menu.homes.entry", "home", home.name()),
+                    messages.render(player, "menu.homes.entry", "home", home.name()),
                     List.of(
-                            messages.render("menu.homes.lore-world", "world", home.worldName()),
-                            messages.render("menu.homes.lore-location",
+                            messages.render(player, "menu.homes.lore-world", "world", home.worldName()),
+                            messages.render(player, "menu.homes.lore-location",
                                     "x", round(home.x()), "y", round(home.y()), "z", round(home.z())),
-                            messages.render("menu.homes.lore-created",
+                            messages.render(player, "menu.homes.lore-created",
                                     "date", DATE.format(Instant.ofEpochMilli(home.createdAt()))),
-                            messages.render("menu.homes.lore-divider"),
-                            messages.render("menu.homes.lore-action")),
+                            messages.render(player, "menu.homes.lore-divider"),
+                            messages.render(player, "menu.homes.lore-action")),
                     clicker -> {
                         clicker.closeInventory();
                         clicker.performCommand("home " + home.name());
@@ -87,21 +87,21 @@ public final class HomeListCommand extends PlayerCommand {
 
         List<Component> entries = new ArrayList<>(owned.size());
         for (Home home : owned) {
-            entries.add(entry(home));
+            entries.add(entry(player, home));
         }
         player.sendMessage(Component.join(
-                JoinConfiguration.separator(messages.render("home.list.separator")), entries));
+                JoinConfiguration.separator(messages.render(player, "home.list.separator")), entries));
     }
 
-    /** The click and hover are built here so the home name reaches the command as data. */
-    private Component entry(Home home) {
-        return messages.render("home.list.entry", "home", home.name())
+    /** Click and hover built from the home name as plain text. */
+    private Component entry(Player player, Home home) {
+        return messages.render(player, "home.list.entry", "home", home.name())
                 .clickEvent(ClickEvent.runCommand("/home " + home.name()))
-                .hoverEvent(HoverEvent.showText(location(home)));
+                .hoverEvent(HoverEvent.showText(location(player, home)));
     }
 
-    private Component location(Home home) {
-        return messages.render("home.list.hover",
+    private Component location(Player player, Home home) {
+        return messages.render(player, "home.list.hover",
                 "home", home.name(),
                 "world", home.worldName(),
                 "x", round(home.x()),

@@ -89,7 +89,7 @@ public final class WarpCommand extends PlayerCommand {
             settle(player, cooldownKey, against);
             details.countUse(key);
             messages.send(player, "warp.teleported", "warp", warp.name());
-        });
+        }, chargeUpfront(player, cooldownKey, against));
     }
 
     private void send(Player sender, Player traveller, NamedLocation warp, Location destination) {
@@ -103,7 +103,7 @@ public final class WarpCommand extends PlayerCommand {
                     "player", traveller.getName(), "warp", warp.name());
             messages.send(traveller, "warp.sent-received",
                     "player", sender.getName(), "warp", warp.name());
-        });
+        }, chargeUpfront(sender));
     }
 
     @Override

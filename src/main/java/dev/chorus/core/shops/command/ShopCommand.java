@@ -7,6 +7,7 @@ import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.shops.chest.ChestShop;
 import dev.chorus.core.shops.chest.ChestShopDisplays;
+import dev.chorus.core.shops.chest.ChestShopSettings;
 import dev.chorus.core.shops.chest.ChestShopSign;
 import dev.chorus.core.shops.chest.ChestShops;
 import dev.chorus.core.shops.chest.ShopContainers;
@@ -21,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 /** {@code /shop}: managing the chest shop you are looking at. */
 public final class ShopCommand extends PlayerCommand {
@@ -35,14 +37,17 @@ public final class ShopCommand extends PlayerCommand {
     private final ChestShopDisplays displays;
     private final Economy economy;
     private final Confirmations confirmations;
+    private final Supplier<ChestShopSettings> settings;
 
     public ShopCommand(CommandSupport support, ChestShops shops, ChestShopDisplays displays,
-                       Economy economy, Confirmations confirmations) {
+                       Economy economy, Confirmations confirmations,
+                       Supplier<ChestShopSettings> settings) {
         super(support, "shop", "chorus.shops.chest.use");
         this.shops = shops;
         this.displays = displays;
         this.economy = economy;
         this.confirmations = confirmations;
+        this.settings = settings;
     }
 
     @Override
@@ -178,12 +183,13 @@ public final class ShopCommand extends PlayerCommand {
         }
         settle(player);
 
-        messages.send(player, "shops.chest-list-header", "count", String.valueOf(owned.size()));
+        messages.send(player, "shops.chest-list-header", "count", String.valueOf(owned.size()),
+                "limit", String.valueOf(settings.get().limitFor(player)));
         for (ChestShop shop : owned) {
             ItemStack template = shop.template();
             messages.send(player, "shops.chest-list-entry",
                     "item", template == null
-                            ? messages.plain("shops.chest-list-broken")
+                            ? messages.plain(player, "shops.chest-list-broken")
                             : ChestShopSign.itemName(template),
                     "price", economy.format(shop.price()),
                     "world", shop.world(),
@@ -211,7 +217,7 @@ public final class ShopCommand extends PlayerCommand {
     }
 
     private static double price(String raw) {
-        return Numbers.cents(Numbers.money(raw));
+        return Numbers.cents(Numbers.amount(raw));
     }
 
     @Override

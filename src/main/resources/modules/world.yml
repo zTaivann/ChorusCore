@@ -1,72 +1,118 @@
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │                                                                        │
 # │   W O R L D                                                            │
-# │   /world  /time  /weather  /spawnmob  /sweep                           │
+# │   /world  /time  /weather  /spawnmob  /sweep  /locate                  │
 # │                                                                        │
 # └────────────────────────────────────────────────────────────────────────┘
 #
-# The command block options are the same everywhere. modules/utility.yml lists
-# them in full.
+# ── Command options ───────────────────────────────────────────────────────
+#
+# Each command uses the `defaults` block plus whatever its own block changes.
+#
+#   enabled             false disables the command.
+#   warmup-seconds      seconds to stand still before a teleport.
+#   cooldown-seconds    seconds before the same player can use it again.
+#   cooldown-group      commands with the same group share one cooldown.
+#   cooldown-scope      who the cooldown applies to: player, world or server.
+#   uses-per-day        uses allowed per day. 0 = no limit.
+#   uses-reset-at       time the daily uses reset, in quotes: '04:00'.
+#   price               price of each use. 0 = free. Needs an economy.
+#   discounts           percent off the price for players with a permission. The
+#                       biggest one the player has counts.
+#                         discounts:
+#                           - 'group.vip: 25'
+#   price-item          items it also costs, as the item and how many: 'diamond 2'.
+#                       '' = none. Renamed or enchanted items do not count.
+#   charge-on           when the price is taken: success (once it works) or use
+#                       (as soon as it is typed, before the warmup).
+#   refund-on-cancel    true gives back a price taken on use if the teleport is
+#                       cancelled.
+#   worlds              worlds it works in. [ ] = all, [ '!event' ] = all but event.
+#   sound               key, volume (0-10) and pitch (0.5-2). Empty key = silent.
+#   particle            name (such as PORTAL), count, spread, height and speed.
+#   permission          permission needed instead of the usual one. '' = everyone.
+#   permission-message  message for players without that permission.
+#   messages            messages for this command only, by their key in messages/:
+#                         messages:
+#                           error.no-permission: '<red>VIP only.'
+#   requires            conditions: permission, placeholder, balance, playtime
+#                       (seconds) or kit. placeholder compares with >=, <=, ==,
+#                       !=, >, < or contains.
+#                         requires:
+#                           - 'balance: 500'
+#                           - condition: 'placeholder: %player_level% >= 10'
+#                             deny: '<red>Reach level 10 first.'
+#   on-success          actions when the command works.
+#   on-fail             actions when the command fails.
+#                         on-success:
+#                           - 'message: <green>Done.'
+#                           - 'actionbar: <green>Done'
+#                           - 'title: <gold>Title;<gray>Subtitle'
+#                           - 'sound: entity.player.levelup 1 1.4'
+#                           - 'broadcast: <gray>%player% used /%command%.'
+#                           - 'console: give %player% bread 1'
+#                           - 'player: spawn'
+#                           - 'close'
+#   log                 true saves every use to /stafflog.
+#
+# Bypass: chorus.teleport.instant (warmup), chorus.bypass.cooldown (cooldown
+# and uses-per-day), chorus.bypass.price, chorus.bypass.worlds.
 
-# Switches off every command in this file at once.
+# false disables this whole module.
 enabled: true
 
 # ── Settings ──────────────────────────────────────────────────────────────
 world:
-  # On, /world also needs chorus.world.go.<world name>, so a creative or event
-  # world can be closed without a second plugin. The name is lower case.
+  # /world also needs chorus.world.go.<world name, lower case>.
   per-world-permission: false
 
-  # The most mobs one /spawnmob may place at once.
+  # Most mobs per /spawnmob.
   spawnmob-limit: 20
 
-  # How far /locate looks for a structure, in chunks.
+  # /locate search radius for structures, in chunks.
   locate-radius-chunks: 64
 
-  # How far /locate looks for a biome, in blocks.
-  #
-  # A biome search is worked out on the server thread by sampling the world's noise, and
-  # there is no version of it that runs in the background. The interval between samples is
-  # worked out from this radius so that a search always costs the same however far it
-  # reaches: a wider one steps over more ground, so a small patch of a biome can be stepped
-  # past. That is the trade, and it is the right way round.
-  #
-  # Anything above 3200 is treated as 3200.
+  # /locate search radius for biomes, in blocks. Up to 3200. Larger values can
+  # miss small biomes.
   locate-biome-radius-blocks: 400
 
-  # true makes /locate look for structures nobody has been to yet, which is what the
-  # vanilla command does and is far more expensive. false finds the nearest one either way.
-  # Biomes are not affected: there is no such thing as an unexplored one.
+  # true only finds structures nobody has explored yet. Slower.
   locate-unexplored: false
 
-  # Clears the ground on a timer, with a warning first. The one piece of housekeeping
-  # every busy server ends up asking somebody to do by hand.
+  # Clears entities on a timer.
   auto-sweep:
     enabled: false
 
-    # How often it runs.
+    # Minutes between sweeps.
     minutes: 15
 
-    # How long before it happens everybody is told. 0 clears without warning.
+    # Warning before each sweep, in seconds. 0 = no warning.
     warn-seconds: 30
 
-    # Any of the groups /sweep accepts. drops is the one worth running on a timer.
+    # What to clear: drops, experience, arrows, boats, minecarts, vehicles,
+    # monsters, animals, ambient, tamed, named, villagers, armourstands, frames,
+    # paintings, mobs or all.
     target: drops
 
-    # Leave empty for every world, or name the ones to clear.
+    # Worlds to clear. [] = all.
     worlds: []
 
 # ── Commands ──────────────────────────────────────────────────────────────
 commands:
 
-  # Everything below inherits this and overrides only what it needs.
   defaults:
     enabled: true
     warmup-seconds: 0
     cooldown-seconds: 0
     cooldown-group: ''
     cooldown-scope: player
+    uses-per-day: 0
+    uses-reset-at: '00:00'
     price: 0.0
+    discounts: [ ]
+    price-item: ''
+    charge-on: success
+    refund-on-cancel: true
     worlds: [ ]
     sound:
       key: ui.button.click
@@ -119,8 +165,6 @@ commands:
       volume: 0.6
       pitch: 1.0
 
-  # Clearing a whole world at once asks for a second press first. The window is
-  # set in config.yml.
   sweep:
     enabled: true
     cooldown-seconds: 5
@@ -147,8 +191,6 @@ commands:
   unlimited:
     enabled: true
 
-  # Ten seconds between searches: one of these is not free, and holding the key down
-  # would be a way to stall the server from chat.
   locate:
     enabled: true
     cooldown-seconds: 10

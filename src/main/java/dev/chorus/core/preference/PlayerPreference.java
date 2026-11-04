@@ -1,7 +1,7 @@
-package dev.chorus.core.flags;
+package dev.chorus.core.preference;
 
-/** The switches a player can leave set for themselves, kept between sessions. */
-public enum PlayerFlag {
+/** The preferences a player can set for themselves, kept between sessions. */
+public enum PlayerPreference {
 
     /** Turns down every incoming teleport request without the sender having to be told twice. */
     TELEPORTS_BLOCKED("teleports-blocked"),
@@ -12,7 +12,7 @@ public enum PlayerFlag {
     /** Makes /reply answer whoever last spoke to them rather than whoever they last wrote to. */
     REPLY_TO_SENDER("reply-to-sender"),
 
-    /** Turns down every payment, so nobody can push money onto them. */
+    /** Refuses every payment. */
     PAYMENTS_BLOCKED("payments-blocked"),
 
     /** Accepts every teleport request without being asked. */
@@ -23,7 +23,7 @@ public enum PlayerFlag {
 
     private final String stored;
 
-    PlayerFlag(String stored) {
+    PlayerPreference(String stored) {
         this.stored = stored;
     }
 

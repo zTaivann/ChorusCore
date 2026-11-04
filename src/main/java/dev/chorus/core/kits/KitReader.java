@@ -42,7 +42,7 @@ public final class KitReader {
             String key = name.toLowerCase(Locale.ROOT);
             kits.put(key, kit(key, name, block, onProblem));
         }
-        // Wrapped rather than copied: the order kits are listed in is the order shown.
+        // Keeps the order of the file.
         return Collections.unmodifiableMap(kits);
     }
 
@@ -170,10 +170,7 @@ public final class KitReader {
         return new ItemStack(material == null ? Material.CHEST : material);
     }
 
-    /**
-     * Looked up by namespaced key rather than by field name, for the reasons set out on
-     * {@link Enchantments}.
-     */
+    /** Looked up through {@link Enchantments}. */
     private static void enchant(ItemMeta meta, Map<?, ?> entries, String kit,
                                 Consumer<String> onProblem) {
         entries.forEach((name, level) -> {

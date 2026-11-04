@@ -128,7 +128,7 @@ public final class SqlPlayerProfileRepository implements PlayerProfileRepository
         }
     }
 
-    /** A nickname is matched on its letters, so colour codes never hide one from /realname. */
+    /** A nickname without colour codes, for /realname. */
     static String plain(String nickname) {
         return nickname.replaceAll("(?i)[&§][0-9a-fk-or]", "").toLowerCase(Locale.ROOT);
     }

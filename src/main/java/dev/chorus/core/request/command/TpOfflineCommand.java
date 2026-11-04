@@ -75,7 +75,7 @@ public final class TpOfflineCommand extends ChorusCommand {
                     "player", name,
                     "ago", lastSeen == 0 ? ""
                             : Durations.format(System.currentTimeMillis() - lastSeen));
-        });
+        }, chargeUpfront(player));
     }
 
     @Override

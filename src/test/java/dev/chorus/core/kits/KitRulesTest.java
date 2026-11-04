@@ -38,10 +38,10 @@ class KitRulesTest {
     /** Blank is not a refusal line, and writing it as one would leave a half-empty block. */
     @Test
     void anEmptyRefusalIsWrittenAsABareLine() {
-        assertEquals(List.of("money: 500"),
-                KitEditor.describe(List.of(new Rule("money: 500", ""))));
-        assertEquals(List.of("money: 500"),
-                KitEditor.describe(List.of(new Rule("money: 500", null))));
+        assertEquals(List.of("balance: 500"),
+                KitEditor.describe(List.of(new Rule("balance: 500", ""))));
+        assertEquals(List.of("balance: 500"),
+                KitEditor.describe(List.of(new Rule("balance: 500", null))));
     }
 
     /** An emptied list stays empty. */
@@ -78,7 +78,7 @@ class KitRulesTest {
 
         List<Rule> requirements = throughTheFile(List.of(
                 Rule.of("permission: chorus.kit.vip"),
-                new Rule("money: 500", "<red>Not enough.")));
+                new Rule("balance: 500", "<red>Not enough.")));
 
         for (Rule rule : requirements) {
             assertNotNull(Requirement.of(rule.line(), rule.deny()),

@@ -112,7 +112,7 @@ public final class UtilityModule implements ChorusModule {
         }
         powertools = new Powertools(powertoolStore, plugin.worker(), plugin.getLogger());
         plugin.loginData().add("powertools", powertools, false);
-        plugin.register(new PowertoolListener(powertools, plugin.flags(), plugin.messages()));
+        plugin.register(new PowertoolListener(powertools, plugin.preferences(), plugin.messages()));
 
         motdText = new ServerText(plugin, "motd.txt");
         infoText = new ServerText(plugin, "info.txt");
@@ -138,7 +138,7 @@ public final class UtilityModule implements ChorusModule {
         commands.add(plugin.register(new SmiteCommand(support, plugin.schedulers())));
         commands.add(plugin.register(new FireballCommand(support, utility)));
         commands.add(plugin.register(new PowertoolCommand(support, powertools)));
-        commands.add(plugin.register(new PowertoolToggleCommand(support, plugin.flags())));
+        commands.add(plugin.register(new PowertoolToggleCommand(support, plugin.preferences())));
         commands.add(plugin.register(new NearCommand(support, utility)));
 
         TextCommand motd = plugin.register(new TextCommand(support, "motd", motdText));

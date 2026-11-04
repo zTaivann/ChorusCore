@@ -1,21 +1,21 @@
 package dev.chorus.core.economy;
 
+import dev.chorus.core.locale.Messages;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 
 /**
- * What the plugin needs from an economy. Every price is ignored while this reports itself
- * as disabled, so a server without Vault behaves exactly as it did before prices existed.
+ * What the plugin needs from an economy. Prices are ignored while it is disabled.
  */
 public interface Economy {
 
     boolean enabled();
 
-    /**
-     * A line saying what was found, for the startup log and for /chorus status. "Vault is
-     * installed" and "there is an economy" are different things, and telling them apart is
-     * the difference between a server owner fixing it in a minute and giving up.
-     */
+    /** A line saying what was found, for the startup log. */
     String status();
+
+    /** The same, for /chorus status in the reader's language. */
+    String status(Messages messages, CommandSender reader);
 
     double balance(OfflinePlayer player);
 

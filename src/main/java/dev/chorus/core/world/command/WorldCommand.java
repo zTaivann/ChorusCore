@@ -58,7 +58,7 @@ public final class WorldCommand extends PlayerCommand {
         teleports.teleport(player, destination, rules(), name(), () -> {
             settle(player);
             messages.send(player, "world.went", "world", world.getName());
-        });
+        }, chargeUpfront(player));
     }
 
     private void list(Player player) {

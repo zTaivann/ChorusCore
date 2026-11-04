@@ -62,38 +62,38 @@ public final class SqlBackupRepository implements BackupRepository {
     }
 
     @Override
-    public void save(InventorySnapshot snapshot) throws SQLException {
+    public void save(InventoryBackup backup) throws SQLException {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(INSERT)) {
-            statement.setString(1, snapshot.owner().toString());
-            statement.setLong(2, snapshot.takenAt());
-            statement.setString(3, snapshot.reason());
-            statement.setString(4, snapshot.actor());
-            statement.setString(5, snapshot.contents());
-            statement.setString(6, snapshot.enderChest());
-            statement.setInt(7, snapshot.level());
-            statement.setFloat(8, snapshot.experience());
-            statement.setDouble(9, snapshot.health());
-            statement.setInt(10, snapshot.food());
-            statement.setString(11, snapshot.world());
-            statement.setInt(12, snapshot.x());
-            statement.setInt(13, snapshot.y());
-            statement.setInt(14, snapshot.z());
-            statement.setString(15, snapshot.cause());
-            statement.setString(16, snapshot.killer());
+            statement.setString(1, backup.owner().toString());
+            statement.setLong(2, backup.takenAt());
+            statement.setString(3, backup.reason());
+            statement.setString(4, backup.actor());
+            statement.setString(5, backup.contents());
+            statement.setString(6, backup.enderChest());
+            statement.setInt(7, backup.level());
+            statement.setFloat(8, backup.experience());
+            statement.setDouble(9, backup.health());
+            statement.setInt(10, backup.food());
+            statement.setString(11, backup.world());
+            statement.setInt(12, backup.x());
+            statement.setInt(13, backup.y());
+            statement.setInt(14, backup.z());
+            statement.setString(15, backup.cause());
+            statement.setString(16, backup.killer());
             statement.executeUpdate();
         }
     }
 
     @Override
-    public List<InventorySnapshot> findFor(UUID owner, int limit) throws SQLException {
+    public List<InventoryBackup> findFor(UUID owner, int limit) throws SQLException {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(SELECT)) {
             statement.setString(1, owner.toString());
             statement.setInt(2, limit);
 
             try (ResultSet rows = statement.executeQuery()) {
-                List<InventorySnapshot> found = new ArrayList<>();
+                List<InventoryBackup> found = new ArrayList<>();
                 while (rows.next()) {
                     found.add(read(rows));
                 }
@@ -103,7 +103,7 @@ public final class SqlBackupRepository implements BackupRepository {
     }
 
     @Override
-    public List<InventorySnapshot> recent(int limit) throws SQLException {
+    public List<InventoryBackup> recent(int limit) throws SQLException {
         String sql = "SELECT " + COLUMNS + " FROM chorus_inventory_backups"
                 + " ORDER BY taken_at DESC LIMIT ?";
         try (Connection connection = storage.connection();
@@ -111,7 +111,7 @@ public final class SqlBackupRepository implements BackupRepository {
             statement.setInt(1, limit);
 
             try (ResultSet rows = statement.executeQuery()) {
-                List<InventorySnapshot> found = new ArrayList<>();
+                List<InventoryBackup> found = new ArrayList<>();
                 while (rows.next()) {
                     found.add(read(rows));
                 }
@@ -121,7 +121,7 @@ public final class SqlBackupRepository implements BackupRepository {
     }
 
     @Override
-    public @Nullable InventorySnapshot find(long id) throws SQLException {
+    public @Nullable InventoryBackup find(long id) throws SQLException {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(SELECT_ONE)) {
             statement.setLong(1, id);
@@ -151,7 +151,7 @@ public final class SqlBackupRepository implements BackupRepository {
     }
 
     @Override
-    public void queue(UUID owner, long snapshot, String parts, String actor) throws SQLException {
+    public void queue(UUID owner, long backupId, String parts, String actor) throws SQLException {
         String upsert = switch (storage.dialect()) {
             case SQLITE -> """
                     INSERT INTO chorus_pending_restores (owner, snapshot, parts, actor, queued)
@@ -167,7 +167,7 @@ public final class SqlBackupRepository implements BackupRepository {
         try (Connection connection = storage.connection();
              PreparedStatement statement = connection.prepareStatement(upsert)) {
             statement.setString(1, owner.toString());
-            statement.setLong(2, snapshot);
+            statement.setLong(2, backupId);
             statement.setString(3, parts);
             statement.setString(4, actor);
             statement.setLong(5, System.currentTimeMillis());
@@ -201,8 +201,8 @@ public final class SqlBackupRepository implements BackupRepository {
         }
     }
 
-    private static InventorySnapshot read(ResultSet rows) throws SQLException {
-        return new InventorySnapshot(
+    private static InventoryBackup read(ResultSet rows) throws SQLException {
+        return new InventoryBackup(
                 rows.getLong("id"),
                 UUID.fromString(rows.getString("owner")),
                 rows.getLong("taken_at"),

@@ -2,18 +2,18 @@ package dev.chorus.core.chat.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
-import dev.chorus.core.flags.PlayerFlag;
-import dev.chorus.core.flags.PlayerFlagService;
+import dev.chorus.core.preference.PlayerPreference;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import org.bukkit.entity.Player;
 
 /** Turns incoming private messages off, and keeps the choice between sessions. */
 public final class MessageToggleCommand extends PlayerCommand {
 
-    private final PlayerFlagService flags;
+    private final PlayerPreferenceService preferences;
 
-    public MessageToggleCommand(CommandSupport support, PlayerFlagService flags) {
+    public MessageToggleCommand(CommandSupport support, PlayerPreferenceService preferences) {
         super(support, "msgtoggle", "chorus.chat.toggle");
-        this.flags = flags;
+        this.preferences = preferences;
     }
 
     @Override
@@ -22,7 +22,7 @@ public final class MessageToggleCommand extends PlayerCommand {
             return;
         }
 
-        boolean blocked = flags.toggle(player.getUniqueId(), PlayerFlag.MESSAGES_BLOCKED);
+        boolean blocked = preferences.toggle(player.getUniqueId(), PlayerPreference.MESSAGES_BLOCKED);
         settle(player);
         messages.send(player, blocked ? "chat.toggle-off" : "chat.toggle-on");
     }

@@ -158,8 +158,8 @@ public final class KitService implements LoginData.Part {
     }
 
     /**
-     * Hands the kit over and records it. Anything that will not fit lands at the player's
-     * feet rather than quietly disappearing.
+     * Hands the kit over and records it. Items that do not fit are dropped at the player's
+     * feet.
      */
     public CompletableFuture<Void> give(Player player, Kit kit) {
         long now = System.currentTimeMillis();

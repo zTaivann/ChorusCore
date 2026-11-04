@@ -20,8 +20,7 @@ public final class MenuItems {
     }
 
     /**
-     * The same from a real item rather than a bare material, so an icon somebody chose by
-     * dragging their own enchanted sword in still looks like that sword on the button.
+     * The same from a full item, keeping its name and enchantments.
      */
     public static ItemStack of(ItemStack template, Component name, List<Component> lore) {
         ItemStack item = template.clone();

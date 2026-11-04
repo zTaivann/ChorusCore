@@ -13,7 +13,7 @@ public final class Placeholders {
 
     private static final String PLUGIN = PlaceholderValues.PLUGIN;
 
-    /** Written the way a person reads a date, not the way a machine sorts one. */
+
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("d MMM yyyy");
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -25,7 +25,7 @@ public final class Placeholders {
     /** Whatever the plugin knows how to fill in itself, plus PlaceholderAPI when present. */
     public static String fill(Player player, String text) {
         if (text.indexOf('%') < 0) {
-            // Nothing to do, and by far the commonest case. Worth the check.
+
             return text;
         }
         String filled = text
@@ -35,10 +35,7 @@ public final class Placeholders {
         return present() ? PapiBridge.fill(player, filled) : filled;
     }
 
-    /**
-     * Looked up once. A server does not gain or lose PlaceholderAPI while it is running, and
-     * this is asked on every requirement check.
-     */
+    /** Looked up once until the next reload. */
     private static boolean present() {
         Boolean known = available;
         if (known == null) {
@@ -48,7 +45,7 @@ public final class Placeholders {
         return known;
     }
 
-    /** Called when the plugin reloads, so a fresh install is noticed without a restart. */
+    /** Looks for PlaceholderAPI again on the next fill. */
     public static void forget() {
         available = null;
     }

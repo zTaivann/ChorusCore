@@ -26,7 +26,7 @@ public record Action(Kind kind, String argument) {
     private static final long TITLE_STAY_MILLIS = 2500;
 
     /**
-     * Skips anything unusable rather than refusing the whole list over one typo.
+     * Lines it does not know are skipped and reported.
      *
      * @param owner how a problem names what the list belongs to, such as {@code kit 'vip'}
      */
@@ -44,7 +44,7 @@ public record Action(Kind kind, String argument) {
         return List.copyOf(actions);
     }
 
-    /** One line on its own, for a screen that has to say whether it is a line at all. */
+    /** One line, or null when it is not an action. */
     public static @Nullable Action of(String line) {
         String trimmed = line.trim();
         int colon = trimmed.indexOf(':');

@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 
 import java.util.function.Consumer;
 
-/** The vanilla screens a player can open without standing in front of the block. */
+/** The vanilla menus a player can open without standing in front of the block. */
 public enum PortableMenu {
 
     CRAFTING("craft", player -> player.openWorkbench(null, true)),

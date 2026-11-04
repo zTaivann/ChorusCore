@@ -43,8 +43,7 @@ public final class TpsCommand extends ChorusCommand {
     }
 
     /**
-     * A server that has just caught up reports a little over twenty, which reads as a fault
-     * rather than the good news it is, so the figure is capped.
+     * Capped at 20.
      */
     private static String format(double[] rates, int index) {
         if (index >= rates.length) {

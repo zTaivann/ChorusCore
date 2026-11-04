@@ -64,11 +64,11 @@ public final class IgnoreCommand extends PlayerCommand {
 
         List<Component> entries = new ArrayList<>(ignored.size());
         for (UUID id : ignored) {
-            entries.add(messages.render("chat.ignore-entry", "player", name(id, id.toString())));
+            entries.add(messages.render(player, "chat.ignore-entry", "player", name(id, id.toString())));
         }
         messages.send(player, "chat.ignore-header", "count", String.valueOf(entries.size()));
         player.sendMessage(Component.join(
-                JoinConfiguration.separator(messages.render("chat.ignore-separator")), entries));
+                JoinConfiguration.separator(messages.render(player, "chat.ignore-separator")), entries));
     }
 
     /** The name the server remembers, or whatever was typed when it remembers none. */

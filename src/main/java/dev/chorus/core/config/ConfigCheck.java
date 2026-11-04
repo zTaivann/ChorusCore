@@ -23,10 +23,11 @@ import java.util.regex.Pattern;
 /** Reads the config files and reports what will not work, by file and line. */
 public final class ConfigCheck {
 
-    /** Sections a server fills in itself, where a key the jar has never heard of is normal. */
+    /** Sections whose keys the server chooses. */
     private static final Set<String> OPEN = Set.of(
             "kits.definitions", "custom", "shops.worth", "items.condense",
-            "homes.world-limits", "storage.mysql.properties");
+            "homes.world-limits", "shops.chest.world-limits", "storage.mysql.properties",
+            "worth", "groups", "item-multipliers");
 
     /** Keys naming a block, an item or a button. */
     private static final Set<String> MATERIALS = Set.of(
@@ -34,7 +35,8 @@ public final class ConfigCheck {
             "back", "new-kit", "delete", "preview");
 
     /** Sections whose keys are material names rather than options. */
-    private static final Set<String> MATERIAL_KEYS = Set.of("shops.worth.", "items.condense.");
+    private static final Set<String> MATERIAL_KEYS =
+            Set.of("shops.worth.", "items.condense.", "worth.");
 
     private static final Pattern SOUND = Pattern.compile("[a-z0-9_]+(\\.[a-z0-9_]+)+");
 
@@ -134,7 +136,7 @@ public final class ConfigCheck {
         }
     }
 
-    /** Every world named in a worlds list, and every world a home limit is set for. */
+    /** Every world named in a worlds list, and every world a home or shop limit is set for. */
     private static void worlds(Server server, String path, YamlConfiguration mine,
                                ConfigLines lines, List<ConfigProblem> problems) {
         for (String key : mine.getKeys(true)) {
@@ -150,7 +152,8 @@ public final class ConfigCheck {
                     }
                 }
             }
-            if (key.startsWith("homes.world-limits.") && server.getWorld(last(key)) == null) {
+            if ((key.startsWith("homes.world-limits.") || key.startsWith("shops.chest.world-limits."))
+                    && server.getWorld(last(key)) == null) {
                 problems.add(new ConfigProblem(path, lines.of(key),
                         "there is no world called '" + last(key) + "' on this server."));
             }

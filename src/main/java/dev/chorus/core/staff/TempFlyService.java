@@ -28,7 +28,7 @@ public final class TempFlyService implements Listener {
         this.schedulers = schedulers;
     }
 
-    /** Replaces any grant already running, so a second call extends rather than stacks. */
+    /** Replaces any grant already running. */
     public void grant(Player player, int seconds) {
         cancel(player.getUniqueId());
         schedulers.entity(player, () -> player.setAllowFlight(true));

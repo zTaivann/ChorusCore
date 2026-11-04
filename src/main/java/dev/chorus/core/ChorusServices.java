@@ -12,8 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 /**
- * What addons see. Modules hand their service over as they start, so a module that is
- * switched off simply leaves its slot empty and the API reports it absent.
+ * What addons see. A disabled module leaves its service absent.
  */
 final class ChorusServices implements ChorusApi {
 

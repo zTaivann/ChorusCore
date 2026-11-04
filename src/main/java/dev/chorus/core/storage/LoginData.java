@@ -75,7 +75,7 @@ public final class LoginData implements Listener {
         }
     }
 
-    /** A refused login never gets a close event, so what was loaded for it goes here. */
+    /** Unloads what a refused login loaded. */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onDecided(AsyncPlayerPreLoginEvent event) {
         UUID id = event.getUniqueId();

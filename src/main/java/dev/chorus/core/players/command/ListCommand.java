@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Who is online, from the point of view of whoever asked: a player hidden from the sender is
- * missing from both the names and the count, so the list never gives a vanish away.
+ * Who is online. Players hidden from the sender are left out of the names and the count.
  */
 public final class ListCommand extends ChorusCommand {
 

@@ -197,17 +197,16 @@ class ConfigCheckTest {
         assertEquals(List.of(), check(SHIPPED));
     }
 
-    /** An entry in the worth list is a material, and a typo there is a price that never applies. */
+    /** An entry in worth.yml is a material, and a typo there is a price that never applies. */
     @Test
     void aMaterialNamedByAKeyIsChecked() throws IOException {
-        write("modules/shops.yml", """
-                shops:
-                  worth:
-                    diamond: 60.0
-                    diamondd: 60.0
+        write("worth.yml", """
+                worth:
+                  diamond: 60.0
+                  diamondd: 60.0
                 """);
         List<ConfigProblem> problems = ConfigCheck.run(plugin(Map.of()), server(),
-                List.of("modules/shops.yml"), false);
+                List.of("worth.yml"), false);
 
         assertEquals(1, problems.size(), problems.toString());
         assertTrue(problems.get(0).message().contains("'diamondd' is not a material"));
@@ -224,7 +223,8 @@ class ConfigCheckTest {
     /** The files as they ship, which is what a fresh install has on disk. */
     @Test
     void theFilesTheJarShipsHaveNothingWrong() throws IOException {
-        List<String> paths = new java.util.ArrayList<>(List.of("config.yml", "aliases.yml"));
+        List<String> paths =
+                new java.util.ArrayList<>(List.of("config.yml", "aliases.yml", "worth.yml"));
         try (var listing = Files.list(RESOURCES.resolve("modules"))) {
             listing.map(file -> "modules/" + file.getFileName()).sorted().forEach(paths::add);
         }

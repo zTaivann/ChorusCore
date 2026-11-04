@@ -37,9 +37,8 @@ public final class Messages implements MessageApi {
     private static final Pattern NEWLINE = Pattern.compile("<newline>", Pattern.LITERAL);
 
     /**
-     * Placeholders are written {@code %name%} in the file and become {@code <chorus_name>}
-     * for MiniMessage. The prefix is what keeps a placeholder called "key" or "lang" from
-     * being mistaken for the MiniMessage tag of the same name.
+     * Placeholders are written {@code %name%} and become {@code <chorus_name>} for
+     * MiniMessage, so a name such as "key" is not read as a MiniMessage tag.
      */
     private static final String SLOT_PREFIX = "chorus_";
 
@@ -233,21 +232,47 @@ public final class Messages implements MessageApi {
         return PlainTextComponentSerializer.plainText().serialize(render(key, placeholders));
     }
 
+    /** The same, in that reader's own language. */
+    public String plain(CommandSender reader, String key, String... placeholders) {
+        return PlainTextComponentSerializer.plainText().serialize(render(reader, key, placeholders));
+    }
+
     /** A message as separate lines, split where the template says {@code <newline>}. */
     public List<Component> renderLines(String key, String... placeholders) {
-        String template = template(key);
-        if (template == null) {
-            return List.of(cached(root().standard, key));
-        }
-        return fillLines(template, placeholders);
+        return renderLines(root().standard, key, placeholders);
+    }
+
+    /** The same, in that reader's own language. */
+    public List<Component> renderLines(CommandSender reader, String key, String... placeholders) {
+        return renderLines(speaking(reader), key, placeholders);
     }
 
     /** The same, with one value drawn rather than written out. */
     public List<Component> renderLines(String key, String slot, Component value,
                                        String... placeholders) {
-        String template = template(key);
+        return renderLines(root().standard, key, slot, value, placeholders);
+    }
+
+    /** The same, in that reader's own language. */
+    public List<Component> renderLines(CommandSender reader, String key, String slot,
+                                       Component value, String... placeholders) {
+        return renderLines(speaking(reader), key, slot, value, placeholders);
+    }
+
+    private List<Component> renderLines(Translations speaking, String key,
+                                        String... placeholders) {
+        String template = template(speaking, key);
         if (template == null) {
-            return List.of(cached(root().standard, key));
+            return List.of(cached(speaking, key));
+        }
+        return fillLines(template, placeholders);
+    }
+
+    private List<Component> renderLines(Translations speaking, String key, String slot,
+                                        Component value, String... placeholders) {
+        String template = template(speaking, key);
+        if (template == null) {
+            return List.of(cached(speaking, key));
         }
         String tag = SLOT_PREFIX + slot;
         return fillLines(template.replace("%" + slot + "%", "<" + tag + ">"),
@@ -263,7 +288,7 @@ public final class Messages implements MessageApi {
         return render(root().standard, key, placeholders);
     }
 
-    /** Package-private so the checks can exercise the split without standing up a server. */
+    /** Package-private for the tests. */
     static List<Component> fillLines(String template, String... placeholders) {
         return fillLines(template, TagResolver.empty(), placeholders);
     }
@@ -291,8 +316,7 @@ public final class Messages implements MessageApi {
     }
 
     /**
-     * Puts the values into a template as it is parsed. Package-private so the checks can
-     * exercise the part that actually goes wrong without standing up a whole server.
+     * Puts the values into a template as it is parsed. Package-private for the tests.
      */
     static Component fill(String template, String... placeholders) {
         return fill(template, TagResolver.empty(), placeholders);
@@ -313,9 +337,9 @@ public final class Messages implements MessageApi {
     }
 
     /** This view's line for a key, or the one the language chain has. */
-    private @Nullable String template(String key) {
+    private @Nullable String template(Translations speaking, String key) {
         String custom = overrides.get(key);
-        return custom != null ? custom : root().standard.template(key);
+        return custom != null ? custom : speaking.template(key);
     }
 
     /** Admin-written text, made ready the way a line from a file is. Root only. */
@@ -389,8 +413,7 @@ public final class Messages implements MessageApi {
     }
 
     /**
-     * The files the plugin used before the folder, read last so that a server which has not
-     * moved its lines across yet still sees them.
+     * The old single message files, read last when they still exist.
      */
     private void readLegacyInto(Translations language, String shared) {
         for (String name : LEGACY) {

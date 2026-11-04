@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-/** Builds and changes kits from inside the game, by screen or by command. */
+/** Builds and changes kits from inside the game, by menu or by command. */
 public final class KitEditCommand extends PlayerCommand {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
@@ -123,17 +123,17 @@ public final class KitEditCommand extends PlayerCommand {
         }
     }
 
-    /** One clickable line per setting, rather than a wall of pipes nobody can read in chat. */
+    /** One clickable line per setting. */
     private void help(Player player) {
         messages.send(player, "kits.edit-help-header");
         for (Setting entry : SETTINGS) {
             String usage = ("/kitedit <kit> " + entry.name() + " " + entry.value()).trim();
-            Component line = messages.render("kits.edit-help-line",
+            Component line = messages.render(player, "kits.edit-help-line",
                     "usage", usage,
-                    "what", messages.plain(entry.help()));
+                    "what", messages.plain(player, entry.help()));
             player.sendMessage(line
                     .clickEvent(ClickEvent.suggestCommand("/kitedit "))
-                    .hoverEvent(HoverEvent.showText(messages.render("kits.edit-help-hover"))));
+                    .hoverEvent(HoverEvent.showText(messages.render(player, "kits.edit-help-hover"))));
         }
         messages.send(player, "kits.edit-help-footer");
     }
@@ -143,17 +143,17 @@ public final class KitEditCommand extends PlayerCommand {
         messages.send(player, "kits.edit-info-display", "display", PLAIN.serialize(kit.display()));
         messages.send(player, "kits.edit-info-icon",
                 "icon", kit.icon().getType().name().toLowerCase(Locale.ROOT));
-        messages.send(player, "kits.edit-info-cooldown", "cooldown", cooldownOf(kit));
-        messages.send(player, "kits.edit-info-maxclaims", "claims", claimsOf(kit));
-        messages.send(player, "kits.edit-info-price", "price", priceOf(kit));
+        messages.send(player, "kits.edit-info-cooldown", "cooldown", cooldownOf(player, kit));
+        messages.send(player, "kits.edit-info-maxclaims", "claims", claimsOf(player, kit));
+        messages.send(player, "kits.edit-info-price", "price", priceOf(player, kit));
         messages.send(player, "kits.edit-info-permission", "permission",
-                kit.permission().isEmpty() ? messages.plain("kits.word-everyone") : kit.permission());
-        messages.send(player, "kits.edit-info-onetime", "onetime", word(kit.oneTime()));
-        messages.send(player, "kits.edit-info-autoarmor", "autoarmor", word(kit.autoArmor()));
+                kit.permission().isEmpty() ? messages.plain(player, "kits.word-everyone") : kit.permission());
+        messages.send(player, "kits.edit-info-onetime", "onetime", word(player, kit.oneTime()));
+        messages.send(player, "kits.edit-info-autoarmor", "autoarmor", word(player, kit.autoArmor()));
         messages.send(player, "kits.edit-info-clearinventory",
-                "clearinventory", word(kit.clearInventory()));
+                "clearinventory", word(player, kit.clearInventory()));
         messages.send(player, "kits.edit-info-placeholders",
-                "placeholders", word(kit.placeholders()));
+                "placeholders", word(player, kit.placeholders()));
         messages.send(player, "kits.edit-info-items", "count", String.valueOf(kit.items().size()));
         if (!kit.requirements().isEmpty()) {
             messages.send(player, "kits.edit-info-requirements",
@@ -167,26 +167,26 @@ public final class KitEditCommand extends PlayerCommand {
         messages.send(player, "kits.edit-info-footer", "kit", kit.name());
     }
 
-    private String cooldownOf(Kit kit) {
+    private String cooldownOf(Player player, Kit kit) {
         if (kit.oneTime()) {
-            return messages.plain("kits.word-once");
+            return messages.plain(player, "kits.word-once");
         }
         return kit.cooldownSeconds() == 0
-                ? messages.plain("kits.word-none")
+                ? messages.plain(player, "kits.word-none")
                 : Durations.format(TimeUnit.SECONDS.toMillis(kit.cooldownSeconds()));
     }
 
-    private String claimsOf(Kit kit) {
-        return kit.maxClaims() == 0 ? messages.plain("kits.word-unlimited")
+    private String claimsOf(Player player, Kit kit) {
+        return kit.maxClaims() == 0 ? messages.plain(player, "kits.word-unlimited")
                 : String.valueOf(kit.maxClaims());
     }
 
-    private String priceOf(Kit kit) {
-        return kit.price() <= 0 ? messages.plain("kits.word-free") : economy.format(kit.price());
+    private String priceOf(Player player, Kit kit) {
+        return kit.price() <= 0 ? messages.plain(player, "kits.word-free") : economy.format(kit.price());
     }
 
-    private String word(boolean value) {
-        return messages.plain(value ? "kits.word-true" : "kits.word-false");
+    private String word(Player player, boolean value) {
+        return messages.plain(player, value ? "kits.word-true" : "kits.word-false");
     }
 
     private void create(Player player, String name, boolean exists) {
@@ -259,16 +259,16 @@ public final class KitEditCommand extends PlayerCommand {
 
         // Shown as it will be read back, not as it was typed.
         messages.send(player, "kits.edit-set",
-                "kit", name, "setting", setting, "value", readable(setting, value));
+                "kit", name, "setting", setting, "value", readable(player, setting, value));
     }
 
-    private String readable(String setting, String value) {
+    private String readable(Player player, String setting, String value) {
         return switch (setting) {
             case "cooldown" -> Durations.format(TimeUnit.SECONDS.toMillis((long) number(value)));
-            case "maxclaims" -> (long) number(value) + " " + messages.plain("kits.word-claims");
+            case "maxclaims" -> (long) number(value) + " " + messages.plain(player, "kits.word-claims");
             case "price" -> economy.format(number(value));
             case "onetime", "autoarmor", "clearinventory", "placeholders" ->
-                    word(Boolean.parseBoolean(value));
+                    word(player, Boolean.parseBoolean(value));
             default -> value;
         };
     }
@@ -278,7 +278,7 @@ public final class KitEditCommand extends PlayerCommand {
     }
 
     private static double number(String value) {
-        return Numbers.money(value);
+        return Numbers.amount(value);
     }
 
     private static boolean isNumber(String value) {

@@ -25,10 +25,9 @@ public final class EntitySweep {
     }
 
     /**
-     * @param remove false counts without touching anything, which is what the confirmation
-     *               prompt needs before it can say how many.
-     * @param onDone given the total once every chunk has answered. It runs on whichever
-     *               thread finished last, so it should do nothing but report.
+     * @param remove false only counts.
+     * @param onDone given the total once every chunk has answered, on whichever thread
+     *               finished last.
      */
     public static void run(Schedulers schedulers, Collection<World> worlds,
                            Predicate<Entity> matches, boolean remove, IntConsumer onDone) {

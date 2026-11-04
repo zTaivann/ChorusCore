@@ -25,7 +25,7 @@ public record Kit(String name, Component display, List<Component> lore, ItemStac
         return items.stream().map(item -> item.build(player)).toList();
     }
 
-    /** The same for a screen nobody is taking the kit from, where a placeholder stays a word. */
+    /** The same for a preview, with placeholders left as written. */
     public List<ItemStack> contents() {
         return contents(null);
     }

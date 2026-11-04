@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-/** The blocks the plugin itself is using, so nothing else edits them out from under it. */
+/** Blocks the plugin is using, which other features must not change. */
 public final class ReservedBlocks {
 
     private final List<Predicate<Block>> owners = new ArrayList<>();

@@ -58,7 +58,7 @@ public final class TextCommand extends ChorusCommand {
         settle(sender);
     }
 
-    /** Sent on join as well as on the command, so it takes the reader rather than assuming. */
+    /** Sends the text to one reader, on join or on the command. */
     public void show(CommandSender reader, @Nullable ServerText.Chapter chapter, int page) {
         if (chapter == null) {
             return;

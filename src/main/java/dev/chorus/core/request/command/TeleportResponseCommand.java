@@ -49,7 +49,7 @@ public final class TeleportResponseCommand extends PlayerCommand {
                 return;
             }
         } else {
-            // A hidden player is treated as not being here, so a vanish cannot be worked out.
+            // A hidden player counts as not online.
             Player from = player.getServer().getPlayerExact(args[0]);
             if (from == null || !player.canSee(from)) {
                 messages.send(player, "error.player-not-found", "player", args[0]);

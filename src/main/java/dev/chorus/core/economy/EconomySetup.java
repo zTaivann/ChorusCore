@@ -1,7 +1,9 @@
 package dev.chorus.core.economy;
 
+import dev.chorus.core.command.PermissionLimits;
 import dev.chorus.core.storage.Storage;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,12 +19,15 @@ import java.util.logging.Level;
 /** Works out which economy the server is going to use and wires it up. */
 public final class EconomySetup implements Listener {
 
+    public static final String BALTOP_HIDDEN = "chorus.economy.baltop.hidden";
+    private static final String STARTING_BALANCE = "chorus.economy.starting.";
+
     private final Plugin plugin;
     private final Storage storage;
     private final Executor worker;
 
     private EconomyMode mode = EconomyMode.AUTO;
-    private Economy economy = new NoEconomy();
+    private Economy economy = NoEconomy.disabled();
     private @Nullable Balances balances;
     private boolean offered;
 
@@ -51,7 +56,7 @@ public final class EconomySetup implements Listener {
                 : EconomyMode.OFF;
 
         if (mode == EconomyMode.OFF) {
-            economy = new NoEconomy();
+            economy = NoEconomy.disabled();
             return;
         }
 
@@ -60,7 +65,7 @@ public final class EconomySetup implements Listener {
         }
         if (balances == null && mode != EconomyMode.VAULT) {
             // The table could not be opened, so there is nothing to hand out.
-            economy = new NoEconomy();
+            economy = NoEconomy.failed();
             return;
         }
 
@@ -75,7 +80,7 @@ public final class EconomySetup implements Listener {
             case AUTO -> vault
                     ? new VaultEconomy(plugin.getServer(), plugin.getLogger())
                     : new ChorusEconomy(balances);
-            case OFF -> new NoEconomy();
+            case OFF -> NoEconomy.disabled();
         };
     }
 
@@ -86,11 +91,23 @@ public final class EconomySetup implements Listener {
         economy.refresh();
     }
 
-    /** Gives a new player their opening balance the first time they arrive. */
+    /**
+     * Gives a new player their starting balance the first time they arrive, or the highest
+     * {@code chorus.economy.starting.<amount>} they hold when that is more, and notes whether
+     * /baltop leaves them out, so it still does while they are offline.
+     */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         if (balances != null) {
-            balances.open(event.getPlayer().getUniqueId(), event.getPlayer().getName());
+            Player player = event.getPlayer();
+            if (balances.exists(player.getUniqueId())) {
+                balances.open(player.getUniqueId(), player.getName());
+            } else {
+                balances.open(player.getUniqueId(), player.getName(), Math.max(
+                        balances.currency().startingBalance(),
+                        PermissionLimits.highest(player, STARTING_BALANCE, 0)));
+            }
+            balances.hide(player.getUniqueId(), player.hasPermission(BALTOP_HIDDEN));
         }
     }
 
@@ -104,7 +121,7 @@ public final class EconomySetup implements Listener {
             return ledger;
         } catch (SQLException exception) {
             plugin.getLogger().log(Level.SEVERE,
-                    "The balances table could not be opened, so prices are switched off", exception);
+                    "The balance table could not be opened, so prices are disabled", exception);
             return null;
         }
     }

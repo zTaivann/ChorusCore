@@ -6,9 +6,9 @@ import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.config.ConfigFile;
-import dev.chorus.core.flags.PlayerFlagService;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.platform.ChorusTask;
+import dev.chorus.core.preference.PlayerPreferenceService;
 import dev.chorus.core.request.command.BackCommand;
 import dev.chorus.core.request.command.TeleportRequestCommand;
 import dev.chorus.core.request.command.TeleportResponseCommand;
@@ -31,7 +31,7 @@ public final class TeleportRequestModule implements ChorusModule {
     private final ChorusPlugin plugin;
     private final CommandSupport support;
     private final TeleportService teleports;
-    private final PlayerFlagService flags;
+    private final PlayerPreferenceService preferences;
     private final List<ChorusCommand> commands = new ArrayList<>();
 
     private ConfigFile config;
@@ -39,11 +39,11 @@ public final class TeleportRequestModule implements ChorusModule {
     private ChorusTask sweeper;
 
     public TeleportRequestModule(ChorusPlugin plugin, CommandSupport support,
-                                 TeleportService teleports, PlayerFlagService flags) {
+                                 TeleportService teleports, PlayerPreferenceService preferences) {
         this.plugin = plugin;
         this.support = support;
         this.teleports = teleports;
-        this.flags = flags;
+        this.preferences = preferences;
     }
 
     @Override
@@ -69,18 +69,18 @@ public final class TeleportRequestModule implements ChorusModule {
 
         plugin.register(new RequestListener(requests));
         commands.add(plugin.register(new TeleportRequestCommand(support, requests,
-                TeleportRequest.Direction.TO_TARGET, "tpa", "chorus.tpa.use", flags, teleports)));
+                TeleportRequest.Direction.TO_TARGET, "tpa", "chorus.tpa.use", preferences, teleports)));
         commands.add(plugin.register(new TeleportRequestCommand(support, requests,
-                TeleportRequest.Direction.TO_SENDER, "tpahere", "chorus.tpa.here", flags, teleports)));
+                TeleportRequest.Direction.TO_SENDER, "tpahere", "chorus.tpa.here", preferences, teleports)));
         commands.add(plugin.register(new TeleportResponseCommand(support, requests, teleports,
                 true, "tpaccept", "chorus.tpa.accept")));
         commands.add(plugin.register(new TeleportResponseCommand(support, requests, teleports,
                 false, "tpdeny", "chorus.tpa.deny")));
         commands.add(plugin.register(new TpCancelCommand(support, requests)));
-        commands.add(plugin.register(new TpToggleCommand(support, flags)));
+        commands.add(plugin.register(new TpToggleCommand(support, preferences)));
         commands.add(plugin.register(new BackCommand(support, teleports)));
-        commands.add(plugin.register(new TpAutoCommand(support, flags)));
-        commands.add(plugin.register(new TpAllRequestCommand(support, requests, teleports, flags)));
+        commands.add(plugin.register(new TpAutoCommand(support, preferences)));
+        commands.add(plugin.register(new TpAllRequestCommand(support, requests, teleports, preferences)));
         commands.add(plugin.register(new TpOfflineCommand(support, plugin.profiles(), teleports)));
         CommandRules.applyAll(config.section("commands"), commands, plugin.getLogger());
 

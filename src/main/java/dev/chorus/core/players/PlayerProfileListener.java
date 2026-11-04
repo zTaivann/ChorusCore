@@ -19,7 +19,7 @@ public final class PlayerProfileListener implements Listener {
         profiles.arrived(event.getPlayer());
     }
 
-    /** At the lowest priority, so the position written down is where they actually were. */
+    /** Lowest priority: the position before other plugins move the player. */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onQuit(PlayerQuitEvent event) {
         profiles.left(event.getPlayer());

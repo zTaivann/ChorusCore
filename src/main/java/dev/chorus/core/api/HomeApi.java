@@ -9,8 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Homes of players who are online. Nothing here touches the database, so it is all safe to
- * call from the server thread as often as you like.
+ * Homes of players who are online. Nothing here touches the database.
  */
 public interface HomeApi {
 

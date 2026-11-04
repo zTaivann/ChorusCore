@@ -4,26 +4,45 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.Context;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
+import java.util.Set;
 
-/** Reads both ways of writing coloured text, so nobody has to learn a new one. */
+/** Reads MiniMessage tags and &-codes. */
 public final class TextFormat {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
+    /** Tags that act on whoever reads the text, or read from the server. */
+    private static final Set<String> ACTIVE_TAGS = Set.of(
+            "click", "hover", "insertion", "selector", "nbt", "score");
+
     /**
-     * Colours and weights only. A click, a hover or a selector in text a player wrote would
-     * act on whoever reads it, and on a sign a click runs with the server's permissions.
+     * Every tag the running server knows except the ones that act on the reader. A click on
+     * a sign runs with the server's permissions.
      */
     private static final MiniMessage STYLING = MiniMessage.builder()
-            .tags(TagResolver.resolver(StandardTags.color(), StandardTags.decorations(),
-                    StandardTags.gradient(), StandardTags.rainbow(), StandardTags.transition(),
-                    StandardTags.reset()))
+            .tags(new PassiveTags(StandardTags.defaults()))
             .build();
+
+    private record PassiveTags(TagResolver all) implements TagResolver {
+
+        @Override
+        public @Nullable Tag resolve(String name, ArgumentQueue arguments, Context ctx) {
+            return has(name) ? all.resolve(name, arguments, ctx) : null;
+        }
+
+        @Override
+        public boolean has(String name) {
+            return !ACTIVE_TAGS.contains(name.toLowerCase(Locale.ROOT)) && all.has(name);
+        }
+    }
 
     /** Indexed by the digit or letter after the marker, in the order the game numbers them. */
     private static final String[] COLOURS = {

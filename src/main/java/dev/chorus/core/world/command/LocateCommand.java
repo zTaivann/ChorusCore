@@ -93,7 +93,7 @@ public final class LocateCommand extends PlayerCommand {
         surfaced(player, found.name(), player.getLocation(), found.where());
     }
 
-    /** Reports the ground rather than the point the search handed back. */
+    /** Reports the ground height at the point found. */
     private void surfaced(Player player, String kind, Location from, Location found) {
         found.getWorld().getChunkAtAsync(found).whenComplete((chunk, missing) ->
                 schedulers.region(found, () -> {
@@ -203,7 +203,7 @@ public final class LocateCommand extends PlayerCommand {
         return raw.toLowerCase(Locale.ROOT).replace(' ', '_');
     }
 
-    /** Null for anything a key cannot be made of, which the registry would refuse anyway. */
+    /** Null when the text cannot be a key. */
     private static @Nullable NamespacedKey id(String raw) {
         try {
             return NamespacedKey.minecraft(key(raw));
