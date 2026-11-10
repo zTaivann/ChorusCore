@@ -1,7 +1,7 @@
 package dev.chorus.core.command;
 
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
 import dev.chorus.core.stafflog.StaffLog;
@@ -26,9 +26,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
 
     private static final String WORLD_BYPASS = "chorus.bypass.worlds";
 
-    /**
-     * This command's own view of the messages, with its messages block applied.
-     */
+    /** This command's messages, with its messages block applied. */
     protected final Messages messages;
     protected final ActionGuard guard;
     protected final Schedulers schedulers;
@@ -78,10 +76,7 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
         return needed == null || needed.isEmpty() || sender.hasPermission(needed);
     }
 
-    /**
-     * Cooldown, daily limit and price check. Call it once the arguments are valid. The
-     * console always passes.
-     */
+    /** Checks cooldown, daily limit and price once arguments are valid. The console always passes. */
     protected final boolean ready(CommandSender sender) {
         return ready(sender, name, rules);
     }
@@ -96,8 +91,8 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * Starts the cooldown, charges the price, plays the sound and runs the on-success actions.
-     * Call it only once the action really happened, which for a teleport means on arrival.
+     * Starts the cooldown, charges, plays the sound and runs the on-success actions. Call it once
+     * the action really happened (for a teleport, on arrival).
      */
     protected final void settle(CommandSender sender) {
         settle(sender, name, rules);
@@ -114,8 +109,8 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
     }
 
     /**
-     * For an action that finishes later, such as a teleport after its warmup: takes the price
-     * now when the rules charge on use. Hand what it returns to the teleport as its cancel action.
+     * For delayed actions such as a teleport warmup: charges now if charging on use. Pass the
+     * result to the teleport as its cancel action.
      */
     protected final Runnable chargeUpfront(CommandSender sender) {
         return chargeUpfront(sender, name, rules);
@@ -182,15 +177,22 @@ public abstract class ChorusCommand implements CommandExecutor, TabCompleter {
         return List.of();
     }
 
+    /** Tells the target what happened to them, and the sender too when that is someone else. */
+    protected final void report(CommandSender sender, Player target, String toSelf, String toOther) {
+        if (target.equals(sender)) {
+            messages.send(sender, toSelf);
+            return;
+        }
+        messages.send(sender, toOther, "player", target.getName());
+        messages.send(target, toSelf);
+    }
+
     protected static List<String> startingWith(String input, Collection<String> candidates) {
         String typed = input.toLowerCase(Locale.ROOT);
         return candidates.stream().filter(candidate -> candidate.startsWith(typed)).sorted().toList();
     }
 
-    /**
-     * Looks up a player who may not be online, reporting it and returning null when there is
-     * nobody by that name.
-     */
+    /** Finds a possibly offline player, reporting and returning null when none matches. */
     protected final @Nullable OfflinePlayer known(CommandSender sender, String name) {
         Player online = sender.getServer().getPlayerExact(name);
         if (online != null && !(sender instanceof Player viewer && !viewer.canSee(online))) {

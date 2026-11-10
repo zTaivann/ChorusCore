@@ -1,7 +1,7 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.core.command.Numbers;
-import dev.chorus.core.config.ConfigFile;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -12,11 +12,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /** Writes kit changes back into kits.yml. */
 public final class KitEditor {
 
     private static final String ROOT = "kits.definitions.";
+    private static final Pattern NAME = Pattern.compile("[a-z0-9_-]{1,32}");
 
     private final ConfigFile config;
     private final Runnable reload;
@@ -26,12 +28,17 @@ public final class KitEditor {
         this.reload = reload;
     }
 
-    /** What happened to the items, so the command can say when something was flattened. */
-    public record Result(boolean saved, int count, int simplified) {
+    /** What happened to the items. */
+    public record Result(boolean saved, int count) {
 
         static Result failed() {
-            return new Result(false, 0, 0);
+            return new Result(false, 0);
         }
+    }
+
+    /** What a new kit may be called: it becomes a key in kits.yml and a word in commands. */
+    public static boolean validName(String name) {
+        return NAME.matcher(name).matches();
     }
 
     public boolean create(String name, Player from) {
@@ -59,15 +66,8 @@ public final class KitEditor {
     public Result setItems(String name, ItemStack[] contents) {
         List<Map<String, Object>> written = KitWriter.describe(contents);
 
-        int simplified = 0;
-        for (ItemStack item : contents) {
-            if (item != null && !item.getType().isAir() && KitWriter.losesDetail(item)) {
-                simplified++;
-            }
-        }
-
         config.data().set(ROOT + name + ".items", written);
-        return commit() ? new Result(true, written.size(), simplified) : Result.failed();
+        return commit() ? new Result(true, written.size()) : Result.failed();
     }
 
     /** The icon as a whole item, written in the same form the contents take. */

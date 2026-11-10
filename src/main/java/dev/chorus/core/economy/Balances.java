@@ -131,9 +131,9 @@ public final class Balances {
     }
 
     /**
-     * Reads and writes one balance as a single step.
+     * Reads and writes one balance atomically.
      *
-     * @param update the new amount, or null to leave it alone
+     * @param update the new amount, or null to leave it
      * @return whether anything changed
      */
     private boolean change(OfflinePlayer player, DoubleFunction<@Nullable Double> update) {

@@ -1,5 +1,6 @@
 package dev.chorus.core.storage;
 
+import dev.chorus.commons.storage.SqlDialect;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 

@@ -1,5 +1,6 @@
 package dev.chorus.core.chat;
 
+import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.chat.command.IgnoreCommand;
@@ -11,7 +12,6 @@ import dev.chorus.core.chat.command.SocialSpyCommand;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.mail.MailListener;
 import dev.chorus.core.mail.MailService;
 import dev.chorus.core.mail.SqlMailRepository;

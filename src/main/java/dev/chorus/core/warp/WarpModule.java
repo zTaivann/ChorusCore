@@ -1,11 +1,11 @@
 package dev.chorus.core.warp;
 
+import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.location.LocationRepository;
 import dev.chorus.core.location.LocationService;
 import dev.chorus.core.location.SqlLocationRepository;

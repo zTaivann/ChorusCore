@@ -1,6 +1,7 @@
 package dev.chorus.core.backup;
 
-import dev.chorus.core.platform.Schedulers;
+import dev.chorus.commons.platform.Schedulers;
+import dev.chorus.core.items.Hand;
 import dev.chorus.core.storage.Queries;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -79,11 +80,9 @@ public final class InventoryBackups {
     }
 
     /**
-     * A backup, with what killed them when that is why it is being made.
+     * A backup, with the death cause when that is why it was made.
      *
-     * @param detail what to call it in menus beyond the reason, such as the kit's name
-     * @param cause  the damage that did it, or null
-     * @param killer who did it, or null
+     * @param detail extra menu text beyond the reason, such as a kit name
      */
     public void take(Player player, BackupReason reason, String detail, String actor,
                      @Nullable String cause, @Nullable String killer) {
@@ -130,9 +129,9 @@ public final class InventoryBackups {
     }
 
     /**
-     * Puts one back, after copying what the player is carrying now.
+     * Puts one back after copying what the player carries now.
      *
-     * @return what was put back. Empty when it cannot be read.
+     * @return what was put back, or empty when unreadable
      */
     public Set<Part> restore(Player player, InventoryBackup backup, Set<Part> parts,
                              String actor) {
@@ -168,9 +167,9 @@ public final class InventoryBackups {
     }
 
     /**
-     * Hands the saved items over without taking anything away.
+     * Hands over the saved items without taking anything.
      *
-     * @return how many items were handed over, or -1 when the backup cannot be read.
+     * @return items handed over, or -1 when the backup is unreadable
      */
     public int deliver(Player player, InventoryBackup backup, boolean includeEnderChest) {
         ItemStack[] contents = InventoryCodec.decode(backup.contents());
@@ -195,8 +194,7 @@ public final class InventoryBackups {
                 continue;
             }
             handed += stack.getAmount();
-            player.getInventory().addItem(stack).values().forEach(
-                    left -> player.getWorld().dropItemNaturally(player.getLocation(), left));
+            Hand.giveOrDrop(player, stack);
         }
         return handed;
     }
@@ -212,9 +210,9 @@ public final class InventoryBackups {
     }
 
     /**
-     * Applies whatever was waiting for a player who has just arrived.
+     * Applies any restore waiting for a player who just arrived.
      *
-     * @param told runs with what was put back.
+     * @param told runs with what was put back
      */
     public void applyWaiting(Player player, BiConsumer<Set<Part>, String> told) {
         UUID owner = player.getUniqueId();

@@ -25,7 +25,7 @@ public record KitItem(ItemStack item, @Nullable String name, @Nullable List<Stri
     /**
      * A copy to hand over.
      *
-     * @param player whose placeholders to fill, or null for a preview nobody is taking.
+     * @param player whose placeholders to fill, or null for a preview
      */
     public ItemStack build(@Nullable Player player) {
         ItemStack copy = item.clone();

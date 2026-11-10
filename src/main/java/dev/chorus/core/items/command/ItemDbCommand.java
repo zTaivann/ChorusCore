@@ -2,6 +2,7 @@ package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
+import dev.chorus.core.items.MaterialName;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -89,12 +90,12 @@ public final class ItemDbCommand extends ChorusCommand {
     private static List<String> matching(String typed, int limit) {
         String wanted = typed.toLowerCase(Locale.ROOT).replace(' ', '_');
         List<String> found = new ArrayList<>();
-        for (Material material : Material.values()) {
+        for (MaterialName each : MaterialName.ALL) {
             if (found.size() >= limit) {
                 break;
             }
-            if (!material.isLegacy() && material.name().toLowerCase(Locale.ROOT).contains(wanted)) {
-                found.add(material.name().toLowerCase(Locale.ROOT));
+            if (!each.material().isLegacy() && each.name().contains(wanted)) {
+                found.add(each.name());
             }
         }
         return found;

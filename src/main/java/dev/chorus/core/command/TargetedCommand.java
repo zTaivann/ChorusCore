@@ -43,10 +43,7 @@ public abstract class TargetedCommand extends ChorusCommand {
 
     protected abstract void execute(CommandSender sender, Player target);
 
-    /**
-     * Sends the right one of the three ways this can read: to yourself, about someone else,
-     * or to the player it was done to.
-     */
+    /** Sends the matching message: to yourself, about someone else, or to the target. */
     protected final void announce(CommandSender sender, Player target,
                                   String toSelf, String toSender, String toTarget) {
         if (target.equals(sender)) {

@@ -4,10 +4,10 @@ import dev.chorus.core.command.Numbers;
 import org.bukkit.configuration.ConfigurationSection;
 
 /**
- * The economy module's own settings.
+ * The economy module's settings.
  *
- * @param payTax            percent of each /pay taken as tax, from 0 to 100
- * @param topHideEmpty      leaves accounts with nothing in them out of /baltop
+ * @param payTax            percent of each /pay taken as tax (0-100)
+ * @param topHideEmpty      hide empty accounts from /baltop
  * @param topRefreshSeconds how long a /baltop ranking is reused
  */
 public record EconomySettings(double minimumPayment, double maximumPayment, double confirmAbove,

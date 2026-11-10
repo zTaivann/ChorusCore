@@ -1,12 +1,12 @@
 package dev.chorus.core.items.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.backup.BackupMenu;
 import dev.chorus.core.backup.BackupReason;
-import dev.chorus.core.backup.InventoryBackups;
 import dev.chorus.core.backup.InventoryBackup;
+import dev.chorus.core.backup.InventoryBackups;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.command.Numbers;
 import dev.chorus.core.players.PlayerProfiles;
 import org.bukkit.command.Command;
@@ -22,8 +22,8 @@ import java.util.UUID;
 public final class RestoreCommand extends ChorusCommand {
 
     /**
-     * Enough to open the menu and look. Putting something back needs
-     * {@code chorus.items.restore}, which plugin.yml gives this one along with.
+     * Enough to open the menu and look; restoring needs {@code chorus.items.restore}, which
+     * plugin.yml grants with it.
      */
     private static final String VIEW_PERMISSION = "chorus.items.restore.view";
 

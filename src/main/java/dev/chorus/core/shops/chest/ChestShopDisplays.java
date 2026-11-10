@@ -1,6 +1,6 @@
 package dev.chorus.core.shops.chest;
 
-import dev.chorus.core.platform.Schedulers;
+import dev.chorus.commons.platform.Schedulers;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** The item turning slowly above a shop, so you can see what it sells without reading the sign. */
+/** The item spinning above a shop, showing what it sells. */
 public final class ChestShopDisplays {
 
     /** Roughly a block above the lid, which is where the eye expects it. */

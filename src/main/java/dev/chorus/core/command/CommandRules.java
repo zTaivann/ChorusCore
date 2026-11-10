@@ -18,15 +18,15 @@ import java.util.logging.Logger;
 /**
  * Everything one command's config block controls.
  *
- * @param cooldownGroup  the name of the cooldown it shares with other commands, or {@code ""}
- * @param cooldownScope  who the cooldown holds back once it starts
- * @param daily          how many times a day it may be used, counted the way the cooldown is
- * @param discounts      percent off the price for some permissions; the biggest one counts
- * @param priceItem      items taken as part of the price, on top of {@code price}
+ * @param cooldownGroup  shared cooldown name, or {@code ""}
+ * @param cooldownScope  who the cooldown holds back
+ * @param daily          uses per day
+ * @param discounts      percent off by permission; the biggest counts
+ * @param priceItem      items taken on top of {@code price}
  * @param chargeOn       when the price is taken
- * @param refundOnCancel whether a price taken on use comes back when the teleport is cancelled
- * @param permission     the node it takes instead of its own, {@code ""} for everyone, or null
- * @param log            whether each use goes into the staff log
+ * @param refundOnCancel whether a price taken on use returns if the teleport is cancelled
+ * @param permission     replacement node, {@code ""} for everyone, or null
+ * @param log            whether uses go into the staff log
  */
 public record CommandRules(boolean enabled, int warmupSeconds, int cooldownSeconds,
                            String cooldownGroup, CooldownScope cooldownScope, DailyLimit daily,

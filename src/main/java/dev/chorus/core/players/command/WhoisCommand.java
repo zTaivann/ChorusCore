@@ -1,8 +1,8 @@
 package dev.chorus.core.players.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.players.AfkService;
 import dev.chorus.core.players.GeoLookup;
 import dev.chorus.core.players.Playtime;
@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Everything the server knows about one player. Lines with nothing to show are left out.
- */
+/** Everything the server knows about one player; empty lines are left out. */
 public final class WhoisCommand extends ChorusCommand {
 
     private static final String IP_PERMISSION = "chorus.players.whois.ip";
@@ -55,7 +53,9 @@ public final class WhoisCommand extends ChorusCommand {
                 return;
             }
             settle(sender);
-            describeOnline(sender, online);
+            // Where they are and how they are doing belong to the thread that owns them.
+            Player target = online;
+            onPlayer(target, () -> describeOnline(sender, target));
             return;
         }
 
@@ -99,7 +99,8 @@ public final class WhoisCommand extends ChorusCommand {
         }
         if (sender.hasPermission(IP_PERMISSION)) {
             InetSocketAddress socket = target.getAddress();
-            String address = socket == null ? "" : socket.getAddress().getHostAddress();
+            String address = socket == null || socket.getAddress() == null
+                    ? "" : socket.getAddress().getHostAddress();
             messages.send(sender, "players.whois-address",
                     "address", address.isEmpty() ? "?" : address);
             country(sender, address);

@@ -1,11 +1,11 @@
 package dev.chorus.core.custom;
 
+import dev.chorus.commons.command.Durations;
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.command.ActionGuard;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Cooldowns;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
 import dev.chorus.core.stafflog.StaffLog;

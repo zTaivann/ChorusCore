@@ -13,6 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,7 +43,6 @@ public final class KitReader {
             String key = name.toLowerCase(Locale.ROOT);
             kits.put(key, kit(key, name, block, onProblem));
         }
-        // Keeps the order of the file.
         return Collections.unmodifiableMap(kits);
     }
 
@@ -88,15 +88,24 @@ public final class KitReader {
         return List.copyOf(items);
     }
 
-    /**
-     * Keeps the written text alongside the built item, but only where it would change from
-     * one player to the next.
-     */
+    /** Keeps the written text beside the built item, only where it varies per player. */
     private static KitItem personal(Map<?, ?> entry, ItemStack item) {
         String name = text(entry.get("name"));
         List<String> lore = entry.get("lore") instanceof List<?> lines
                 ? lines.stream().map(String::valueOf).toList()
                 : null;
+
+        // An exact item has no written name or lore: they are the item's own.
+        ItemMeta meta = item.getItemMeta();
+        if (entry.get(KitWriter.DATA) != null && meta != null) {
+            if (name == null && meta.hasDisplayName()) {
+                name = TextFormat.toText(meta.displayName());
+            }
+            List<Component> shown = meta.lore();
+            if (lore == null && shown != null && !shown.isEmpty()) {
+                lore = shown.stream().map(TextFormat::toText).toList();
+            }
+        }
 
         boolean namedByPlayer = name != null && name.indexOf('%') >= 0;
         boolean loredByPlayer = lore != null && lore.stream().anyMatch(line -> line.indexOf('%') >= 0);
@@ -109,6 +118,11 @@ public final class KitReader {
     /** One item from its written form. */
     private static @Nullable ItemStack item(Map<?, ?> entry, String kit,
                                             Consumer<String> onProblem) {
+        ItemStack exact = exact(entry.get(KitWriter.DATA), kit, onProblem);
+        if (exact != null) {
+            return exact;
+        }
+
         Material material = material(text(entry.get("material")), null, onProblem);
         if (material == null) {
             return null;
@@ -140,9 +154,32 @@ public final class KitReader {
     }
 
     /**
-     * The written form of an item, whichever shape the config hands it over in.
+     * The item exactly as saved.
      *
-     * @return null when this is not a block at all, such as a bare material name.
+     * @return null when absent or unreadable, so the written material and block are used instead
+     */
+    private static @Nullable ItemStack exact(@Nullable Object data, String kit,
+                                             Consumer<String> onProblem) {
+        if (data == null) {
+            return null;
+        }
+        try {
+            ItemStack item = ItemStack.deserializeBytes(
+                    Base64.getDecoder().decode(String.valueOf(data).trim()));
+            if (!item.getType().isAir()) {
+                return item;
+            }
+        } catch (RuntimeException unreadable) {
+        }
+        onProblem.accept("kit '" + kit + "' has an item whose saved data cannot be read, "
+                + "so it is rebuilt from its material alone");
+        return null;
+    }
+
+    /**
+     * The written form of an item, in whichever shape the config gives it.
+     *
+     * @return null when this is not a block, such as a bare material name
      */
     static @Nullable Map<?, ?> asBlock(@Nullable Object written) {
         if (written instanceof ConfigurationSection section) {

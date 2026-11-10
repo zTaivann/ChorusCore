@@ -51,8 +51,8 @@ public record ItemRestrictions(Set<Material> blockedItems, boolean permissionPer
     }
 
     /**
-     * The highest level this sender may put on, which is the vanilla maximum unless both the
-     * server and their permissions allow going past it.
+     * The highest level this sender may apply: vanilla's maximum, unless the server and their
+     * permissions allow more.
      */
     public int highestLevel(Permissible who, Enchantment enchantment) {
         boolean beyond = unsafeEnchantments

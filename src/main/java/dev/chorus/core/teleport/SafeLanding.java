@@ -29,10 +29,10 @@ public final class SafeLanding {
     }
 
     /**
-     * The given spot if it will do, otherwise the closest one above or below it within
-     * {@code radius} blocks, otherwise null.
+     * The given spot if it will do, else the closest one above or below within {@code radius}
+     * blocks, else null.
      *
-     * @param needsFloor false for a player who can fly, who needs the room and not the ground
+     * @param needsFloor false for flyers, who need room rather than ground
      */
     public static @Nullable Location nearest(Location wanted, int radius, boolean needsFloor) {
         if (standable(wanted, needsFloor)) {
@@ -53,9 +53,7 @@ public final class SafeLanding {
         return null;
     }
 
-    /**
-     * A candidate that many blocks away, at the bottom of its block.
-     */
+    /** A candidate that many blocks away, at the bottom of its block. */
     private static @Nullable Location shifted(Location from, int blocks) {
         World world = from.getWorld();
         double y = Math.floor(from.getY()) + blocks;

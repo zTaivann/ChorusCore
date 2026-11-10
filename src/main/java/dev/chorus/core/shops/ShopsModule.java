@@ -1,11 +1,11 @@
 package dev.chorus.core.shops;
 
+import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.shops.chest.ChestShopDisplays;
 import dev.chorus.core.shops.chest.ChestShopListener;
 import dev.chorus.core.shops.chest.ChestShopSettings;
@@ -138,8 +138,8 @@ public final class ShopsModule implements ChorusModule {
     }
 
     /**
-     * The prices lived in shops.yml before 0.1.7. The start that first writes worth.yml carries
-     * a server's own list and multiplier over, so nothing it had set is lost.
+     * Prices lived in shops.yml before 0.1.7; the first start that writes worth.yml carries the
+     * old list and multiplier over.
      */
     private ConfigFile worthFile() {
         boolean fresh = !new File(plugin.getDataFolder(), WorthTable.FILE).exists();

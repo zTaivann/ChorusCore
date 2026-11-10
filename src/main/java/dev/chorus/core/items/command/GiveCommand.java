@@ -3,9 +3,11 @@ package dev.chorus.core.items.command;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Numbers;
+import dev.chorus.core.items.Hand;
 import dev.chorus.core.items.ItemAttributes;
 import dev.chorus.core.items.ItemRestrictions;
 import dev.chorus.core.items.ItemService;
+import dev.chorus.core.items.MaterialName;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /** {@code /give [player] <item> [amount]}: hands out items by name. */
 public final class GiveCommand extends ChorusCommand {
@@ -125,9 +126,7 @@ public final class GiveCommand extends ChorusCommand {
 
             ItemStack giving = template.clone();
             giving.setAmount(batch);
-            Map<Integer, ItemStack> rejected = target.getInventory().addItem(giving);
-            rejected.values().forEach(
-                    stack -> target.getWorld().dropItemNaturally(target.getLocation(), stack));
+            Hand.giveOrDrop(target, giving);
         }
     }
 
@@ -157,11 +156,11 @@ public final class GiveCommand extends ChorusCommand {
         String typed = args[args.length - 1].toLowerCase(Locale.ROOT);
         if (typed.length() >= 2) {
             ItemRestrictions restrictions = items.settings().restrictions();
-            for (Material material : Material.values()) {
-                if (material.isItem() && !material.isAir()
-                        && material.name().toLowerCase(Locale.ROOT).startsWith(typed)
+            for (MaterialName each : MaterialName.ALL) {
+                Material material = each.material();
+                if (material.isItem() && !material.isAir() && each.name().startsWith(typed)
                         && restrictions.mayHave(sender, material)) {
-                    options.add(material.name().toLowerCase(Locale.ROOT));
+                    options.add(each.name());
                 }
             }
         }

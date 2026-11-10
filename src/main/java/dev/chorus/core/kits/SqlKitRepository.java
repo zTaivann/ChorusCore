@@ -1,8 +1,8 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.commons.storage.SqlDialect;
+import dev.chorus.commons.storage.Storage;
 import dev.chorus.core.storage.Schema;
-import dev.chorus.core.storage.SqlDialect;
-import dev.chorus.core.storage.Storage;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -92,9 +92,7 @@ final class SqlKitRepository implements KitRepository {
         };
     }
 
-    /**
-     * The claim count, added after the first release. Older rows default to one.
-     */
+    /** The claim count, added after the first release; older rows default to one. */
     private static String addTimes(SqlDialect dialect) {
         return switch (dialect) {
             case SQLITE -> "ALTER TABLE chorus_kit_uses ADD COLUMN times INTEGER NOT NULL DEFAULT 1";

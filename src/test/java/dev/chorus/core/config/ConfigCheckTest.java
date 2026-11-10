@@ -1,5 +1,6 @@
 package dev.chorus.core.config;
 
+import dev.chorus.commons.config.ConfigProblem;
 import org.bukkit.Server;
 import org.bukkit.plugin.Plugin;
 import org.junit.jupiter.api.Test;

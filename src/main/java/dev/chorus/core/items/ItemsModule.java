@@ -1,12 +1,13 @@
 package dev.chorus.core.items;
 
+import dev.chorus.commons.config.ConfigFile;
+import dev.chorus.commons.menu.MenuSettings;
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.backup.BackupMenu;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.items.SignClipboard;
 import dev.chorus.core.items.command.BookCommand;
 import dev.chorus.core.items.command.ClearInventoryCommand;
@@ -28,7 +29,6 @@ import dev.chorus.core.items.command.RestoreCommand;
 import dev.chorus.core.items.command.SkullCommand;
 import dev.chorus.core.items.command.StackCommand;
 import dev.chorus.core.items.command.UnbreakableCommand;
-import dev.chorus.core.menu.MenuSettings;
 
 import org.bukkit.Material;
 

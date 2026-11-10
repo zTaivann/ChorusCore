@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * How amounts are written down and how far a balance is allowed to go.
+ * How amounts are written and how far a balance may go.
  *
- * @param thousands  written between each three digits, or {@code ""} for nothing
- * @param decimal    written before the decimals
- * @param shortUnits the letters for thousands, millions and so on, or empty for full amounts
+ * @param thousands  separator between digit groups, or {@code ""}
+ * @param decimal    decimal separator
+ * @param shortUnits letters for thousands, millions and so on, empty for full amounts
  */
 public record Currency(String symbol, boolean suffix, int decimals, String thousands,
                        String decimal, List<String> shortUnits, String singular, String plural,

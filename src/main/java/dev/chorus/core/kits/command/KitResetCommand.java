@@ -13,10 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /kitreset <kit|*> [player]}: clears a cooldown, or lets a one-time kit be taken
- * again.
- */
+/** {@code /kitreset <kit|*> [player]}: clears a cooldown or lets a one-time kit be taken again. */
 public final class KitResetCommand extends ChorusCommand {
 
     private final KitService kits;

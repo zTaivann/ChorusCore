@@ -184,11 +184,7 @@ class MessagesTest {
         }
     }
 
-    /**
-     * The values a line is given are named, so a translated line that renames one leaves a
-     * gap where the number should be. Catching it here costs nothing; catching it in chat
-     * costs somebody a bug report.
-     */
+    /** Placeholders are named, so a translation that renames one leaves a gap. Catch it here, not in chat. */
     @Test
     void noTranslationRenamesAPlaceholder() {
         YamlConfiguration base = allLines();

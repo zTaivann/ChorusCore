@@ -6,8 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 
 /**
- * Reads a comparison that has already had its placeholders filled in, such as
- * {@code "12 >= 10"} or {@code "Gold contains old"}.
+ * Reads a comparison with placeholders already filled, such as {@code "12 >= 10"} or
+ * {@code "Gold contains old"}.
  */
 final class Comparisons {
 

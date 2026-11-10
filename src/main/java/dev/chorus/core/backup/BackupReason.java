@@ -5,10 +5,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.Locale;
 
-/**
- * Why a backup was made, which decides what it is called in menus and whether it is made at
- * all.
- */
+/** Why a backup was made; decides its menu name and whether it is made. */
 public enum BackupReason {
 
     /** The one that matters most: everything they had when they died. */

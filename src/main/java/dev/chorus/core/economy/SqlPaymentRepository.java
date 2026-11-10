@@ -1,8 +1,8 @@
 package dev.chorus.core.economy;
 
+import dev.chorus.commons.storage.SqlDialect;
+import dev.chorus.commons.storage.Storage;
 import dev.chorus.core.storage.Schema;
-import dev.chorus.core.storage.SqlDialect;
-import dev.chorus.core.storage.Storage;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;

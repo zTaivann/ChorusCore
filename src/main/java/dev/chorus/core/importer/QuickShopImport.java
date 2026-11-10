@@ -1,10 +1,10 @@
 package dev.chorus.core.importer;
 
+import dev.chorus.commons.storage.Storage;
 import dev.chorus.core.backup.InventoryCodec;
 import dev.chorus.core.shops.chest.ChestShop;
 import dev.chorus.core.shops.chest.ChestShopRepository;
 import dev.chorus.core.shops.chest.SqlChestShopRepository;
-import dev.chorus.core.storage.Storage;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -77,10 +77,10 @@ public final class QuickShopImport {
     }
 
     /**
-     * Blocking. Belongs on a worker thread.
+     * Blocking; run on a worker thread.
      *
-     * @param dryRun    true to read everything and write nothing
-     * @param overwrite true to replace a Chorus shop standing on the same block
+     * @param dryRun    read everything, write nothing
+     * @param overwrite replace a Chorus shop on the same block
      */
     public ShopImportReport run(boolean dryRun, boolean overwrite) throws SQLException {
         ShopImportReport report = new ShopImportReport();
@@ -233,10 +233,7 @@ public final class QuickShopImport {
         }
     }
 
-    /**
-     * The owner's id, which QuickShop writes plain or with something in front of it. Null
-     * when there is no readable id.
-     */
+    /** The owner's id, which QuickShop writes plain or prefixed; null when unreadable. */
     private static @Nullable UUID ownerOf(@Nullable String raw) {
         if (raw == null || raw.isBlank()) {
             return null;
@@ -346,9 +343,9 @@ public final class QuickShopImport {
     }
 
     /**
-     * The prefix the tables actually carry.
+     * The table prefix in use.
      *
-     * @return null when nothing in there looks like QuickShop.
+     * @return null when nothing looks like QuickShop
      */
     private static @Nullable String prefixIn(Set<String> tables, String configured) {
         for (String candidate : List.of(configured, "")) {

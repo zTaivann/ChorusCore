@@ -1,5 +1,7 @@
 package dev.chorus.core.command;
 
+import java.util.OptionalInt;
+
 /** Reading a number a player typed. */
 public final class Numbers {
 
@@ -12,6 +14,15 @@ public final class Numbers {
             return Integer.parseInt(raw.trim());
         } catch (NumberFormatException | NullPointerException notANumber) {
             return fallback;
+        }
+    }
+
+    /** The number, or empty when it is not one, for when no fallback can stand in for that. */
+    public static OptionalInt integer(String raw) {
+        try {
+            return OptionalInt.of(Integer.parseInt(raw.trim()));
+        } catch (NumberFormatException | NullPointerException notANumber) {
+            return OptionalInt.empty();
         }
     }
 
@@ -59,8 +70,8 @@ public final class Numbers {
     }
 
     /**
-     * What a letter right after the number multiplies it by: k, m, b or t. {@code 5 mil} and
-     * {@code 5mil} are not a unit, so neither turns into five million.
+     * The multiplier for a unit letter right after the number: k, m, b or t. Words such as
+     * {@code 5mil} are not units.
      */
     private static double scale(String after) {
         if (after.isEmpty() || (after.length() > 1 && Character.isLetter(after.charAt(1)))) {

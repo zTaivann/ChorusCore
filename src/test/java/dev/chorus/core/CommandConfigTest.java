@@ -16,10 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Holds plugin.yml, aliases.yml and the module files to the same command list, and guards the
- * two Bukkit traps that this plugin's design depends on avoiding.
- */
+/** Keeps plugin.yml, aliases.yml and the module files on one command list, and guards two Bukkit traps. */
 class CommandConfigTest {
 
     private static final Pattern SOUND_KEY = Pattern.compile("[a-z0-9_]+(\\.[a-z0-9_]+)+");
@@ -37,8 +34,7 @@ class CommandConfigTest {
         for (String command : commands.getKeys(false)) {
             ConfigurationSection block = commands.getConfigurationSection(command);
             assertNotNull(block, "/" + command + " has no block in plugin.yml");
-            // A permission here would make Bukkit refuse the command with its own message,
-            // and aliases here would split them across two files.
+            // Permissions here make Bukkit reject with its own message; aliases would split across files.
             assertTrue(!block.contains("permission"),
                     "/" + command + " declares a permission in plugin.yml; check it in code instead");
             assertTrue(!block.contains("aliases"),

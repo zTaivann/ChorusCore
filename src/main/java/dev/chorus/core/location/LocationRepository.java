@@ -4,8 +4,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Blocking persistence for server-wide positions. The category keeps unrelated sets apart,
- * so warps and the spawn point share one table without ever colliding on a name.
+ * Blocking persistence for server-wide positions. The category keeps sets such as warps and
+ * spawn apart in one table.
  */
 public interface LocationRepository {
 

@@ -1,6 +1,6 @@
 package dev.chorus.core.command;
 
-import dev.chorus.core.config.ConfigFile;
+import dev.chorus.commons.config.ConfigFile;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
@@ -20,10 +20,7 @@ public final class CommandAliases {
     private CommandAliases() {
     }
 
-    /**
-     * @return the names taken from the server's own commands, each mapped to the command of
-     *         ours that should answer to it.
-     */
+    /** @return server command names mapped to the command of ours that should answer them */
     public static Map<String, String> apply(JavaPlugin plugin, ConfigFile file,
                                             List<String> commands, Set<String> disabledCommands) {
         CommandMap map = plugin.getServer().getCommandMap();
@@ -68,10 +65,9 @@ public final class CommandAliases {
     }
 
     /**
-     * Frees a name the server itself already answers to, such as {@code /tps} or
-     * {@code /list}.
+     * Frees a name the server already answers to, such as {@code /tps}.
      *
-     * @return whether anything had to be moved out of the way.
+     * @return whether anything was moved
      */
     private static boolean takeOverBuiltIn(CommandMap map, String name, PluginCommand ours) {
         Command holder = map.getCommand(name);

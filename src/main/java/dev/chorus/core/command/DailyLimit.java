@@ -9,10 +9,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 
 /**
- * How many times a day something may be used, and when the day starts over.
+ * Uses per day and when the count resets.
  *
  * @param uses    0 for no limit
- * @param resetAt the time of day, on the server's clock, the count goes back to zero
+ * @param resetAt time of day, on the server's clock
  */
 public record DailyLimit(int uses, LocalTime resetAt) {
 
@@ -44,8 +44,8 @@ public record DailyLimit(int uses, LocalTime resetAt) {
     }
 
     /**
-     * A time of day as the config holds it, or null when it is not one. YAML reads an unquoted
-     * {@code 12:30} as the number 750, the minutes since midnight, so a number is read that way.
+     * A config time of day, or null. YAML reads an unquoted {@code 12:30} as 750, so numbers
+     * are taken as minutes since midnight.
      */
     public static @Nullable LocalTime time(Object written) {
         if (written instanceof Number minutes) {

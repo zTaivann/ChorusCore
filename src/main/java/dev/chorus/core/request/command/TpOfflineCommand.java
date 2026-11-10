@@ -1,8 +1,8 @@
 package dev.chorus.core.request.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.players.PlayerProfile;
 import dev.chorus.core.players.PlayerProfiles;
 import dev.chorus.core.teleport.TeleportService;
@@ -41,7 +41,11 @@ public final class TpOfflineCommand extends ChorusCommand {
 
         Player online = player.getServer().getPlayerExact(args[0]);
         if (online != null && player.canSee(online)) {
-            go(player, online.getLocation(), online.getName(), 0);
+            // Read where they stand on their thread, then carry on on the sender's.
+            onPlayer(online, () -> {
+                Location there = online.getLocation();
+                onPlayer(player, () -> go(player, there, online.getName(), 0));
+            });
             return;
         }
 

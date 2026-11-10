@@ -3,6 +3,7 @@ package dev.chorus.core.command;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.OptionalInt;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -58,5 +59,15 @@ class NumbersTest {
         assertEquals(-1, Numbers.integer("7.5", -1));
         assertEquals(-1, Numbers.integer("99999999999", -1));
         assertEquals(99999999999L, Numbers.whole("99999999999", -1));
+    }
+
+    /** Without a fallback a number that happens to equal it cannot be mistaken for a typo. */
+    @Test
+    void aWholeNumberOrNothing() {
+        assertEquals(OptionalInt.of(-1), Numbers.integer("-1"));
+        assertEquals(OptionalInt.of(3), Numbers.integer(" 3"));
+        assertEquals(OptionalInt.empty(), Numbers.integer("abc"));
+        assertEquals(OptionalInt.empty(), Numbers.integer("99999999999"));
+        assertEquals(OptionalInt.empty(), Numbers.integer(null));
     }
 }

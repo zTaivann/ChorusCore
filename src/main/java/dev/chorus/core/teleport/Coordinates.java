@@ -17,9 +17,9 @@ public final class Coordinates {
     }
 
     /**
-     * Three coordinates starting at {@code from}, or null when any of them is not a number.
+     * Three coordinates starting at {@code from}, or null if any is not a number.
      *
-     * @param origin what {@code ~} is measured against, and the direction to keep
+     * @param origin what {@code ~} is relative to, and the direction to keep
      */
     public static @Nullable Location read(String[] args, int from, World world, Location origin) {
         if (args.length < from + 3) {
@@ -32,7 +32,6 @@ public final class Coordinates {
         if (x == null || y == null || z == null) {
             return null;
         }
-        // Keeps the direction they were facing.
         return new Location(world, x, y, z, origin.getYaw(), origin.getPitch());
     }
 

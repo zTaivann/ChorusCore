@@ -1,8 +1,8 @@
 package dev.chorus.core.custom;
 
+import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
-import dev.chorus.core.config.ConfigFile;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.configuration.ConfigurationSection;

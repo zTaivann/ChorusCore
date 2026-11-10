@@ -49,7 +49,9 @@ public final class TimeCommand extends ChorusCommand {
             return;
         }
 
-        worlds.forEach(world -> world.setFullTime(next(world.getFullTime(), time)));
+        // The clock belongs to the global region on Folia, which refuses it from anywhere else.
+        schedulers.withGlobal(() ->
+                worlds.forEach(world -> world.setFullTime(next(world.getFullTime(), time))));
         settle(sender);
         messages.send(sender, "world.time-set",
                 "time", args[0].toLowerCase(Locale.ROOT),

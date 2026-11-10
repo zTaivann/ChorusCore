@@ -1,11 +1,11 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.kits.command.KitCommand;
 import dev.chorus.core.kits.command.KitEditCommand;
 import dev.chorus.core.kits.command.KitListCommand;
@@ -74,7 +74,7 @@ public final class KitsModule implements ChorusModule {
         commands.add(plugin.register(new KitListCommand(support, kits, () -> settings)));
         commands.add(plugin.register(new KitResetCommand(support, kits)));
         KitEditor editor = new KitEditor(config, this::load);
-        KitEditMenu menu = new KitEditMenu(plugin, plugin.schedulers(), kits, editor,
+        KitEditMenu menu = new KitEditMenu(plugin.schedulers(), kits, editor,
                 plugin.messages(), plugin.economy(), plugin.prompts(),
                 KitMenuSettings.read(config.section("kits.editor"), this::warn));
         commands.add(plugin.register(

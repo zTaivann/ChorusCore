@@ -11,10 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * A translation is allowed to be incomplete, so what it does with the lines it leaves out is
- * the whole of what these check.
- */
+/** A translation may be incomplete, so these check what happens to the lines it leaves out. */
 class TranslationsTest {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();

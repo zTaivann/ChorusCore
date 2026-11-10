@@ -1,5 +1,8 @@
 package dev.chorus.core.storage;
 
+import dev.chorus.commons.storage.SqlDialect;
+import dev.chorus.commons.storage.Storage;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,8 +20,8 @@ public final class Schema {
     }
 
     /**
-     * Runs whichever of {@code steps} this database has not run yet, in order, and records
-     * how far it got. The whole upgrade is one transaction.
+     * Runs the {@code steps} this database hasn't run, in order, and records its version. The
+     * whole upgrade is one transaction.
      */
     public static void apply(Storage storage, String component, List<String> steps)
             throws SQLException {

@@ -3,6 +3,7 @@ package dev.chorus.core.items.command;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Numbers;
+import dev.chorus.core.items.MaterialName;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -144,13 +145,13 @@ public final class RecipeCommand extends ChorusCommand {
         List<String> options = new ArrayList<>(List.of("hand"));
         String typed = args[0].toLowerCase(Locale.ROOT);
         if (typed.length() >= 2) {
-            for (Material material : Material.values()) {
+            for (MaterialName each : MaterialName.ALL) {
                 if (options.size() > 20) {
                     break;
                 }
-                if (material.isItem() && !material.isLegacy()
-                        && material.name().toLowerCase(Locale.ROOT).startsWith(typed)) {
-                    options.add(material.name().toLowerCase(Locale.ROOT));
+                if (each.material().isItem() && !each.material().isLegacy()
+                        && each.name().startsWith(typed)) {
+                    options.add(each.name());
                 }
             }
         }

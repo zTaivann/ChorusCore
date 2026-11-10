@@ -2,9 +2,7 @@ package dev.chorus.core;
 
 import java.util.List;
 
-/**
- * A feature of the core. Modules start in registration order and stop in reverse.
- */
+/** A feature of the core. Modules start in registration order and stop in reverse. */
 public interface ChorusModule {
 
     String name();
@@ -12,10 +10,7 @@ public interface ChorusModule {
     /** The file under plugins/ChorusCore/ that holds this module's settings. */
     String configPath();
 
-    /**
-     * Every command this module owns, whether or not it starts. Read before
-     * {@link #enable()}.
-     */
+    /** Every command this module owns, read before {@link #enable()}. */
     List<String> commandNames();
 
     void enable();

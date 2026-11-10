@@ -1,5 +1,6 @@
 package dev.chorus.core.request.command;
 
+import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.preference.PlayerPreference;
@@ -97,7 +98,9 @@ public final class TeleportRequestCommand extends PlayerCommand {
 
         messages.send(player, "request.auto-accepted", "player", target.getName());
         messages.send(target, "request.auto-accepted-by", "player", player.getName());
-        teleports.teleport(traveller, anchor.getLocation(), rules(), name());
+        // Where the anchor stands is read on the thread that owns them.
+        CommandRules current = rules();
+        onPlayer(anchor, () -> teleports.teleport(traveller, anchor.getLocation(), current, name()));
     }
 
     /** One clickable line to accept or deny. */

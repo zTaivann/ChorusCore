@@ -7,8 +7,6 @@ import dev.chorus.core.locale.Messages;
 import dev.chorus.core.location.NamedLocation;
 import dev.chorus.core.location.Names;
 import dev.chorus.core.teleport.TeleportService;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -19,7 +17,6 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Locale;
 import java.util.Optional;
 
 /** Signs that read {@code [Warp]} on the first line and a warp name on the second. */
@@ -30,7 +27,6 @@ public final class WarpSignListener implements org.bukkit.event.Listener {
     private static final String HEADER = "[warp]";
     private static final String COMMAND = "warp";
 
-    private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
     private final WarpService warps;
     private final WarpDetailsService details;
@@ -56,7 +52,7 @@ public final class WarpSignListener implements org.bukkit.event.Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onSignChange(SignChangeEvent event) {
-        String header = plain(event.line(0));
+        String header = Signs.plain(event.line(0));
         if (!header.equalsIgnoreCase(HEADER)) {
             return;
         }
@@ -68,7 +64,7 @@ public final class WarpSignListener implements org.bukkit.event.Listener {
             return;
         }
 
-        String warp = Names.normalise(plain(event.line(1)));
+        String warp = Names.normalise(Signs.plain(event.line(1)));
         if (warps.find(warp).isEmpty()) {
             event.setCancelled(true);
             messages.send(player, "warp.unknown", "warp", warp);
@@ -126,18 +122,12 @@ public final class WarpSignListener implements org.bukkit.event.Listener {
     /** Signs grew a back side in 1.20. The front is read, and the newer method is not on 1.18. */
     private @Nullable String warpOn(Block block) {
         Sign sign = Signs.at(block);
-        if (sign == null || !plain(sign.line(0)).equalsIgnoreCase(HEADER)) {
+        if (sign == null || !Signs.plain(sign.line(0)).equalsIgnoreCase(HEADER)) {
             return null;
         }
-        String warp = Names.normalise(plain(sign.line(1)));
+        String warp = Names.normalise(Signs.plain(sign.line(1)));
         return warp.isEmpty() ? null : warp;
     }
 
-    /**
-     * Signs hold styled text, and a warp name is a plain word. Reading it back as plain text
-     * means a coloured sign still points at the same warp it did before it was coloured.
-     */
-    private static String plain(Component line) {
-        return PLAIN.serialize(line).trim().toLowerCase(Locale.ROOT);
-    }
+    /** Reads the sign text back as plain text, so a coloured sign still points at the same warp. */
 }

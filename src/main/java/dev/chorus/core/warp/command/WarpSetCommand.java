@@ -22,10 +22,7 @@ import java.util.Locale;
 /** {@code /warpset <warp> <setting> [value]}: everything about a warp except where it is. */
 public final class WarpSetCommand extends ChorusCommand {
 
-    /**
-     * Each setting with the shape of its value and its message key. The keys are written out
-     * in full for the test that finds unused messages.
-     */
+    /** Each setting's value shape and message key, spelled out for the unused-messages test. */
     private record Setting(String name, String value, String help) {
     }
 

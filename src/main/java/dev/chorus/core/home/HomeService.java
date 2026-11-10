@@ -21,9 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
-/**
- * The homes of everyone online, in memory. Every change is saved before the cache changes.
- */
+/** Homes of everyone online, in memory. Changes are saved before the cache is updated. */
 public final class HomeService implements HomeApi, LoginData.Part {
 
     private static final String LIMIT_PREFIX = "chorus.home.limit.";
@@ -88,9 +86,7 @@ public final class HomeService implements HomeApi, LoginData.Part {
         return sorted;
     }
 
-    /**
-     * The player's home when they have exactly one, for a bare /home.
-     */
+    /** The only home, for a bare /home. */
     public Optional<Home> onlyHome(UUID owner) {
         Map<String, Home> homes = cache.get(owner);
         if (homes == null || homes.size() != 1) {

@@ -1,11 +1,11 @@
 package dev.chorus.core.players;
 
+import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.players.command.AfkCommand;
 import dev.chorus.core.players.command.ListCommand;
 import dev.chorus.core.players.command.NickCommand;

@@ -1,5 +1,6 @@
 package dev.chorus.core.feedback;
 
+import dev.chorus.commons.feedback.SoundCue;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;

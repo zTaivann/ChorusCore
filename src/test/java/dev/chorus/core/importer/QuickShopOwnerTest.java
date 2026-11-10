@@ -9,9 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
- * QuickShop has written the owner column several different ways over the years, and an
- * import that reads it wrong hands somebody else's shop to the wrong player. Every shape it
- * is known to take is pinned here.
+ * QuickShop has written the owner column in several shapes; a misread hands a shop to the
+ * wrong player. Each known shape is pinned.
  */
 class QuickShopOwnerTest {
 

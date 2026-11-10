@@ -62,7 +62,6 @@ kits:
   edit-bad-name: '%prefix%<red>Invalid name. Use letters, numbers, <white>-</white> or <white>_</white>, up to 32 characters.'
   edit-deleted: '%prefix%<gray>Kit <white>%kit%</white> deleted.'
   edit-items: '%prefix%<gray>The <white>%kit%</white> kit now has <white>%count%</white> items.'
-  edit-items-simplified: '%prefix%<yellow>%count% of them had data this format cannot save, such as custom model data. They were saved without it.'
   edit-set: '%prefix%<gray>Kit <white>%kit%</white>: <white>%setting%</white> is now <white>%value%</white>.'
   edit-cleared: '%prefix%<gray>Kit <white>%kit%</white>: <white>%setting%</white> is back to the default.'
   edit-bad-icon: '%prefix%<red>There is no item called <white>%value%</white> on this version.'

@@ -20,8 +20,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * What a player needs in memory before they are let in. Loaded on the login thread, and let go
- * when their last connection closes, whether or not they ever reached the world.
+ * What a player needs in memory before being let in. Loaded on the login thread and released
+ * when their last connection closes, whether or not they reached the world.
  */
 public final class LoginData implements Listener {
 
@@ -48,8 +48,8 @@ public final class LoginData implements Listener {
     }
 
     /**
-     * @param what     how the log names it when it cannot be read
-     * @param required whether a player is kept out when it cannot be read
+     * @param what     how the log names it when unreadable
+     * @param required whether an unreadable value keeps the player out
      */
     public void add(String what, Part part, boolean required) {
         entries.add(new Entry(what, part, required));

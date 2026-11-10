@@ -35,7 +35,7 @@ final class Translations {
     /**
      * Reads a file into this language.
      *
-     * @param prefix what {@code %prefix%} stands for in this file.
+     * @param prefix what {@code %prefix%} stands for in this file
      */
     void read(YamlConfiguration data, String prefix) {
         for (String key : data.getKeys(true)) {

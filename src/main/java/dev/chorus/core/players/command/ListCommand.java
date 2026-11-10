@@ -9,9 +9,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Who is online. Players hidden from the sender are left out of the names and the count.
- */
+/** Who is online. Players hidden from the sender are left out of names and count. */
 public final class ListCommand extends ChorusCommand {
 
     private final AfkService afk;

@@ -1,8 +1,8 @@
 package dev.chorus.core.players;
 
+import dev.chorus.commons.platform.ChorusTask;
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -186,10 +186,7 @@ public final class AfkService implements Listener {
         placeholders[0] = "player";
         placeholders[1] = player.getName();
         System.arraycopy(extra, 0, placeholders, 2, extra.length);
-        for (Player other : plugin.getServer().getOnlinePlayers()) {
-            if (!other.equals(player)) {
-                messages.send(other, toEveryone, placeholders);
-            }
-        }
+        messages.sendAll(plugin.getServer().getOnlinePlayers().stream()
+                .filter(other -> !other.equals(player)).toList(), toEveryone, placeholders);
     }
 }

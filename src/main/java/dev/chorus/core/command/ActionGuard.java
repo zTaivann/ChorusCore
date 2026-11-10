@@ -1,8 +1,9 @@
 package dev.chorus.core.command;
 
+import dev.chorus.commons.command.Durations;
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.players.Playtime;
 import dev.chorus.core.rules.Requirement;
 import org.bukkit.entity.Player;
@@ -101,9 +102,8 @@ public final class ActionGuard {
     }
 
     /**
-     * Takes the price now when the rules charge on use, for an action that finishes later.
-     * Running what it returns gives the price back, when the rules allow it, if the action
-     * never happens. Call it on the player's own thread.
+     * Charges now if the rules charge on use, for an action that finishes later. The returned
+     * runnable refunds if the rules allow it and the action never happens. Player's thread only.
      */
     public Runnable chargeUpfront(Player player, String command, CommandRules rules) {
         if (rules.chargeOn() != ChargeOn.USE) {
@@ -202,10 +202,7 @@ public final class ActionGuard {
         }
     }
 
-    /**
-     * Zero for a free command, a player who bypasses prices, or a server with no economy, and
-     * otherwise the price less the biggest discount the player has.
-     */
+    /** Zero when free, bypassed or without an economy; otherwise the price minus the best discount. */
     private double priceFor(Player player, CommandRules rules) {
         if (rules.price() <= 0 || !economy.enabled() || player.hasPermission(PRICE_BYPASS)) {
             return 0;

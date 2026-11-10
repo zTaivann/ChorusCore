@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Which block is which around a shop, from type and data only: this runs on every hopper move. */
+/** Identifies blocks around a shop by type and data only; this runs on every hopper move. */
 public final class ShopContainers {
 
     private static final BlockFace[] AROUND =

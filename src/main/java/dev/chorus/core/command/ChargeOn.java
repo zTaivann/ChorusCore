@@ -1,5 +1,6 @@
 package dev.chorus.core.command;
 
+import dev.chorus.core.config.Enums;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -15,12 +16,6 @@ public enum ChargeOn {
 
     /** Null when the text names neither. */
     public static @Nullable ChargeOn of(String text) {
-        String wanted = text.trim().toUpperCase(Locale.ROOT);
-        for (ChargeOn moment : values()) {
-            if (moment.name().equals(wanted)) {
-                return moment;
-            }
-        }
-        return null;
+        return Enums.named(values(), text.trim().toUpperCase(Locale.ROOT));
     }
 }

@@ -1,8 +1,8 @@
 package dev.chorus.core.staff.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.command.Numbers;
 import dev.chorus.core.staff.TempFlyService;
 import dev.chorus.core.stafflog.StaffLog;

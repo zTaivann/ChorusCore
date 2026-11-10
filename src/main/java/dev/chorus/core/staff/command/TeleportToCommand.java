@@ -1,6 +1,7 @@
 package dev.chorus.core.staff.command;
 
 import dev.chorus.core.command.ChorusCommand;
+import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.teleport.Coordinates;
 import dev.chorus.core.teleport.TeleportService;
@@ -64,23 +65,30 @@ public final class TeleportToCommand extends ChorusCommand {
         }
 
         settle(sender);
-        teleports.teleport(traveller, destination.getLocation(), rules(), name(), () -> {
-            messages.send(sender, "staff.tp-done",
-                    "player", traveller.getName(), "target", destination.getName());
-            if (!traveller.equals(sender)) {
-                messages.send(traveller, "staff.tp-moved", "target", destination.getName());
-            }
-        });
+        // Where the destination stands is read on the thread that owns them.
+        CommandRules current = rules();
+        onPlayer(destination, () -> teleports.teleport(traveller, destination.getLocation(), current,
+                name(), () -> {
+                    messages.send(sender, "staff.tp-done",
+                            "player", traveller.getName(), "target", destination.getName());
+                    if (!traveller.equals(sender)) {
+                        messages.send(traveller, "staff.tp-moved", "target", destination.getName());
+                    }
+                }));
     }
 
     /** {@code /tp <x> <y> <z>}, and {@code /tp <player> <x> <y> <z>} for somebody else. */
     private void toCoordinates(CommandSender sender, String[] args, int from,
                                @Nullable Player traveller) {
-        if (traveller == null) {
-            return;
+        if (traveller != null) {
+            // Relative coordinates start from where they stand, which their thread owns.
+            onPlayer(traveller, () -> toCoordinates(sender, args, from, traveller,
+                    Coordinates.read(args, from, traveller.getWorld(), traveller.getLocation())));
         }
-        Location destination =
-                Coordinates.read(args, from, traveller.getWorld(), traveller.getLocation());
+    }
+
+    private void toCoordinates(CommandSender sender, String[] args, int from, Player traveller,
+                               @Nullable Location destination) {
         if (destination == null) {
             messages.send(sender, "staff.tppos-numbers");
             return;

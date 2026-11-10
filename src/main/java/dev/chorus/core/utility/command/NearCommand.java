@@ -63,9 +63,7 @@ public final class NearCommand extends PlayerCommand {
                 JoinConfiguration.separator(messages.render(player, "utility.near-separator")), entries));
     }
 
-    /**
-     * Players in range, from the world's player list.
-     */
+    /** Players in range, from the world's player list. */
     private List<Found> search(Player player, int radius) {
         Location from = player.getLocation();
         long limit = (long) radius * radius;

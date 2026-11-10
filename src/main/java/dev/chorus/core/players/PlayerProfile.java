@@ -11,13 +11,10 @@ import java.util.UUID;
 /**
  * What the server remembers about a player between visits.
  *
- * @param player    their account
- * @param name      the username they last logged in with
- * @param nickname  what they asked to be called, or null
- * @param firstSeen when they first joined
- * @param lastSeen  when they were last here
- * @param address   the address they last connected from, for finding shared accounts
- * @param world     where they logged out, for /tpoffline
+ * @param name     the username they last logged in with
+ * @param nickname what they asked to be called, or null
+ * @param address  the last address they connected from, for finding shared accounts
+ * @param world    where they logged out, for /tpoffline
  */
 public record PlayerProfile(UUID player, String name, @Nullable String nickname,
                             long firstSeen, long lastSeen, String address,

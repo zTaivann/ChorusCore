@@ -39,10 +39,7 @@ public final class InventoryCodec {
         return Base64.getEncoder().encodeToString(bytes.toByteArray());
     }
 
-    /**
-     * @return the slots, or null when the text cannot be read as an inventory. An item form
-     *         the running version no longer understands is the way that happens.
-     */
+    /** @return the slots, or null when unreadable, such as an item the running version dropped */
     public static ItemStack @Nullable [] decode(String encoded) {
         try (DataInputStream in = new DataInputStream(
                 new ByteArrayInputStream(Base64.getDecoder().decode(encoded)))) {

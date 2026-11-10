@@ -53,10 +53,7 @@ class PaletteTest {
         assertEquals("<color:#b03a3a><bold>No", palette.apply("<c:shout>No"));
     }
 
-    /**
-     * A name nobody defined is left where it is, so the plugin never gets in the way of
-     * MiniMessage's own {@code <c:red>}.
-     */
+    /** An undefined name is left alone, so MiniMessage's own {@code <c:red>} still works. */
     @Test
     void aNameThePaletteDoesNotKnowIsLeftAlone() throws InvalidConfigurationException {
         Palette palette = read("accent: '<color:#c9a227>'");

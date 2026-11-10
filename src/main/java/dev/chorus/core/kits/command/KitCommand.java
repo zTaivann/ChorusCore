@@ -1,7 +1,7 @@
 package dev.chorus.core.kits.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.kits.Kit;
 import dev.chorus.core.kits.KitService;

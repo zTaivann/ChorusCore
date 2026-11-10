@@ -5,7 +5,7 @@ import org.bukkit.Bukkit;
 import java.util.Optional;
 
 /**
- * The way in.
+ * Entry point for addons.
  *
  * <pre>
  * ChorusProvider.get().flatMap(ChorusApi::homes)

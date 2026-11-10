@@ -31,10 +31,10 @@ public final class ItemAttributes {
     }
 
     /**
-     * Who is building the item and what they are allowed to put on it.
+     * Who is building the item and what they may put on it.
      *
-     * @param formatting   whether colour codes in the text are obeyed or shown as typed
-     * @param restrictions the same rules {@code /enchant} answers to
+     * @param formatting   whether colour codes are obeyed or shown as typed
+     * @param restrictions the same rules {@code /enchant} follows
      */
     public record Allowed(boolean formatting, ItemRestrictions restrictions, Permissible who) {
     }
@@ -42,7 +42,7 @@ public final class ItemAttributes {
     /**
      * Applies every word to the stack.
      *
-     * @param onProblem told about each word that meant nothing, or was not allowed
+     * @param onProblem told about each word that was meaningless or not allowed
      */
     public static void apply(ItemStack stack, List<String> words, Allowed allowed,
                              Consumer<String> onProblem) {
@@ -148,10 +148,7 @@ public final class ItemAttributes {
         return true;
     }
 
-    /**
-     * The shimmer without an enchantment behind it: a level that does nothing, hidden from
-     * the tooltip.
-     */
+    /** The glint without an enchantment: a useless level, hidden from the tooltip. */
     private static boolean glow(ItemMeta meta) {
         Enchantment marker = Enchantments.byName(GLOW_MARKER);
         if (marker == null) {

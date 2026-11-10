@@ -11,10 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * {@code /exp [show|give|take|set|reset] [player] <amount>}: experience, in points or in
- * levels.
- */
+/** {@code /exp [show|give|take|set|reset] [player] <amount>}: experience in points or levels. */
 public final class ExperienceCommand extends ChorusCommand {
 
     private static final String OTHERS = "chorus.items.exp.others";
@@ -40,14 +37,14 @@ public final class ExperienceCommand extends ChorusCommand {
         }
 
         if (action.equals("show")) {
-            show(sender, target);
+            onPlayer(target, () -> show(sender, target));
             return;
         }
         if (action.equals("reset")) {
             if (!ready(sender)) {
                 return;
             }
-            setTotal(target, 0);
+            onPlayer(target, () -> setTotal(target, 0));
             settle(sender);
             report(sender, target, "items.exp-reset", "items.exp-reset-other");
             return;
@@ -108,15 +105,6 @@ public final class ExperienceCommand extends ChorusCommand {
                 "player", target.getName(),
                 "level", String.valueOf(target.getLevel()),
                 "points", String.valueOf(total(target)));
-    }
-
-    private void report(CommandSender sender, Player target, String toSelf, String toOther) {
-        if (target.equals(sender)) {
-            messages.send(sender, toSelf);
-            return;
-        }
-        messages.send(sender, toOther, "player", target.getName());
-        messages.send(target, toSelf);
     }
 
     /** The named player when one was given and allowed, otherwise the sender. */

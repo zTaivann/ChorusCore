@@ -29,9 +29,7 @@ public final class EditSignCommand extends PlayerCommand {
     private final SignClipboard clipboard;
     private final Predicate<Block> reserved;
 
-    /**
-     * @param reserved says whether a block is a sign the plugin itself is using
-     */
+    /** @param reserved whether a block is a sign the plugin itself uses */
     public EditSignCommand(CommandSupport support, SignClipboard clipboard,
                            Predicate<Block> reserved) {
         super(support, "editsign", "chorus.items.editsign");

@@ -1,8 +1,8 @@
 package dev.chorus.core.world;
 
+import dev.chorus.commons.platform.ChorusTask;
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;

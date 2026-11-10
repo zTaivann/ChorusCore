@@ -1,8 +1,8 @@
 package dev.chorus.core.menu;
 
+import dev.chorus.commons.platform.ChorusTask;
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -19,7 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-/** Asks a player for a value in chat, and takes the answer without letting it become a message. */
+/** Asks a player for a value in chat, swallowing the answer so it never becomes a message. */
 public final class ChatPrompts implements Listener {
 
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
@@ -54,11 +54,11 @@ public final class ChatPrompts implements Listener {
     }
 
     /**
-     * Closes whatever the player is looking at and waits for them to type.
+     * Closes the player's view and waits for them to type.
      *
-     * @param ask     the line telling them what to write, ready to send
-     * @param answer  given the typed line, on the player's own thread
-     * @param aborted run instead when they change their mind or run out of time
+     * @param ask     the prompt, ready to send
+     * @param answer  given the typed line, on the player's thread
+     * @param aborted runs instead if they cancel or time out
      */
     public void ask(Player player, Component ask, Consumer<String> answer, Runnable aborted) {
         player.closeInventory();

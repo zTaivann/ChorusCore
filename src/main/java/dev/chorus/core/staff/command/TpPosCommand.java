@@ -33,10 +33,13 @@ public final class TpPosCommand extends ChorusCommand {
         }
 
         Player traveller = args.length >= 5 ? online(sender, args[4]) : self(sender);
-        if (traveller == null) {
-            return;
+        if (traveller != null) {
+            // Their world and where they stand are read on the thread that owns them.
+            onPlayer(traveller, () -> travel(sender, args, traveller));
         }
+    }
 
+    private void travel(CommandSender sender, String[] args, Player traveller) {
         World world = traveller.getWorld();
         if (args.length >= 4) {
             world = sender.getServer().getWorld(args[3]);

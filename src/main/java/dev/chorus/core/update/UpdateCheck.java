@@ -1,8 +1,9 @@
 package dev.chorus.core.update;
 
+import dev.chorus.commons.platform.ChorusTask;
+import dev.chorus.commons.platform.Schedulers;
+import dev.chorus.core.config.Enums;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
@@ -76,13 +77,7 @@ public final class UpdateCheck implements Listener {
 
         /** Null when the text names none of them. */
         public static @Nullable Source of(String name) {
-            String wanted = name.trim().toUpperCase(Locale.ROOT).replace("-", "");
-            for (Source source : values()) {
-                if (source.name().equals(wanted)) {
-                    return source;
-                }
-            }
-            return null;
+            return Enums.named(values(), name.trim().toUpperCase(Locale.ROOT).replace("-", ""));
         }
     }
 

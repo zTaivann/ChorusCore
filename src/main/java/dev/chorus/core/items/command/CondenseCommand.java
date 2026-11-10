@@ -2,6 +2,7 @@ package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
+import dev.chorus.core.items.Hand;
 import dev.chorus.core.items.ItemService;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -77,8 +78,7 @@ public final class CondenseCommand extends PlayerCommand {
     }
 
     private static void give(Player player, ItemStack item) {
-        player.getInventory().addItem(item).values()
-                .forEach(leftover -> player.getWorld().dropItemNaturally(player.getLocation(), leftover));
+        Hand.giveOrDrop(player, item);
     }
 
     private static boolean isPlain(ItemStack item, Material material) {

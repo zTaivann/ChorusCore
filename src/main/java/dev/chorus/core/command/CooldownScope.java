@@ -1,5 +1,6 @@
 package dev.chorus.core.command;
 
+import dev.chorus.core.config.Enums;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,12 +43,6 @@ public enum CooldownScope {
 
     /** Null when the text names none of them. */
     public static @Nullable CooldownScope of(String text) {
-        String wanted = text.trim().toUpperCase(Locale.ROOT);
-        for (CooldownScope scope : values()) {
-            if (scope.name().equals(wanted)) {
-                return scope;
-            }
-        }
-        return null;
+        return Enums.named(values(), text.trim().toUpperCase(Locale.ROOT));
     }
 }

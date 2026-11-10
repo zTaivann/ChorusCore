@@ -108,7 +108,7 @@ public final class LoreCommand extends HeldItemCommand {
         return true;
     }
 
-    /** Lines are one-based for the player and zero-based here. Returns -1 when it is not a line. */
+    /** Lines are one-based for the player, zero-based here. Returns -1 when invalid. */
     private int lineNumber(Player player, List<Component> lore, String raw) {
         int line = Numbers.integer(raw, 0) - 1;
         if (line < 0 || line >= lore.size()) {

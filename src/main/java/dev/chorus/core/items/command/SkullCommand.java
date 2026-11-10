@@ -2,6 +2,7 @@ package dev.chorus.core.items.command;
 
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
+import dev.chorus.core.items.Hand;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -49,9 +50,7 @@ public final class SkullCommand extends PlayerCommand {
         skull.setItemMeta(meta);
 
         String name = owner.getName() == null ? args[0] : owner.getName();
-        for (ItemStack leftover : player.getInventory().addItem(skull).values()) {
-            player.getWorld().dropItemNaturally(player.getLocation(), leftover);
-        }
+        Hand.giveOrDrop(player, skull);
 
         settle(player);
         messages.send(player, "items.skull", "player", name);

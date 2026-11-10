@@ -4,10 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Cooldowns by owner and timer. The owner is a player, or a world or the whole server for a
- * cooldown everyone there shares; see {@link CooldownScope}.
- */
+/** Cooldowns per owner and timer; see {@link CooldownScope} for who the owner is. */
 public final class Cooldowns {
 
     private static final String GROUP = "group:";

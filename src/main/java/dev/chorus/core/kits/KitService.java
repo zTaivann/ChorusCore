@@ -1,10 +1,11 @@
 package dev.chorus.core.kits;
 
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.backup.BackupReason;
 import dev.chorus.core.backup.InventoryBackups;
 import dev.chorus.core.economy.Economy;
+import dev.chorus.core.items.Hand;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.players.Playtime;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
@@ -157,10 +158,7 @@ public final class KitService implements LoginData.Part {
         return taken != null && taken.containsKey(kit);
     }
 
-    /**
-     * Hands the kit over and records it. Items that do not fit are dropped at the player's
-     * feet.
-     */
+    /** Hands the kit over and records it; items that don't fit drop at the player's feet. */
     public CompletableFuture<Void> give(Player player, Kit kit) {
         long now = System.currentTimeMillis();
         UUID owner = player.getUniqueId();
@@ -221,9 +219,7 @@ public final class KitService implements LoginData.Part {
             }
         }
 
-        for (ItemStack leftover : inventory.addItem(loose.toArray(new ItemStack[0])).values()) {
-            player.getWorld().dropItemNaturally(player.getLocation(), leftover);
-        }
+        Hand.giveOrDrop(player, loose.toArray(new ItemStack[0]));
     }
 
     /** @return whether the piece was worn. */

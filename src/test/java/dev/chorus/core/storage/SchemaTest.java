@@ -16,9 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * The point of the version table is that a server upgrading from an older release ends up
- * with the same columns as one installing for the first time, so both halves of that are
- * checked here against a real database.
+ * A server upgrading from an older release must end with the same columns as a fresh install;
+ * both are checked against a real database.
  */
 class SchemaTest {
 
@@ -63,8 +62,7 @@ class SchemaTest {
     @Test
     void applyingTwiceChangesNothing() throws SQLException {
         Schema.apply(storage, "test", List.of(CREATE, ADD_COLUMN));
-        // A second ADD COLUMN would fail outright, so this passing is the proof that the
-        // recorded version is what decides which steps run.
+        // A second ADD COLUMN would fail, so passing proves the recorded version decides which steps run.
         Schema.apply(storage, "test", List.of(CREATE, ADD_COLUMN));
         assertEquals(2, version("test"));
     }

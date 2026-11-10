@@ -1,8 +1,8 @@
 package dev.chorus.core.utility.command;
 
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.platform.Schedulers;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;

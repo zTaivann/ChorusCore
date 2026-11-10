@@ -1,5 +1,8 @@
 package dev.chorus.core.config;
 
+import dev.chorus.commons.config.ConfigFile;
+import dev.chorus.commons.config.ConfigLines;
+import dev.chorus.commons.config.ConfigProblem;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.feedback.ParticleCue;
 import org.bukkit.Material;
@@ -54,8 +57,8 @@ public final class ConfigCheck {
     }
 
     /**
-     * @param worlds whether to check that the worlds named in the config exist. False at
-     *               startup, where a world another plugin creates has not been made yet.
+     * @param worlds whether to check that configured worlds exist; false at startup, when another
+     *               plugin may not have created its worlds yet
      */
     public static List<ConfigProblem> run(Plugin plugin, Server server, List<String> paths,
                                           boolean worlds) {
@@ -161,8 +164,8 @@ public final class ConfigCheck {
     }
 
     /**
-     * Where the jar's copy has this option, or null when it has none. A command block takes
-     * every option the defaults block does, and a few of its own.
+     * Where the jar's copy has this option, or null. A command block accepts every default option
+     * plus a few of its own.
      */
     private static @Nullable String shippedPath(YamlConfiguration shipped, String key) {
         if (shipped.contains(key)) {

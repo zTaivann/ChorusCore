@@ -1,5 +1,7 @@
 package dev.chorus.core.menu;
 
+import dev.chorus.commons.menu.Menu;
+import dev.chorus.commons.menu.MenuSettings;
 import dev.chorus.core.locale.Messages;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -13,9 +15,7 @@ import java.util.function.Consumer;
 /** A paginated menu of clickable entries, used by /homes and /warps. */
 public final class ListMenu {
 
-    /**
-     * One entry of the menu, with a full item as its icon.
-     */
+    /** One entry of the menu, with a full item as its icon. */
     public record Entry(ItemStack icon, Component display, List<Component> lore,
                         Consumer<Player> action) {
 
@@ -35,10 +35,10 @@ public final class ListMenu {
     }
 
     /**
-     * The same with a way back, for a menu that was opened from another one.
+     * The same with a way back, for a menu opened from another.
      *
-     * @param back        what the back button does, or null for a menu that is the first one.
-     * @param titleValues anything else the title names, beyond the page it is on.
+     * @param back        what the back button does, or null for a first menu
+     * @param titleValues extra title placeholders beyond the page
      */
     public static void open(Player viewer, Messages messages, MenuSettings settings,
                             String titleKey, List<Entry> entries, int page,
@@ -47,9 +47,9 @@ public final class ListMenu {
     }
 
     /**
-     * The same with one button of the menu's own, such as the filter on the backup list.
+     * The same with one custom button, such as the backup list filter.
      *
-     * @param control what goes in the free spot on the navigation row, or null.
+     * @param control goes in the free spot on the navigation row, or null
      */
     public static void open(Player viewer, Messages messages, MenuSettings settings,
                             String titleKey, List<Entry> entries, int page,

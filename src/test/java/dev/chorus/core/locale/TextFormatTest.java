@@ -57,11 +57,7 @@ class TextFormatTest {
         assertEquals(TextColor.fromHexString("#a1b2c3"), colourOf(TextFormat.parse("&#a1b2c3Hex")));
     }
 
-    /**
-     * In the game a colour clears the formatting before it, so {@code &l&cText} is red and
-     * not bold. Emitting the colour on its own would quietly restyle every config that
-     * relies on that.
-     */
+    /** A colour clears earlier formatting, so {@code &l&cText} is red, not bold. */
     @Test
     void aColourClearsWhatCameBeforeIt() {
         Component text = TextFormat.parse("&l&cRed");
@@ -76,10 +72,7 @@ class TextFormatTest {
         assertEquals(TextDecoration.State.FALSE, item.style().decoration(TextDecoration.ITALIC));
     }
 
-    /**
-     * The game draws a line of lore purple when nothing says otherwise, which is nobody's
-     * idea of a default and is not something the line asked for.
-     */
+    /** The game draws lore purple when nothing says otherwise; the line didn't ask for that. */
     @Test
     void loreWithNoColourOfItsOwnIsGrey() {
         assertEquals(NamedTextColor.GRAY, TextFormat.forLore("Welcome to the server").color());
@@ -108,8 +101,8 @@ class TextFormatTest {
     }
 
     /**
-     * A kit laid out in the screen is written back to the file, and may be laid out again
-     * tomorrow. Each pass must leave the same text, not the same text plus a marker.
+     * A kit laid out in the screen is written back to the file; each pass must leave the same
+     * text, not add a marker.
      */
     @Test
     void itemTextDoesNotCollectMarkersOnTheWayBack() {
@@ -129,8 +122,8 @@ class TextFormatTest {
     }
 
     /**
-     * A doubled marker is the marker itself, which is the only way a line can talk about a
-     * colour code without turning into one. The help text in the menus depends on it.
+     * A doubled marker is the marker itself, the only way to write about a colour code. Menu help
+     * text relies on it.
      */
     @Test
     void aDoubledMarkerIsTheMarkerItself() {

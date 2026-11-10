@@ -1,8 +1,8 @@
 package dev.chorus.core.warp.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.location.NamedLocation;
 import dev.chorus.core.location.Names;

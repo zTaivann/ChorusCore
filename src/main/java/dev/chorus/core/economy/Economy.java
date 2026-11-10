@@ -4,9 +4,7 @@ import dev.chorus.core.locale.Messages;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
-/**
- * What the plugin needs from an economy. Prices are ignored while it is disabled.
- */
+/** What the plugin needs from an economy. Prices are ignored while disabled. */
 public interface Economy {
 
     boolean enabled();

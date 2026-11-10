@@ -47,8 +47,8 @@ public record ParticleCue(@Nullable Particle particle, int count, double spread,
             Map.entry("WATER_BUBBLE", "BUBBLE"));
 
     /**
-     * Anything the block leaves out is taken from {@code base}, which is the defaults block.
-     * {@code onUnknown} receives names this server has under neither spelling.
+     * Missing options come from {@code base}, the defaults block; {@code onUnknown} receives
+     * names this server doesn't know.
      */
     public static ParticleCue read(ConfigurationSection parent, ParticleCue base,
                                    Consumer<String> onUnknown) {
@@ -71,7 +71,6 @@ public record ParticleCue(@Nullable Particle particle, int count, double spread,
         if (particle == null || count <= 0 || world == null) {
             return;
         }
-        // Raised to chest height.
         world.spawnParticle(particle, where.clone().add(0, height / 2, 0),
                 count, spread, height / 2, spread, speed);
     }

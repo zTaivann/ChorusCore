@@ -76,7 +76,7 @@ public final class Powertools implements LoginData.Part {
     /**
      * Puts another command on the same item.
      *
-     * @return false when the item already holds as many as it may.
+     * @return false when the item already holds the maximum
      */
     public boolean add(UUID player, Material material, String command) {
         List<String> current = on(player, material);

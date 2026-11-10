@@ -8,9 +8,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Enchantments looked up by namespaced key rather than by field name.
- *
- * <p>The constants on {@link Enchantment} were renamed more than once between 1.18 and 26.
+ * Enchantments looked up by namespaced key, since the {@link Enchantment} constants were
+ * renamed between 1.18 and 26.
  */
 public final class Enchantments {
 

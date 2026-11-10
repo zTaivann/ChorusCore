@@ -27,9 +27,7 @@ final class QuickShopDatabase {
     private QuickShopDatabase() {
     }
 
-    /**
-     * @param kind what to tell the admin it is, when the driver for it is missing.
-     */
+    /** @param kind named to the admin when its driver is missing */
     record Settings(String url, String user, String password, String prefix,
                     String kind, String driverClass) {
     }

@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -87,15 +88,15 @@ public final class HelpCommand extends ChorusCommand {
             }
             entries.add(new Entry(registered.module(), command.name(), describe(command.name())));
         }
-        entries.sort((left, right) -> {
-            int module = order(left.module()) - order(right.module());
-            return module != 0 ? module : left.name().compareTo(right.name());
-        });
+        // Looked up once for the whole sort rather than once per comparison.
+        List<String> modules = plugin.enabledModules();
+        entries.sort(Comparator.comparingInt((Entry entry) -> order(modules, entry.module()))
+                .thenComparing(Entry::name));
         return entries;
     }
 
-    private int order(String module) {
-        int place = plugin.enabledModules().indexOf(module);
+    private static int order(List<String> modules, String module) {
+        int place = modules.indexOf(module);
         return place < 0 ? Integer.MAX_VALUE : place;
     }
 

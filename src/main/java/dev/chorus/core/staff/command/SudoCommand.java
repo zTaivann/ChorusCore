@@ -50,7 +50,6 @@ public final class SudoCommand extends ChorusCommand {
         }
 
         settle(sender);
-        // Written down before it runs.
         staffLog.record(sender, "sudo", target.getName(), command);
 
         messages.send(sender, "staff.sudo-ran", "player", target.getName(), "command", command);

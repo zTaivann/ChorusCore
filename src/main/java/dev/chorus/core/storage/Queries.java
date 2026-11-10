@@ -35,9 +35,7 @@ public final class Queries {
         };
     }
 
-    /**
-     * Runs a query off the server thread and completes on the server thread.
-     */
+    /** Runs a query off the server thread and completes on it. */
     public static <T> CompletableFuture<T> run(Call<T> call, Executor worker, Executor mainThread) {
         CompletableFuture<T> result = new CompletableFuture<>();
         worker.execute(() -> {
@@ -52,8 +50,8 @@ public final class Queries {
     }
 
     /**
-     * Runs a query on the storage thread and waits for it, behind every write already
-     * queued. For threads that may block, such as the login thread.
+     * Runs a query on the storage thread and waits, behind queued writes. For threads that may
+     * block, such as login.
      */
     public static <T> T await(Call<T> call, Executor worker) throws SQLException {
         // Already on it: waiting for the queue would be waiting for this very thread.

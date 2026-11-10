@@ -1,8 +1,8 @@
 package dev.chorus.core.rules;
 
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.command.Numbers;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.Schedulers;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
@@ -26,9 +26,9 @@ public record Action(Kind kind, String argument) {
     private static final long TITLE_STAY_MILLIS = 2500;
 
     /**
-     * Lines it does not know are skipped and reported.
+     * Unknown lines are skipped and reported.
      *
-     * @param owner how a problem names what the list belongs to, such as {@code kit 'vip'}
+     * @param owner names the list's owner in problems, such as {@code kit 'vip'}
      */
     public static List<Action> read(List<String> lines, String owner, Consumer<String> onProblem) {
         List<Action> actions = new ArrayList<>(lines.size());
@@ -60,9 +60,9 @@ public record Action(Kind kind, String argument) {
     }
 
     /**
-     * On the player's thread. A console line goes on to the global one.
+     * Runs on the player's thread; console lines go on to the global one.
      *
-     * @param placeholders name and value pairs, such as {@code "kit", "vip"}
+     * @param placeholders name/value pairs, such as {@code "kit", "vip"}
      */
     public static void runAll(List<Action> actions, Player player, Messages messages,
                               Schedulers schedulers, String... placeholders) {

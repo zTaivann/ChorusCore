@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Percent off a price for whoever holds a permission, written {@code 'group.vip: 25'}.
+ * Percent off for a permission holder, written {@code 'group.vip: 25'}.
  *
- * @param percent above 0 and at most 100
+ * @param percent above 0, at most 100
  */
 public record Discount(String permission, double percent) {
 

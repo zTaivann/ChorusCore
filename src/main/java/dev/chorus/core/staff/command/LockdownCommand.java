@@ -6,7 +6,6 @@ import dev.chorus.core.staff.LockdownService;
 import dev.chorus.core.stafflog.StaffLog;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -64,11 +63,9 @@ public final class LockdownCommand extends ChorusCommand {
     /** Everyone who could have closed it themselves deserves to know that somebody did. */
     private void announce(CommandSender sender, String key) {
         messages.send(sender, key);
-        for (Player staff : sender.getServer().getOnlinePlayers()) {
-            if (!staff.equals(sender) && staff.hasPermission(BYPASS_PERMISSION)) {
-                messages.send(staff, key);
-            }
-        }
+        messages.sendAll(sender.getServer().getOnlinePlayers().stream()
+                .filter(staff -> !staff.equals(sender) && staff.hasPermission(BYPASS_PERMISSION))
+                .toList(), key);
     }
 
     @Override

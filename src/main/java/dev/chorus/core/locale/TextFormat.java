@@ -3,8 +3,8 @@ package dev.chorus.core.locale;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Context;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -24,8 +24,8 @@ public final class TextFormat {
             "click", "hover", "insertion", "selector", "nbt", "score");
 
     /**
-     * Every tag the running server knows except the ones that act on the reader. A click on
-     * a sign runs with the server's permissions.
+     * Every tag the server knows except those that act on the reader; a click on a sign runs
+     * with the server's permissions.
      */
     private static final MiniMessage STYLING = MiniMessage.builder()
             .tags(new PassiveTags(StandardTags.defaults()))

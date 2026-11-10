@@ -1,11 +1,11 @@
 package dev.chorus.core.kits.menu;
 
-import dev.chorus.core.kits.KitEditor;
+import dev.chorus.commons.menu.Menu;
 import dev.chorus.core.kits.KitEditor.Rule;
 import dev.chorus.core.kits.KitEditor.RuleList;
+import dev.chorus.core.kits.KitEditor;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.menu.ChatPrompts;
-import dev.chorus.core.menu.Menu;
 import dev.chorus.core.menu.MenuItems;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
@@ -126,10 +126,10 @@ public final class KitRulesMenu {
     }
 
     /**
-     * Asks for a line, and puts it where it was asked for.
+     * Asks for a line and puts it in place.
      *
      * @param index the line being rewritten, or -1 to add one
-     * @param rule  that line as it stands, so it can be read before it is replaced
+     * @param rule  that line as it stands
      */
     private void askFor(Player player, String kit, RuleList list, int index, @Nullable Rule rule) {
         if (rule != null) {

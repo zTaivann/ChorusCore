@@ -1,7 +1,7 @@
 package dev.chorus.core.locale;
 
+import dev.chorus.commons.config.ConfigFiles;
 import dev.chorus.core.api.MessageApi;
-import dev.chorus.core.config.ConfigFiles;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -37,8 +37,8 @@ public final class Messages implements MessageApi {
     private static final Pattern NEWLINE = Pattern.compile("<newline>", Pattern.LITERAL);
 
     /**
-     * Placeholders are written {@code %name%} and become {@code <chorus_name>} for
-     * MiniMessage, so a name such as "key" is not read as a MiniMessage tag.
+     * Placeholders are written {@code %name%} and become {@code <chorus_name>}, so a name such as
+     * "key" isn't read as a MiniMessage tag.
      */
     private static final String SLOT_PREFIX = "chorus_";
 
@@ -172,6 +172,27 @@ public final class Messages implements MessageApi {
         target.sendMessage(render(speaking, key, placeholders));
     }
 
+    /** {@link #send} to each in turn, rendering each language once. */
+    public void sendAll(Iterable<? extends CommandSender> targets, String key, String... placeholders) {
+        String custom = overrides.get(key);
+        if (custom != null) {
+            if (!custom.isEmpty()) {
+                Component filled = fill(custom, placeholders);
+                targets.forEach(target -> target.sendMessage(filled));
+            }
+            return;
+        }
+
+        Map<Translations, Component> rendered = new IdentityHashMap<>(2);
+        for (CommandSender target : targets) {
+            Translations speaking = speaking(target);
+            if (!speaking.isMuted(key)) {
+                target.sendMessage(rendered.computeIfAbsent(speaking,
+                        language -> render(language, key, placeholders)));
+            }
+        }
+    }
+
     /** What {@link #send} would have sent, in that reader's own language. */
     public Component render(CommandSender target, String key, String... placeholders) {
         String custom = overrides.get(key);
@@ -217,17 +238,14 @@ public final class Messages implements MessageApi {
     }
 
     /**
-     * Parses a line that came from somewhere other than the messages folder, such as a kit
-     * action or a custom command, honouring {@code %prefix%} and the palette the same way.
+     * Parses a line from outside the messages folder (a kit action, a custom command), honouring
+     * {@code %prefix%} and the palette.
      */
     public Component parse(String raw) {
         return MINI_MESSAGE.deserialize(root().ready(raw));
     }
 
-    /**
-     * A message as plain text, for the small words that end up inside another message —
-     * "no limit", "free" and "none".
-     */
+    /** A message as plain text, for small words inside other messages: "no limit", "free", "none". */
     public String plain(String key, String... placeholders) {
         return PlainTextComponentSerializer.plainText().serialize(render(key, placeholders));
     }
@@ -315,16 +333,13 @@ public final class Messages implements MessageApi {
         return fill(template, placeholders);
     }
 
-    /**
-     * Puts the values into a template as it is parsed. Package-private for the tests.
-     */
+    /** Puts the values into a template as it is parsed. Package-private for tests. */
     static Component fill(String template, String... placeholders) {
         return fill(template, TagResolver.empty(), placeholders);
     }
 
     private static Component fill(String template, TagResolver extra, String... placeholders) {
-        // Resolved during the parse: a gradient splits a value into one component per character.
-        // The tags are named after the placeholders passed, so an unfilled %word% is left.
+        // Resolved during the parse: a gradient splits values per character. Unfilled %word% is left.
         TagResolver.Builder resolvers = TagResolver.builder();
         resolvers.resolver(extra);
         String filled = template;
@@ -391,10 +406,9 @@ public final class Messages implements MessageApi {
     }
 
     /**
-     * Every YAML file directly inside one of the plugin's own folders.
+     * Every YAML file directly inside one of the plugin's folders.
      *
-     * @param path the folder inside the plugin's folder, which is also where the jar keeps
-     *             the copies these fall back to.
+     * @param path folder inside the plugin folder, also where the jar keeps the fallback copies
      */
     private void readInto(Translations language, String path, String shared) {
         for (String name : found(new File(plugin().getDataFolder(), path))) {
@@ -412,9 +426,7 @@ public final class Messages implements MessageApi {
         }
     }
 
-    /**
-     * The old single message files, read last when they still exist.
-     */
+    /** The old single message files, read last when present. */
     private void readLegacyInto(Translations language, String shared) {
         for (String name : LEGACY) {
             File file = new File(plugin().getDataFolder(), name);

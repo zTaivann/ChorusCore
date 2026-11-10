@@ -1,8 +1,8 @@
 package dev.chorus.core.home;
 
+import dev.chorus.commons.menu.MenuSettings;
 import dev.chorus.core.location.Names;
 import dev.chorus.core.location.WorldLimits;
-import dev.chorus.core.menu.MenuSettings;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;

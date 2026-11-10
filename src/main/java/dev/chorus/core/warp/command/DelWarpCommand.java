@@ -65,7 +65,6 @@ public final class DelWarpCommand extends ChorusCommand {
                 messages.send(sender, "warp.unknown", "warp", key);
                 return;
             }
-            // The icon, price and the rest go with it.
             details.forget(key);
             settle(sender);
             messages.send(sender, "warp.deleted", "warp", key);

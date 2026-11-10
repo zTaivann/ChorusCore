@@ -6,10 +6,7 @@ import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Exposes the plugin's numbers to PlaceholderAPI, which is how a scoreboard or tab plugin
- * shows them without depending on ChorusCore at all.
- */
+/** Exposes the plugin's numbers to PlaceholderAPI. */
 public final class ChorusExpansion extends PlaceholderExpansion {
 
     private final ChorusApi api;

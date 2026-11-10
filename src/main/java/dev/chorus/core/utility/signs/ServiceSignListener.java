@@ -3,9 +3,8 @@ package dev.chorus.core.utility.signs;
 import dev.chorus.core.block.Signs;
 import dev.chorus.core.command.Numbers;
 import dev.chorus.core.economy.Economy;
+import dev.chorus.core.items.Hand;
 import dev.chorus.core.locale.Messages;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -20,15 +19,10 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
-import java.util.Map;
 
-/**
- * The signs that do what a command does: {@code [Heal]}, {@code [Kit]}, {@code [Repair]} and
- * the rest.
- */
+/** Signs that do what a command does: {@code [Heal]}, {@code [Kit]}, {@code [Repair]} and so on. */
 public final class ServiceSignListener implements Listener {
 
-    private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
     private static final int LAST_LINE = 3;
 
     private final Messages messages;
@@ -47,7 +41,7 @@ public final class ServiceSignListener implements Listener {
 
     public boolean isServiceSign(Block block) {
         Sign sign = Signs.at(block);
-        return sign != null && ServiceSign.of(plain(sign.line(0))) != null;
+        return sign != null && ServiceSign.of(Signs.plain(sign.line(0))) != null;
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -55,7 +49,7 @@ public final class ServiceSignListener implements Listener {
         if (!enabled) {
             return;
         }
-        ServiceSign kind = ServiceSign.of(plain(event.line(0)));
+        ServiceSign kind = ServiceSign.of(Signs.plain(event.line(0)));
         if (kind == null) {
             return;
         }
@@ -66,7 +60,7 @@ public final class ServiceSignListener implements Listener {
             messages.send(player, "error.no-permission");
             return;
         }
-        if (kind == ServiceSign.FREE && item(plain(event.line(2))) == null) {
+        if (kind == ServiceSign.FREE && item(Signs.plain(event.line(2))) == null) {
             event.setCancelled(true);
             messages.send(player, "utility.sign-free-item");
             return;
@@ -84,7 +78,7 @@ public final class ServiceSignListener implements Listener {
         if (sign == null) {
             return;
         }
-        ServiceSign kind = ServiceSign.of(plain(sign.line(0)));
+        ServiceSign kind = ServiceSign.of(Signs.plain(sign.line(0)));
         if (kind == null) {
             return;
         }
@@ -96,7 +90,7 @@ public final class ServiceSignListener implements Listener {
             return;
         }
 
-        double price = price(plain(sign.line(LAST_LINE)));
+        double price = price(Signs.plain(sign.line(LAST_LINE)));
         if (price > 0 && economy.enabled()) {
             if (!economy.has(player, price)) {
                 messages.send(player, "economy.insufficient",
@@ -120,7 +114,7 @@ public final class ServiceSignListener implements Listener {
     private static String line(ServiceSign kind, Sign sign) {
         StringBuilder command = new StringBuilder(kind.command());
         for (int row = 1; row < LAST_LINE; row++) {
-            String text = plain(sign.line(row));
+            String text = Signs.plain(sign.line(row));
             if (!text.isEmpty()) {
                 command.append(' ').append(text);
             }
@@ -129,19 +123,15 @@ public final class ServiceSignListener implements Listener {
     }
 
     private boolean free(Player player, Sign sign) {
-        Material material = item(plain(sign.line(2)));
+        Material material = item(Signs.plain(sign.line(2)));
         if (material == null) {
             messages.send(player, "utility.sign-broken");
             return false;
         }
-        int amount = amount(plain(sign.line(1)), material.getMaxStackSize());
+        int amount = amount(Signs.plain(sign.line(1)), material.getMaxStackSize());
 
         ItemStack giving = new ItemStack(material, amount);
-        Map<Integer, ItemStack> rejected = player.getInventory().addItem(giving);
-        if (!rejected.isEmpty()) {
-            rejected.values().forEach(left ->
-                    player.getWorld().dropItemNaturally(player.getLocation(), left));
-        }
+        Hand.giveOrDrop(player, giving);
 
         messages.send(player, "utility.sign-free-given",
                 "amount", String.valueOf(amount),
@@ -165,9 +155,5 @@ public final class ServiceSignListener implements Listener {
     /** Zero when the last line is not a price, which is how a free sign is written. */
     private static double price(String raw) {
         return Math.max(0, Numbers.amount(raw));
-    }
-
-    private static String plain(Component line) {
-        return PLAIN.serialize(line).trim().toLowerCase(Locale.ROOT);
     }
 }

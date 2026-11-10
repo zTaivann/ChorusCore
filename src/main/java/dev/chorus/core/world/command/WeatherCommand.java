@@ -54,10 +54,13 @@ public final class WeatherCommand extends ChorusCommand {
         }
 
         int ticks = minutes * TICKS_PER_MINUTE;
-        world.setStorm(!kind.equals("clear"));
-        world.setThundering(kind.equals("storm"));
-        world.setWeatherDuration(ticks);
-        world.setThunderDuration(ticks);
+        // The weather belongs to the global region on Folia, which refuses it from anywhere else.
+        schedulers.withGlobal(() -> {
+            world.setStorm(!kind.equals("clear"));
+            world.setThundering(kind.equals("storm"));
+            world.setWeatherDuration(ticks);
+            world.setThunderDuration(ticks);
+        });
 
         settle(sender);
         messages.send(sender, "world.weather-set",

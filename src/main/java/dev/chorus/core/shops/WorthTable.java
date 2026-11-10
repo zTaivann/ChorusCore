@@ -1,7 +1,7 @@
 package dev.chorus.core.shops;
 
+import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.core.command.PermissionValue;
-import dev.chorus.core.config.ConfigFile;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.permissions.Permissible;
@@ -18,9 +18,8 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 /**
- * What each material is worth, for {@code /sell} and for a {@code [Sell]} sign with no price
- * written on it. Read from worth.yml: one item each under {@code worth}, several at one price
- * under {@code groups}.
+ * What each material is worth, for {@code /sell} and unpriced {@code [Sell]} signs. Read from
+ * worth.yml: single items under {@code worth}, groups under {@code groups}.
  */
 public final class WorthTable {
 
@@ -99,8 +98,8 @@ public final class WorthTable {
     }
 
     /**
-     * {@code item-multipliers}, by item. A group's name stands for every item in it, and an
-     * item named on its own wins over its group.
+     * {@code item-multipliers} by item; a group name covers its items, and an item named alone
+     * wins over its group.
      */
     static Map<Material, Double> itemMultipliers(ConfigurationSection data,
                                                  Consumer<String> onProblem) {
@@ -155,10 +154,7 @@ public final class WorthTable {
         return List.copyOf(multipliers);
     }
 
-    /**
-     * The items a name stands for. A {@code *} stands for any part of the name, so
-     * {@code *_log} is every log.
-     */
+    /** The items a name stands for; {@code *} matches any part, so {@code *_log} is every log. */
     static List<Material> matching(String pattern) {
         String wanted = pattern.trim().toLowerCase(Locale.ROOT);
         if (!wanted.contains("*")) {
@@ -197,8 +193,8 @@ public final class WorthTable {
     }
 
     /**
-     * Writes a new price into the file, so /setworth survives a restart. Zero or less means
-     * it cannot be sold, even when a group names it.
+     * Writes a new price to the file so /setworth survives restarts. Zero or less means
+     * unsellable, even when a group names it.
      */
     public boolean set(Material material, double price) {
         String key = material.name().toLowerCase(Locale.ROOT);

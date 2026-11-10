@@ -7,10 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-/**
- * The framing around the items, which is what decides whether a slot comes back in the slot
- * it went into.
- */
+/** The framing around the items, which decides whether a slot returns to the slot it came from. */
 class InventoryCodecTest {
 
     @Test

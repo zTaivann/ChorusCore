@@ -1,5 +1,7 @@
 package dev.chorus.core.config;
 
+import dev.chorus.commons.config.ConfigFiles;
+import dev.chorus.commons.config.ConfigSnapshot;
 import dev.chorus.core.locale.Messages;
 import org.bukkit.plugin.Plugin;
 import org.junit.jupiter.api.BeforeEach;

@@ -3,3 +3,6 @@ plugins {
 }
 
 rootProject.name = "ChorusCore"
+
+// Shared sources, shaded into the jar and relocated; see chorus-commons/build.gradle.kts.
+includeBuild("../chorus-commons")

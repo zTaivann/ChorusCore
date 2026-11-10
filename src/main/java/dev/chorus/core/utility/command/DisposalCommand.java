@@ -5,10 +5,7 @@ import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.utility.UtilityService;
 import org.bukkit.entity.Player;
 
-/**
- * A throwaway inventory. Nothing saves it, so whatever is inside when the menu closes is
- * gone for good; that is the entire point of the command.
- */
+/** A throwaway inventory: nothing saves it, so its contents are gone when the menu closes. */
 public final class DisposalCommand extends PlayerCommand {
 
     private final UtilityService utility;

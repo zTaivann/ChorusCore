@@ -58,9 +58,9 @@ public final class IgnoreList implements LoginData.Part {
     }
 
     /**
-     * Adds or removes, whichever it was not.
+     * Toggles ignoring.
      *
-     * @return true when they are now ignored.
+     * @return true when now ignored
      */
     public boolean toggle(UUID owner, UUID other) {
         Set<UUID> list = ignored.computeIfAbsent(owner, id -> ConcurrentHashMap.newKeySet());

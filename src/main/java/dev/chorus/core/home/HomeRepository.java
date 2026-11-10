@@ -4,10 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Blocking persistence for homes. Every method talks to the database on the calling
- * thread; scheduling is {@link HomeService}'s job.
- */
+/** Blocking persistence for homes, on the calling thread; scheduling is {@link HomeService}'s job. */
 public interface HomeRepository {
 
     void createTables() throws SQLException;

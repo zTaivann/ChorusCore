@@ -1,8 +1,8 @@
 package dev.chorus.core.custom;
 
+import dev.chorus.commons.feedback.SoundCue;
 import dev.chorus.core.command.CooldownScope;
 import dev.chorus.core.command.DailyLimit;
-import dev.chorus.core.feedback.SoundCue;
 import dev.chorus.core.rules.Action;
 import dev.chorus.core.rules.Requirement;
 import org.bukkit.configuration.ConfigurationSection;

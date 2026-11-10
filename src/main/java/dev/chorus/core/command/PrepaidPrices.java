@@ -34,8 +34,8 @@ final class PrepaidPrices {
     /**
      * What was taken for one use.
      *
-     * @param money 0 when none was
-     * @param items {@link ItemPrice#NONE} when none were
+     * @param money 0 when none
+     * @param items {@link ItemPrice#NONE} when none
      */
     record Payment(double money, ItemPrice items) {
     }

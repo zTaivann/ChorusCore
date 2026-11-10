@@ -1,11 +1,11 @@
 package dev.chorus.core.economy;
 
+import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.economy.command.BalanceCommand;
 import dev.chorus.core.economy.command.BalanceTopCommand;
 import dev.chorus.core.economy.command.EcoCommand;

@@ -11,10 +11,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 /**
- * One player-run shop: a container, a sign on it, and a price.
+ * One player-run shop: a container, a sign and a price.
  *
- * @param selling   true when the shop hands items to the player, false when it takes them
- * @param unlimited true for a shop with no stock and no till, which only an admin may make
+ * @param selling   true when the shop hands items to the player
+ * @param unlimited no stock and no till; admins only
  */
 public record ChestShop(long id, UUID owner, String ownerName, String world, int x, int y, int z,
                         String item, double price, boolean selling, boolean unlimited,

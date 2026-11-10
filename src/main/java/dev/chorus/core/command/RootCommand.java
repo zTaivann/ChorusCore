@@ -1,10 +1,10 @@
 package dev.chorus.core.command;
 
+import dev.chorus.commons.config.ConfigFile;
+import dev.chorus.commons.config.ConfigProblem;
+import dev.chorus.commons.config.ConfigSnapshot;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.config.ConfigCheck;
-import dev.chorus.core.config.ConfigFile;
-import dev.chorus.core.config.ConfigProblem;
-import dev.chorus.core.config.ConfigSnapshot;
 import dev.chorus.core.importer.EssentialsImport;
 import dev.chorus.core.importer.ImportReport;
 import dev.chorus.core.importer.QuickShopImport;
@@ -51,10 +51,19 @@ public final class RootCommand extends ChorusCommand {
     private final ChorusPlugin plugin;
     private final Confirmations confirmations;
 
+    /** Read once: it is inside the jar, so it cannot change while the plugin runs. */
+    private final @Nullable YamlConfiguration permissionFile;
+    private final List<String> permissionGroups;
+
     public RootCommand(ChorusPlugin plugin, CommandSupport support, Confirmations confirmations) {
         super(support, "chorus", "chorus.admin");
         this.plugin = plugin;
         this.confirmations = confirmations;
+        this.permissionFile = ConfigFile.bundled(plugin, PERMISSIONS);
+        List<String> groups = permissionFile == null
+                ? new ArrayList<>() : new ArrayList<>(permissionFile.getKeys(false));
+        groups.remove(FAMILIES);
+        this.permissionGroups = List.copyOf(groups);
     }
 
     @Override
@@ -264,7 +273,7 @@ public final class RootCommand extends ChorusCommand {
         }
     }
 
-    /** The whole plugin, or one module by name, on the global thread: a reload belongs to no region. */
+    /** The whole plugin or one module, on the global thread: a reload belongs to no region. */
     private void reload(CommandSender sender, String module) {
         plugin.schedulers().global(() -> reloadNow(sender, module));
     }
@@ -323,7 +332,7 @@ public final class RootCommand extends ChorusCommand {
 
     /** {@code /chorus permissions [group]}: every node, and which of them the reader holds. */
     private void permissions(CommandSender sender, @Nullable String group) {
-        YamlConfiguration file = ConfigFile.bundled(plugin, PERMISSIONS);
+        YamlConfiguration file = permissionFile;
         if (file == null) {
             messages.send(sender, "core.permissions-missing");
             return;
@@ -351,21 +360,21 @@ public final class RootCommand extends ChorusCommand {
     private void groups(CommandSender sender, YamlConfiguration file) {
         int total = 0;
         int held = 0;
-        List<String> names = new ArrayList<>(file.getKeys(false));
-        names.remove(FAMILIES);
-
-        for (String name : names) {
-            total += file.getStringList(name).size();
-            held += (int) file.getStringList(name).stream().filter(sender::hasPermission).count();
+        long[] heldIn = new long[permissionGroups.size()];
+        for (int at = 0; at < heldIn.length; at++) {
+            List<String> nodes = file.getStringList(permissionGroups.get(at));
+            heldIn[at] = nodes.stream().filter(sender::hasPermission).count();
+            total += nodes.size();
+            held += (int) heldIn[at];
         }
 
         messages.send(sender, "core.permissions-header",
                 "count", String.valueOf(total), "held", String.valueOf(held));
-        for (String name : names) {
-            List<String> nodes = file.getStringList(name);
+        for (int at = 0; at < heldIn.length; at++) {
+            String name = permissionGroups.get(at);
             messages.send(sender, "core.permissions-summary", "group", name,
-                    "count", String.valueOf(nodes.size()),
-                    "held", String.valueOf(nodes.stream().filter(sender::hasPermission).count()));
+                    "count", String.valueOf(file.getStringList(name).size()),
+                    "held", String.valueOf(heldIn[at]));
         }
         for (String family : file.getStringList(FAMILIES)) {
             messages.send(sender, "core.permissions-family", "node", family);
@@ -387,10 +396,7 @@ public final class RootCommand extends ChorusCommand {
         }
     }
 
-    /**
-     * What the plugin found when it started. Most of what gets reported as a bug in a core
-     * plugin is one of these lines saying something the owner did not expect.
-     */
+    /** What the plugin found while starting. */
     private void status(CommandSender sender) {
         messages.send(sender, "core.status-header",
                 "version", plugin.getDescription().getVersion());
@@ -469,11 +475,7 @@ public final class RootCommand extends ChorusCommand {
             return startingWith(args[1], List.of("essentials", "quickshop"));
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("permissions")) {
-            YamlConfiguration file = ConfigFile.bundled(plugin, PERMISSIONS);
-            List<String> groups = file == null
-                    ? List.of() : new ArrayList<>(file.getKeys(false));
-            groups.remove(FAMILIES);
-            return startingWith(args[1], groups);
+            return startingWith(args[1], permissionGroups);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("purge")) {
             return startingWith(args[1], List.of("30", "90", "180", "365"));

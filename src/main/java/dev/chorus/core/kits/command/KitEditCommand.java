@@ -1,13 +1,14 @@
 package dev.chorus.core.kits.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.kits.Kit;
 import dev.chorus.core.kits.KitEditor;
 import dev.chorus.core.kits.KitService;
+import dev.chorus.core.kits.KitWords;
 import dev.chorus.core.kits.menu.KitEditMenu;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -53,6 +54,7 @@ public final class KitEditCommand extends PlayerCommand {
     private final KitEditor editor;
     private final KitEditMenu menu;
     private final Economy economy;
+    private final KitWords words;
 
     public KitEditCommand(CommandSupport support, KitService kits, KitEditor editor,
                           KitEditMenu menu, Economy economy) {
@@ -61,6 +63,7 @@ public final class KitEditCommand extends PlayerCommand {
         this.editor = editor;
         this.menu = menu;
         this.economy = economy;
+        this.words = new KitWords(messages, economy);
     }
 
     @Override
@@ -144,16 +147,16 @@ public final class KitEditCommand extends PlayerCommand {
         messages.send(player, "kits.edit-info-icon",
                 "icon", kit.icon().getType().name().toLowerCase(Locale.ROOT));
         messages.send(player, "kits.edit-info-cooldown", "cooldown", cooldownOf(player, kit));
-        messages.send(player, "kits.edit-info-maxclaims", "claims", claimsOf(player, kit));
-        messages.send(player, "kits.edit-info-price", "price", priceOf(player, kit));
+        messages.send(player, "kits.edit-info-maxclaims", "claims", words.claims(player, kit));
+        messages.send(player, "kits.edit-info-price", "price", words.price(player, kit));
         messages.send(player, "kits.edit-info-permission", "permission",
                 kit.permission().isEmpty() ? messages.plain(player, "kits.word-everyone") : kit.permission());
-        messages.send(player, "kits.edit-info-onetime", "onetime", word(player, kit.oneTime()));
-        messages.send(player, "kits.edit-info-autoarmor", "autoarmor", word(player, kit.autoArmor()));
+        messages.send(player, "kits.edit-info-onetime", "onetime", words.word(player, kit.oneTime()));
+        messages.send(player, "kits.edit-info-autoarmor", "autoarmor", words.word(player, kit.autoArmor()));
         messages.send(player, "kits.edit-info-clearinventory",
-                "clearinventory", word(player, kit.clearInventory()));
+                "clearinventory", words.word(player, kit.clearInventory()));
         messages.send(player, "kits.edit-info-placeholders",
-                "placeholders", word(player, kit.placeholders()));
+                "placeholders", words.word(player, kit.placeholders()));
         messages.send(player, "kits.edit-info-items", "count", String.valueOf(kit.items().size()));
         if (!kit.requirements().isEmpty()) {
             messages.send(player, "kits.edit-info-requirements",
@@ -167,26 +170,9 @@ public final class KitEditCommand extends PlayerCommand {
         messages.send(player, "kits.edit-info-footer", "kit", kit.name());
     }
 
+    /** Unlike the menu, which has a toggle of its own for it, this says when a kit is one-time. */
     private String cooldownOf(Player player, Kit kit) {
-        if (kit.oneTime()) {
-            return messages.plain(player, "kits.word-once");
-        }
-        return kit.cooldownSeconds() == 0
-                ? messages.plain(player, "kits.word-none")
-                : Durations.format(TimeUnit.SECONDS.toMillis(kit.cooldownSeconds()));
-    }
-
-    private String claimsOf(Player player, Kit kit) {
-        return kit.maxClaims() == 0 ? messages.plain(player, "kits.word-unlimited")
-                : String.valueOf(kit.maxClaims());
-    }
-
-    private String priceOf(Player player, Kit kit) {
-        return kit.price() <= 0 ? messages.plain(player, "kits.word-free") : economy.format(kit.price());
-    }
-
-    private String word(Player player, boolean value) {
-        return messages.plain(player, value ? "kits.word-true" : "kits.word-false");
+        return kit.oneTime() ? messages.plain(player, "kits.word-once") : words.cooldown(player, kit);
     }
 
     private void create(Player player, String name, boolean exists) {
@@ -194,7 +180,7 @@ public final class KitEditCommand extends PlayerCommand {
             messages.send(player, "kits.edit-exists", "kit", name);
             return;
         }
-        if (!name.matches("[a-z0-9_-]{1,32}")) {
+        if (!KitEditor.validName(name)) {
             messages.send(player, "kits.edit-bad-name");
             return;
         }
@@ -227,10 +213,6 @@ public final class KitEditCommand extends PlayerCommand {
         }
         settle(player);
         messages.send(player, "kits.edit-items", "kit", name, "count", String.valueOf(result.count()));
-        if (result.simplified() > 0) {
-            messages.send(player, "kits.edit-items-simplified",
-                    "count", String.valueOf(result.simplified()));
-        }
     }
 
     private void change(Player player, String name, String setting, String value) {
@@ -268,7 +250,7 @@ public final class KitEditCommand extends PlayerCommand {
             case "maxclaims" -> (long) number(value) + " " + messages.plain(player, "kits.word-claims");
             case "price" -> economy.format(number(value));
             case "onetime", "autoarmor", "clearinventory", "placeholders" ->
-                    word(player, Boolean.parseBoolean(value));
+                    words.word(player, Boolean.parseBoolean(value));
             default -> value;
         };
     }

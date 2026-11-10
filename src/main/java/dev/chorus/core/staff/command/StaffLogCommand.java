@@ -1,8 +1,8 @@
 package dev.chorus.core.staff.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.stafflog.StaffLog;
 import dev.chorus.core.stafflog.StaffLogEntry;
 import org.bukkit.command.Command;

@@ -1,6 +1,7 @@
 package dev.chorus.core.economy.command;
 
 import dev.chorus.core.api.event.ChorusPaymentEvent;
+import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Confirmations;
 import dev.chorus.core.command.Numbers;
@@ -112,7 +113,6 @@ public final class PayCommand extends PlayerCommand {
             return;
         }
         if (received > 0 && !economy.deposit(target, received)) {
-            // Refund the sender.
             if (!economy.deposit(player, amount)) {
                 logger.severe("Took " + amount + " from " + player.getName() + " for a payment to "
                         + target.getName() + ", but neither the payment nor the refund went "
@@ -123,7 +123,9 @@ public final class PayCommand extends PlayerCommand {
         }
 
         settle(player);
-        rules().feedback().play(target);
+        // Played where the payee stands, so on the thread that owns them.
+        CommandRules current = rules();
+        onPlayer(target, () -> current.feedback().play(target));
         log.record(player, target, received);
 
         String paid = economy.format(amount);

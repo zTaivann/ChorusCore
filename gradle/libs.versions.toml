@@ -24,6 +24,8 @@ junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 annotations = { module = "org.jetbrains:annotations", version.ref = "annotations" }
 bstats = { module = "org.bstats:bstats-bukkit", version.ref = "bstats" }
+# Built from ../chorus-commons, which settings.gradle.kts includes.
+chorus-commons = { module = "dev.chorus:chorus-commons" }
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

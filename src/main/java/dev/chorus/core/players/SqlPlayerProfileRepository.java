@@ -1,8 +1,8 @@
 package dev.chorus.core.players;
 
+import dev.chorus.commons.storage.SqlDialect;
+import dev.chorus.commons.storage.Storage;
 import dev.chorus.core.storage.Schema;
-import dev.chorus.core.storage.SqlDialect;
-import dev.chorus.core.storage.Storage;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
@@ -13,10 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public final class SqlPlayerProfileRepository implements PlayerProfileRepository {
 
     private static final String SELECT = "SELECT * FROM chorus_players WHERE player = ?";
+    private static final Pattern COLOUR_CODE = Pattern.compile("(?i)[&§][0-9a-fk-or]");
     private static final String SELECT_BY_NAME =
             "SELECT * FROM chorus_players WHERE lower_name = ? OR lower_nickname = ? LIMIT 1";
     private static final String SELECT_SHARING =
@@ -130,7 +132,7 @@ public final class SqlPlayerProfileRepository implements PlayerProfileRepository
 
     /** A nickname without colour codes, for /realname. */
     static String plain(String nickname) {
-        return nickname.replaceAll("(?i)[&§][0-9a-fk-or]", "").toLowerCase(Locale.ROOT);
+        return COLOUR_CODE.matcher(nickname).replaceAll("").toLowerCase(Locale.ROOT);
     }
 
     private static PlayerProfile read(ResultSet rows) throws SQLException {

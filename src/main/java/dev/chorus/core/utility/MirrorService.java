@@ -1,8 +1,8 @@
 package dev.chorus.core.utility;
 
+import dev.chorus.commons.platform.ChorusTask;
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

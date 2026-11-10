@@ -7,9 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * The ChorusCore ledger offered to other plugins through Vault.
- */
+/** The ChorusCore ledger offered to other plugins through Vault. */
 @SuppressWarnings("deprecation")
 public final class VaultBridge implements net.milkbowl.vault.economy.Economy {
 

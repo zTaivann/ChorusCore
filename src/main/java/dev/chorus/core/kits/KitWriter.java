@@ -1,18 +1,18 @@
 package dev.chorus.core.kits;
 
-import dev.chorus.core.locale.TextFormat;
-import net.kyori.adventure.text.Component;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /** Turns real items back into the shape {@link KitReader} reads. */
 final class KitWriter {
+
+    /** The key holding the exact item. */
+    static final String DATA = "data";
 
     private KitWriter() {
     }
@@ -29,17 +29,12 @@ final class KitWriter {
         return written;
     }
 
-    /** Whether an item carries more than the written form can express. */
-    static boolean losesDetail(ItemStack item) {
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return false;
-        }
-        return meta.hasCustomModelData() || !meta.getPersistentDataContainer().isEmpty()
-                || !meta.getItemFlags().isEmpty();
-    }
-
-    /** One item on its own, which is what an icon is. */
+    /**
+     * One item on its own, as an icon is.
+     *
+     * <p>Stored exactly as the server's versioned serialized form, so every component survives
+     * updates. {@code material} and {@code amount} are written beside it only for readability.
+     */
     static Map<String, Object> describe(ItemStack item) {
         // Keeps a fixed key order.
         Map<String, Object> written = new LinkedHashMap<>();
@@ -47,32 +42,7 @@ final class KitWriter {
         if (item.getAmount() != 1) {
             written.put("amount", item.getAmount());
         }
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return written;
-        }
-        if (meta.hasDisplayName()) {
-            written.put("name", TextFormat.toText(meta.displayName()));
-        }
-        List<Component> lore = meta.lore();
-        if (lore != null && !lore.isEmpty()) {
-            written.put("lore", lore.stream().map(TextFormat::toText).toList());
-        }
-        if (meta.isUnbreakable()) {
-            written.put("unbreakable", true);
-        }
-        if (!meta.getEnchants().isEmpty()) {
-            Map<String, Object> enchantments = new LinkedHashMap<>();
-            meta.getEnchants().forEach((enchantment, level) ->
-                    enchantments.put(key(enchantment), level));
-            written.put("enchantments", enchantments);
-        }
+        written.put(DATA, Base64.getEncoder().encodeToString(item.serializeAsBytes()));
         return written;
-    }
-
-    /** Namespaced keys, matching what the reader looks up. */
-    private static String key(Enchantment enchantment) {
-        return enchantment.getKey().getKey();
     }
 }

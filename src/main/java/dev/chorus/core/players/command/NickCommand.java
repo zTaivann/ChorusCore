@@ -116,15 +116,6 @@ public final class NickCommand extends ChorusCommand {
         return named != null && !named.equals(target);
     }
 
-    private void report(CommandSender sender, Player target, String toSelf, String toOther) {
-        if (target.equals(sender)) {
-            messages.send(sender, toSelf);
-            return;
-        }
-        messages.send(sender, toOther, "player", target.getName());
-        messages.send(target, toSelf);
-    }
-
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
                                       @NotNull String label, @NotNull String[] args) {

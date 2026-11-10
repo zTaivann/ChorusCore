@@ -8,10 +8,7 @@ import java.util.UUID;
 
 public interface TeleportApi {
 
-    /**
-     * Moves the player after the given wait, cancelling if they move or take damage, exactly
-     * as the plugin's own teleports do. Pass 0 for no wait.
-     */
+    /** Teleports after the given wait (0 for none), cancelling on movement or damage like the plugin's own. */
     void teleport(Player player, Location destination, int warmupSeconds);
 
     /** Where the player was before their last teleport, which is what /back uses. */

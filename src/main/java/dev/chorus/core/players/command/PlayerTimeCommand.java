@@ -9,10 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Changes the sky one player sees and nothing else: the world keeps its own time, and so does
- * everybody standing next to them.
- */
+/** Changes the sky one player sees; the world's own time is untouched. */
 public final class PlayerTimeCommand extends PersonalViewCommand {
 
     private static final String RESET = "reset";

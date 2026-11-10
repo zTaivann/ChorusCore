@@ -2,6 +2,7 @@ package dev.chorus.core.chat.command;
 
 import dev.chorus.core.chat.IgnoreList;
 import dev.chorus.core.chat.PrivateMessages;
+import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.preference.PlayerPreference;
@@ -45,7 +46,9 @@ abstract class PrivateMessageCommand extends PlayerCommand {
     protected final void deliver(Player from, Player to, String text) {
         chat.remember(from.getUniqueId(), to.getUniqueId());
         settle(from);
-        rules().feedback().play(to);
+        // Played where the recipient stands, so on the thread that owns them.
+        CommandRules current = rules();
+        onPlayer(to, () -> current.feedback().play(to));
 
         messages.send(from, "chat.msg-sent", "player", to.getName(), "message", text);
         messages.send(to, "chat.msg-received", "player", from.getName(), "message", text);
@@ -68,9 +71,7 @@ abstract class PrivateMessageCommand extends PlayerCommand {
         }
     }
 
-    /**
-     * Joins the words after {@code firstWord} back together, as plain text.
-     */
+    /** Joins the words after {@code firstWord} into plain text. */
     protected static String textFrom(String[] args, int firstWord) {
         StringBuilder text = new StringBuilder();
         for (int index = firstWord; index < args.length; index++) {

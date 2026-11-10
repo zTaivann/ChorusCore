@@ -31,8 +31,8 @@ public final class ChestShopTrade {
     }
 
     /**
-     * @param amount how many actually changed hands
-     * @param total  what was actually paid
+     * @param amount how many changed hands
+     * @param total  what was paid
      */
     public record Trade(Result result, int amount, double total) {
 

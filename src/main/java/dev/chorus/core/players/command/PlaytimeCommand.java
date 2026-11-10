@@ -1,8 +1,8 @@
 package dev.chorus.core.players.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.players.Playtime;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -12,9 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/**
- * The play time from the server's own statistics.
- */
+/** Play time from the server's statistics. */
 public final class PlaytimeCommand extends ChorusCommand {
 
     private static final String OTHERS_PERMISSION = "chorus.players.playtime.others";

@@ -12,10 +12,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * The per-player preferences, held in memory for everyone online and written through to the
- * database as they change.
- */
+/** Per-player preferences, held in memory for online players and written through to the database. */
 public final class PlayerPreferenceService implements LoginData.Part {
 
     private final PlayerPreferenceRepository repository;
@@ -47,9 +44,7 @@ public final class PlayerPreferenceService implements LoginData.Part {
         return preferences != null && preferences.contains(preference.stored());
     }
 
-    /**
-     * Changes the preference at once and saves it in the background.
-     */
+    /** Changes the preference immediately and saves it in the background. */
     public boolean toggle(UUID player, PlayerPreference preference) {
         Set<String> preferences = cache.computeIfAbsent(player, key -> ConcurrentHashMap.newKeySet());
         boolean nowSet = !preferences.remove(preference.stored());

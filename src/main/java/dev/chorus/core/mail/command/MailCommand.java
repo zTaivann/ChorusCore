@@ -1,8 +1,8 @@
 package dev.chorus.core.mail.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.command.Numbers;
 import dev.chorus.core.mail.Mail;
 import dev.chorus.core.mail.MailService;
@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 /** {@code /mail [read|send|sendall|clear]}: letters for players who were not here. */
@@ -188,7 +189,13 @@ public final class MailCommand extends ChorusCommand {
         }
 
         if (args.length > 1) {
-            long id = Math.max(1, Numbers.integer(args[1], -1));
+            // Something that is not a number is a mistake, not an order to delete letter 1.
+            OptionalInt typed = Numbers.integer(args[1]);
+            if (typed.isEmpty()) {
+                messages.send(player, "chat.mail-usage");
+                return;
+            }
+            long id = Math.max(1, typed.getAsInt());
             mail.clear(player.getUniqueId(), id).whenComplete((gone, failure) -> {
                 if (failure != null) {
                     messages.send(player, "error.storage");
@@ -218,8 +225,6 @@ public final class MailCommand extends ChorusCommand {
     private static String senderName(CommandSender sender) {
         return sender instanceof Player player ? player.getName() : "Server";
     }
-
-    /** Negative for anything that is not a number, which is how a name is told apart. */
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,

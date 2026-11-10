@@ -5,8 +5,6 @@ import dev.chorus.core.command.Numbers;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.menu.ChatPrompts;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -40,7 +38,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Locale;
 
 /** Making, using and protecting a chest shop. */
 public final class ChestShopListener implements Listener {
@@ -50,7 +47,6 @@ public final class ChestShopListener implements Listener {
     private static final String ADMIN_PERMISSION = "chorus.shops.chest.admin";
     private static final String UNLIMITED_PERMISSION = "chorus.shops.chest.unlimited";
 
-    private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
     private static final BlockFace[] AROUND =
             {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
@@ -84,7 +80,7 @@ public final class ChestShopListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onSignChange(SignChangeEvent event) {
-        if (!settings.enabled() || !plain(event.line(0)).equals(ChestShopSign.HEADER)) {
+        if (!settings.enabled() || !Signs.plain(event.line(0)).equals(ChestShopSign.HEADER)) {
             return;
         }
 
@@ -135,17 +131,16 @@ public final class ChestShopListener implements Listener {
             return;
         }
 
-        String mode = plain(event.line(1));
+        String mode = Signs.plain(event.line(1));
         boolean selling = !mode.equals("buy") && !mode.equals("buying");
         boolean unlimited = mode.equals("admin") && player.hasPermission(UNLIMITED_PERMISSION);
 
-        double price = price(plain(event.line(3)));
+        double price = price(Signs.plain(event.line(3)));
         if (price >= 0) {
             open(player, container, template, price, selling, unlimited);
             return;
         }
 
-        // No price on the sign, so it is asked for in chat.
         Block sign = event.getBlock();
         messages.send(player, "shops.chest-ask-price",
                 "item", ChestShopSign.itemName(template));
@@ -595,9 +590,5 @@ public final class ChestShopListener implements Listener {
     /** Negative when the line is not a price, which is how "ask me" is said. */
     private static double price(String raw) {
         return Numbers.cents(Numbers.amount(raw));
-    }
-
-    private static String plain(Component line) {
-        return PLAIN.serialize(line).trim().toLowerCase(Locale.ROOT);
     }
 }

@@ -7,10 +7,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-/**
- * The same idea as {@link PlayerTimeCommand} for the weather. Minecraft only lets a client be
- * shown clear skies or rain, so there is no thunder to ask for here.
- */
+/** Like {@link PlayerTimeCommand} for weather. Clients can only be shown clear or rain. */
 public final class PlayerWeatherCommand extends PersonalViewCommand {
 
     public PlayerWeatherCommand(CommandSupport support) {

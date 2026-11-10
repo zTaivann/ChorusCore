@@ -28,7 +28,7 @@ class PermissionsTest {
 
     private static final Pattern NODE = Pattern.compile("\"(chorus\\.[a-z0-9_.]*)\"");
 
-    /** Nodes built from a name the plugin already knows, which the scanner sees only as a prefix. */
+    /** Nodes built from a known name, which the scanner only sees as a prefix. */
     private static final Set<String> BUILT = Set.of(
             "chorus.utility.motd", "chorus.utility.info",
             "chorus.utility.invsee", "chorus.utility.invsee.edit",

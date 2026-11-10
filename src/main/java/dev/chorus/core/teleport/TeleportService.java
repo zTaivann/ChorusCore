@@ -1,11 +1,11 @@
 package dev.chorus.core.teleport;
 
+import dev.chorus.commons.platform.ChorusTask;
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.api.TeleportApi;
 import dev.chorus.core.api.event.ChorusTeleportEvent;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.ChorusTask;
-import dev.chorus.core.platform.Schedulers;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -62,14 +62,12 @@ public final class TeleportService implements TeleportApi, Listener {
     public enum Landing {
 
         /**
-         * Look for a floor nearby. For a place that was saved once and may not be what it
-         * was: a home, a warp, a spawn, a death point.
+         * Looks for a floor nearby. For saved places that may have changed: homes, warps, spawn,
+         * death points.
          */
         SAFE,
 
-        /**
-         * Exactly where asked, whatever is there. For typed coordinates.
-         */
+        /** Exactly where asked. For typed coordinates. */
         EXACT
     }
 
@@ -95,8 +93,8 @@ public final class TeleportService implements TeleportApi, Listener {
 
     /**
      * @param arrived   runs once the player is there
-     * @param cancelled runs instead when they never get there: they moved, were hurt or left
-     *                  during the warmup, an addon stopped it, or there was nowhere safe to land
+     * @param cancelled runs instead if they never arrive: moved, hurt or left during the warmup,
+     *                  an addon stopped it, or nowhere safe to land
      */
     public void teleport(Player player, Location destination, CommandRules rules, String cause,
                          Landing landing, Runnable arrived, Runnable cancelled) {
@@ -138,8 +136,8 @@ public final class TeleportService implements TeleportApi, Listener {
     }
 
     /**
-     * The overload addons get: a warmup in seconds and nothing else. Everything the plugin's
-     * own commands do beyond that comes from their config block.
+     * The overload for addons: a warmup in seconds only. Everything else comes from the
+     * command's config block.
      */
     @Override
     public void teleport(Player player, Location destination, int warmupSeconds) {
@@ -175,8 +173,8 @@ public final class TeleportService implements TeleportApi, Listener {
     }
 
     /**
-     * Takes {@code steps} places off the history and returns the last of them, so asking to
-     * go two back does not leave the one in between waiting to be visited again.
+     * Removes {@code steps} places from the history and returns the last, so going two back
+     * doesn't leave the one between waiting to be visited.
      */
     public Optional<Location> takePrevious(UUID playerId, int steps) {
         Deque<Location> places = history.get(playerId);

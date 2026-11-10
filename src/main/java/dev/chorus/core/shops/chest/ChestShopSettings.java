@@ -10,11 +10,10 @@ import org.bukkit.entity.Player;
  *
  * @param enabled        false leaves a {@code [Shop]} sign as an ordinary sign
  * @param defaultLimit   shops per player without a limit permission
- * @param worldLimits    shops per player in some worlds, on top of {@code defaultLimit}
- * @param creationCost   the price of creating one
- * @param protectHoppers stops a hopper draining a shop's container
- * @param maxPrice       the highest price for one item, to blunt a mistyped price
- * @param reach          how far from a shop a trade may still be finished, in blocks
+ * @param worldLimits    per-world limits, on top of {@code defaultLimit}
+ * @param protectHoppers stops hoppers draining a shop's container
+ * @param maxPrice       highest price per item, to blunt typos
+ * @param reach          how far from a shop a trade may still finish, in blocks
  */
 public record ChestShopSettings(boolean enabled, int defaultLimit, WorldLimits worldLimits,
                                 double creationCost, boolean protectHoppers, double maxPrice,

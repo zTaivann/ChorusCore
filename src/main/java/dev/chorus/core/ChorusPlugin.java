@@ -1,5 +1,12 @@
 package dev.chorus.core;
 
+import dev.chorus.commons.Console;
+import dev.chorus.commons.command.CommandOverrides;
+import dev.chorus.commons.config.ConfigFile;
+import dev.chorus.commons.config.ConfigFiles;
+import dev.chorus.commons.config.ConfigProblem;
+import dev.chorus.commons.platform.Schedulers;
+import dev.chorus.commons.storage.Storage;
 import dev.chorus.core.api.ChorusApi;
 import dev.chorus.core.api.HomeApi;
 import dev.chorus.core.api.SpawnApi;
@@ -12,7 +19,6 @@ import dev.chorus.core.chat.ChatModule;
 import dev.chorus.core.command.ActionGuard;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandAliases;
-import dev.chorus.core.command.CommandOverrides;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Confirmations;
 import dev.chorus.core.command.Cooldowns;
@@ -22,9 +28,6 @@ import dev.chorus.core.command.HelpCommand;
 import dev.chorus.core.command.RootCommand;
 import dev.chorus.core.command.SqlDailyUseRepository;
 import dev.chorus.core.config.ConfigCheck;
-import dev.chorus.core.config.ConfigFile;
-import dev.chorus.core.config.ConfigFiles;
-import dev.chorus.core.config.ConfigProblem;
 import dev.chorus.core.custom.CustomCommandsModule;
 import dev.chorus.core.economy.Balances;
 import dev.chorus.core.economy.Economy;
@@ -35,11 +38,11 @@ import dev.chorus.core.home.HomeModule;
 import dev.chorus.core.items.ItemsModule;
 import dev.chorus.core.kits.KitsModule;
 import dev.chorus.core.locale.Messages;
+import dev.chorus.core.locale.TextFormat;
 import dev.chorus.core.menu.ChatPrompts;
 import dev.chorus.core.menu.MenuListener;
 import dev.chorus.core.papi.ChorusExpansion;
 import dev.chorus.core.papi.PlaceholderValues;
-import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.players.PlayerProfileListener;
 import dev.chorus.core.players.PlayerProfiles;
 import dev.chorus.core.players.PlayersModule;
@@ -56,7 +59,6 @@ import dev.chorus.core.stafflog.StaffLog;
 import dev.chorus.core.storage.LoginData;
 import dev.chorus.core.storage.Queries;
 import dev.chorus.core.storage.SqlStorage;
-import dev.chorus.core.storage.Storage;
 import dev.chorus.core.storage.StorageOptions;
 import dev.chorus.core.teleport.TeleportService;
 import dev.chorus.core.teleport.TeleportSettings;
@@ -88,6 +90,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public final class ChorusPlugin extends JavaPlugin {
@@ -310,7 +313,7 @@ public final class ChorusPlugin extends JavaPlugin {
             return;
         }
 
-        Console console = new Console(this);
+        Console console = new Console(getServer().getConsoleSender(), TextFormat::parse, ConsoleTheme.CORE);
         console.banner();
         console.title(getDescription().getVersion(), serverVersion());
 
@@ -356,43 +359,27 @@ public final class ChorusPlugin extends JavaPlugin {
             }
         }
 
-        if (updates != null) {
-            updates.shutdown();
-        }
-        if (metrics != null) {
-            metrics.shutdown();
-        }
+        // The storage thread drains after the last possible write; the pool closes last.
+        stop(updates, UpdateCheck::shutdown);
+        stop(metrics, Metrics::shutdown);
         cooldowns.clear();
-        if (dailyUses != null) {
-            dailyUses.clear();
-        }
+        stop(dailyUses, DailyUses::clear);
         reserved.clear();
-        if (confirmations != null) {
-            confirmations.clear();
-        }
-        if (prompts != null) {
-            prompts.shutdown();
-        }
-        if (loginData != null) {
-            loginData.clear();
-        }
-        if (preferences != null) {
-            preferences.clearAll();
-        }
-        if (profiles != null) {
-            profiles.clear();
-        }
-        if (teleports != null) {
-            teleports.shutdown();
-        }
-        if (schedulers != null) {
-            schedulers.shutdown();
-        }
-        if (worker != null) {
-            drain(worker);
-        }
-        if (storage != null) {
-            storage.close();
+        stop(confirmations, Confirmations::clear);
+        stop(prompts, ChatPrompts::shutdown);
+        stop(loginData, LoginData::clear);
+        stop(preferences, PlayerPreferenceService::clearAll);
+        stop(profiles, PlayerProfiles::clear);
+        stop(teleports, TeleportService::shutdown);
+        stop(schedulers, Schedulers::shutdown);
+        stop(worker, this::drain);
+        stop(storage, Storage::close);
+    }
+
+    /** One step of the shutdown, for a part that may never have been made. */
+    private static <T> void stop(@Nullable T part, Consumer<T> step) {
+        if (part != null) {
+            step.accept(part);
         }
     }
 
@@ -419,6 +406,8 @@ public final class ChorusPlugin extends JavaPlugin {
         configs.get(found.configPath()).reload();
         configs.reload(Messages::owns);
         messages.reload();
+        // reload() puts English back as the default; the configured language goes on top again.
+        messages.apply(configs.get("config.yml").section("language"));
         found.reload();
         return true;
     }
@@ -545,10 +534,7 @@ public final class ChorusPlugin extends JavaPlugin {
         return command;
     }
 
-    /**
-     * Starts a module unless its config switches it off. A module that is off still answers
-     * its commands with a message.
-     */
+    /** Starts a module unless its config disables it; a disabled one still replies to its commands. */
     private void install(ChorusModule module) {
         if (!isEnabled()) {
             // An earlier module already brought the plugin down.

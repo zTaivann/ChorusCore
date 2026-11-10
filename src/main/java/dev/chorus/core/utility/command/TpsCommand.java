@@ -1,8 +1,8 @@
 package dev.chorus.core.utility.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import org.bukkit.command.CommandSender;
 
 import java.lang.management.ManagementFactory;
@@ -42,9 +42,7 @@ public final class TpsCommand extends ChorusCommand {
                 "max", String.valueOf(runtime.maxMemory() / BYTES_PER_MEGABYTE));
     }
 
-    /**
-     * Capped at 20.
-     */
+    /** Capped at 20. */
     private static String format(double[] rates, int index) {
         if (index >= rates.length) {
             return "?";

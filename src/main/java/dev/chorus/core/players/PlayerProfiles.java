@@ -1,7 +1,7 @@
 package dev.chorus.core.players;
 
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.locale.TextFormat;
-import dev.chorus.core.platform.Schedulers;
 import dev.chorus.core.storage.Queries;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -18,10 +18,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * The record of who has been on the server: names, nicknames, where they last were and the
- * address they came from.
- */
+/** Who has been on the server: names, nicknames, last location and address. */
 public final class PlayerProfiles {
 
     private final PlayerProfileRepository repository;

@@ -8,9 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/**
- * Homes of players who are online. Nothing here touches the database.
- */
+/** Homes of online players. Never touches the database. */
 public interface HomeApi {
 
     List<Home> list(UUID owner);

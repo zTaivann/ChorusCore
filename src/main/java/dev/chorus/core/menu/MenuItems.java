@@ -19,9 +19,7 @@ public final class MenuItems {
         return of(new ItemStack(material), name, lore);
     }
 
-    /**
-     * The same from a full item, keeping its name and enchantments.
-     */
+    /** The same from a full item, keeping its name and enchantments. */
     public static ItemStack of(ItemStack template, Component name, List<Component> lore) {
         ItemStack item = template.clone();
         item.setAmount(1);

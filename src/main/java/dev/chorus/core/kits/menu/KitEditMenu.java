@@ -1,26 +1,24 @@
 package dev.chorus.core.kits.menu;
 
-import dev.chorus.core.command.Durations;
+import dev.chorus.commons.menu.Menu;
+import dev.chorus.commons.platform.Schedulers;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.kits.Kit;
 import dev.chorus.core.kits.KitEditor;
 import dev.chorus.core.kits.KitService;
+import dev.chorus.core.kits.KitWords;
 import dev.chorus.core.locale.Messages;
 import dev.chorus.core.menu.ChatPrompts;
-import dev.chorus.core.menu.Menu;
 import dev.chorus.core.menu.MenuItems;
 import dev.chorus.core.menu.PaletteMenu;
-import dev.chorus.core.platform.Schedulers;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /** The kit editor as a menu. */
 public final class KitEditMenu {
@@ -52,25 +50,23 @@ public final class KitEditMenu {
     private static final int COOLDOWN_STEP = 60;
     private static final int COOLDOWN_LEAP = 86400;
 
-    private final Plugin plugin;
     private final Schedulers schedulers;
     private final KitService kits;
     private final KitEditor editor;
     private final Messages messages;
-    private final Economy economy;
+    private final KitWords words;
     private final ChatPrompts prompts;
     private final KitMenuSettings settings;
     private final KitRulesMenu rules;
 
-    public KitEditMenu(Plugin plugin, Schedulers schedulers, KitService kits, KitEditor editor,
+    public KitEditMenu(Schedulers schedulers, KitService kits, KitEditor editor,
                        Messages messages, Economy economy, ChatPrompts prompts,
                        KitMenuSettings settings) {
-        this.plugin = plugin;
         this.schedulers = schedulers;
         this.kits = kits;
         this.editor = editor;
         this.messages = messages;
-        this.economy = economy;
+        this.words = new KitWords(messages, economy);
         this.prompts = prompts;
         this.settings = settings;
         this.rules = new KitRulesMenu(editor, messages, prompts, settings, this::open);
@@ -168,7 +164,6 @@ public final class KitEditMenu {
         menu.setPerClick(DELETE_SLOT,
                 button(player, settings.delete(), "menu.editor.delete", "menu.editor.delete-lore"),
                 (clicker, click) -> {
-                    // Only on a shift click.
                     if (click.isShiftClick()) {
                         editor.delete(kit.name());
                         messages.send(clicker, "kits.edit-deleted", "kit", kit.name());
@@ -200,39 +195,39 @@ public final class KitEditMenu {
                 clicker -> rules.open(clicker, kit.name(), KitEditor.RuleList.FAIL_ACTIONS));
 
         menu.set(PLACEHOLDERS_SLOT, toggle(player, kit.placeholders(), "menu.editor.placeholders",
-                        "menu.editor.placeholders-lore", word(player, kit.placeholders())),
+                        "menu.editor.placeholders-lore", words.word(player, kit.placeholders())),
                 clicker -> set(clicker, kit, "placeholders", String.valueOf(!kit.placeholders())));
     }
 
     private void settings(Player player, Menu menu, Kit kit) {
         menu.setPerClick(SETTING_SLOTS[0],
                 button(player, settings.cooldown(), "menu.editor.cooldown", "menu.editor.cooldown-lore",
-                        "value", cooldownOf(player, kit)),
+                        "value", words.cooldown(player, kit)),
                 (clicker, click) -> number(clicker, kit, click, "cooldown", "menu.editor.ask-cooldown",
                         kit.cooldownSeconds(), click.isShiftClick() ? COOLDOWN_LEAP : COOLDOWN_STEP));
 
         menu.setPerClick(SETTING_SLOTS[1],
                 button(player, settings.maxClaims(), "menu.editor.maxclaims", "menu.editor.maxclaims-lore",
-                        "value", claimsOf(player, kit)),
+                        "value", words.claims(player, kit)),
                 (clicker, click) -> number(clicker, kit, click, "maxclaims",
                         "menu.editor.ask-maxclaims", kit.maxClaims(), click.isShiftClick() ? 10 : 1));
 
         menu.setPerClick(SETTING_SLOTS[2],
                 button(player, settings.price(), "menu.editor.price", "menu.editor.price-lore",
-                        "value", priceOf(player, kit)),
+                        "value", words.price(player, kit)),
                 (clicker, click) -> number(clicker, kit, click, "price", "menu.editor.ask-price",
                         (int) kit.price(), click.isShiftClick() ? 100 : 10));
 
         menu.set(SETTING_SLOTS[3], toggle(player, kit.oneTime(), "menu.editor.onetime",
-                        "menu.editor.onetime-lore", word(player, kit.oneTime())),
+                        "menu.editor.onetime-lore", words.word(player, kit.oneTime())),
                 clicker -> set(clicker, kit, "onetime", String.valueOf(!kit.oneTime())));
 
         menu.set(SETTING_SLOTS[4], toggle(player, kit.autoArmor(), "menu.editor.autoarmor",
-                        "menu.editor.autoarmor-lore", word(player, kit.autoArmor())),
+                        "menu.editor.autoarmor-lore", words.word(player, kit.autoArmor())),
                 clicker -> set(clicker, kit, "autoarmor", String.valueOf(!kit.autoArmor())));
 
         menu.set(SETTING_SLOTS[5], toggle(player, kit.clearInventory(), "menu.editor.clearinventory",
-                        "menu.editor.clearinventory-lore", word(player, kit.clearInventory())),
+                        "menu.editor.clearinventory-lore", words.word(player, kit.clearInventory())),
                 clicker -> set(clicker, kit, "clearinventory", String.valueOf(!kit.clearInventory())));
 
         menu.set(SETTING_SLOTS[6],
@@ -278,7 +273,7 @@ public final class KitEditMenu {
         prompts.ask(player, messages.render(player, "menu.editor.ask-name"),
                 typed -> {
                     String name = ChatPrompts.normalise(typed);
-                    if (!name.matches("[a-z0-9_-]{1,32}")) {
+                    if (!KitEditor.validName(name)) {
                         messages.send(player, "kits.edit-bad-name");
                         openList(player);
                         return;
@@ -345,10 +340,6 @@ public final class KitEditMenu {
                     }
                     messages.send(closer, "kits.edit-items",
                             "kit", kit.name(), "count", String.valueOf(result.count()));
-                    if (result.simplified() > 0) {
-                        messages.send(closer, "kits.edit-items-simplified",
-                                "count", String.valueOf(result.simplified()));
-                    }
                     later(closer, () -> open(closer, kit.name()));
                 });
 
@@ -372,10 +363,7 @@ public final class KitEditMenu {
 
     /** Opens a menu on the next tick rather than now. */
     private void later(Player player, Runnable open) {
-        if (!plugin.isEnabled()) {
-            // A close during shutdown. Asking a stopping server to schedule anything throws.
-            return;
-        }
+        // A close during shutdown is dropped by the scheduler itself.
         schedulers.entity(player, () -> {
             if (player.isOnline()) {
                 open.run();
@@ -404,23 +392,4 @@ public final class KitEditMenu {
                 messages.render(player, nameKey), messages.renderLines(player, loreKey, "value", value));
     }
 
-    private String cooldownOf(Player player, Kit kit) {
-        return kit.cooldownSeconds() == 0
-                ? messages.plain(player, "kits.word-none")
-                : Durations.format(TimeUnit.SECONDS.toMillis(kit.cooldownSeconds()));
-    }
-
-    private String claimsOf(Player player, Kit kit) {
-        return kit.maxClaims() == 0
-                ? messages.plain(player, "kits.word-unlimited")
-                : String.valueOf(kit.maxClaims());
-    }
-
-    private String priceOf(Player player, Kit kit) {
-        return kit.price() <= 0 ? messages.plain(player, "kits.word-free") : economy.format(kit.price());
-    }
-
-    private String word(Player player, boolean value) {
-        return messages.plain(player, value ? "kits.word-true" : "kits.word-false");
-    }
 }

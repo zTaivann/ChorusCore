@@ -1,8 +1,8 @@
 package dev.chorus.core.home;
 
+import dev.chorus.commons.storage.SqlDialect;
+import dev.chorus.commons.storage.Storage;
 import dev.chorus.core.storage.Schema;
-import dev.chorus.core.storage.SqlDialect;
-import dev.chorus.core.storage.Storage;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -129,10 +129,7 @@ public final class SqlHomeRepository implements HomeRepository {
         };
     }
 
-    /**
-     * The second step, added after the first release. A server upgrading from it runs only
-     * this one; a fresh install runs both, in order, and ends up with the same table.
-     */
+    /** Second step, added after the first release: upgrades run only this, fresh installs run both. */
     private static String addIcon(SqlDialect dialect) {
         return switch (dialect) {
             case SQLITE -> "ALTER TABLE chorus_homes ADD COLUMN icon TEXT";

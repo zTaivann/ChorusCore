@@ -90,10 +90,9 @@ public record Requirement(Kind kind, String argument, @Nullable String deny) {
     }
 
     /**
-     * Tells the player they were turned away: this requirement's own line when it has one,
-     * the message under {@code fallbackKey} when it does not.
+     * Tells the player they were turned away: this requirement's own line, else {@code fallbackKey}.
      *
-     * @param placeholders name and value pairs, filled into either
+     * @param placeholders name/value pairs filled into either
      */
     public void tell(Player player, Messages messages, String fallbackKey, String... placeholders) {
         if (deny == null) {

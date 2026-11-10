@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The menus once showed a literal {@code %home%} because the value was being put into the
- * finished component rather than into the parse.
+ * Menus once showed a literal {@code %home%} because values were put into the finished
+ * component instead of the parse.
  */
 class PlaceholderTest {
 
@@ -57,8 +57,8 @@ class PlaceholderTest {
     }
 
     /**
-     * A tag called "key" is a real MiniMessage tag, so a placeholder of that name has to be
-     * kept apart from it or the message would come out as a keybind.
+     * "key" is a real MiniMessage tag; a placeholder of that name must stay apart from it, or the
+     * message becomes a keybind.
      */
     @Test
     void aPlaceholderNamedAfterATagIsNotMistakenForIt() {
@@ -66,8 +66,8 @@ class PlaceholderTest {
     }
 
     /**
-     * The menus once showed a box in the middle of a tooltip because a lore line holding a
-     * newline was sent as one piece. Lore is a list of lines; this is what splits it.
+     * A lore line with a newline once rendered a box in the tooltip. Lore is a list of lines;
+     * this splits it.
      */
     @Test
     void aTemplateSplitsIntoTheLinesItAsksFor() {

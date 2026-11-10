@@ -1,5 +1,6 @@
 package dev.chorus.core;
 
+import dev.chorus.commons.Console;
 import dev.chorus.core.locale.TextFormat;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ class ConsoleTest {
 
     @Test
     void everyRowOfTheNameIsTheSameWidth() {
-        for (String[] word : Console.words()) {
+        for (String[] word : Console.words(ConsoleTheme.CORE)) {
             int width = word[0].length();
             for (String row : word) {
                 assertEquals(width, row.length(), "this row is a different width:\n" + row);
@@ -24,7 +25,7 @@ class ConsoleTest {
     /** Nothing in the letters may be read as formatting and disappear on the way out. */
     @Test
     void theNameSurvivesBeingColoured() {
-        for (String[] word : Console.words()) {
+        for (String[] word : Console.words(ConsoleTheme.CORE)) {
             for (String row : word) {
                 assertEquals(row, PLAIN.serialize(TextFormat.parse("<color:#5b2ea8>" + row)));
             }

@@ -1,7 +1,7 @@
 package dev.chorus.core.economy;
 
+import dev.chorus.commons.storage.Storage;
 import dev.chorus.core.command.PermissionLimits;
-import dev.chorus.core.storage.Storage;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -64,7 +64,6 @@ public final class EconomySetup implements Listener {
             balances = openLedger(economySection);
         }
         if (balances == null && mode != EconomyMode.VAULT) {
-            // The table could not be opened, so there is nothing to hand out.
             economy = NoEconomy.failed();
             return;
         }
@@ -92,9 +91,8 @@ public final class EconomySetup implements Listener {
     }
 
     /**
-     * Gives a new player their starting balance the first time they arrive, or the highest
-     * {@code chorus.economy.starting.<amount>} they hold when that is more, and notes whether
-     * /baltop leaves them out, so it still does while they are offline.
+     * Gives a new player their starting balance on first arrival (or the highest
+     * {@code chorus.economy.starting.<amount>} they hold) and notes whether /baltop hides them.
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {

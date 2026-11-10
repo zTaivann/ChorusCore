@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Shared groundwork for the commands shaped {@code /command <value> [player]}, where the
- * value changes only what one client is shown and nothing on the server itself.
+ * Shared base for {@code /command <value> [player]} commands that change only what one
+ * client is shown.
  */
 abstract class PersonalViewCommand extends ChorusCommand {
 

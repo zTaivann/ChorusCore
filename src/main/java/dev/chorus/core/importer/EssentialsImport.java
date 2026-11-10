@@ -1,6 +1,7 @@
 package dev.chorus.core.importer;
 
-import dev.chorus.core.config.ConfigFile;
+import dev.chorus.commons.config.ConfigFile;
+import dev.chorus.commons.storage.Storage;
 import dev.chorus.core.economy.BalanceRepository;
 import dev.chorus.core.economy.SqlBalanceRepository;
 import dev.chorus.core.home.Home;
@@ -14,7 +15,6 @@ import dev.chorus.core.mail.MailRepository;
 import dev.chorus.core.mail.SqlMailRepository;
 import dev.chorus.core.players.PlayerProfileRepository;
 import dev.chorus.core.players.SqlPlayerProfileRepository;
-import dev.chorus.core.storage.Storage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -55,10 +55,10 @@ public final class EssentialsImport {
     }
 
     /**
-     * Blocking. Belongs on a worker thread.
+     * Blocking; run on a worker thread.
      *
-     * @param dryRun    true to read everything and write nothing
-     * @param overwrite true to replace what Chorus already has
+     * @param dryRun    read everything, write nothing
+     * @param overwrite replace what Chorus already has
      */
     public ImportReport run(boolean dryRun, boolean overwrite) throws SQLException {
         ImportReport report = new ImportReport();
@@ -227,10 +227,7 @@ public final class EssentialsImport {
         }
     }
 
-    /**
-     * Essentials writes mail as lines of text, older versions as {@code "Sender: body"} and
-     * newer ones with a timestamp in front. Both are read back into a sender and a body.
-     */
+    /** Essentials stores mail as {@code "Sender: body"}, newer versions with a leading timestamp. Both are read. */
     private void mail(ImportReport report, boolean dryRun, MailRepository mail, UUID owner,
                       YamlConfiguration data) throws SQLException {
         List<String> letters = data.getStringList("mail");
@@ -365,10 +362,7 @@ public final class EssentialsImport {
 
     // ── reading Essentials ────────────────────────────────────────────────────
 
-    /**
-     * Essentials writes a price as a number, or as a section with the amount under it when
-     * the item had data values. Both shapes turn into one number.
-     */
+    /** Essentials writes a price as a number or as a section holding the amount. Both become one number. */
     private static double price(@Nullable Object value) {
         if (value instanceof Number number) {
             return number.doubleValue();

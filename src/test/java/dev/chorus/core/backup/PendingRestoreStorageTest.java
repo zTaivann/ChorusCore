@@ -13,10 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-/**
- * A restore left for an offline player has to be applied once and once only. Handing
- * somebody the same inventory twice is a duplication bug with extra steps.
- */
+/** A restore left for an offline player must apply exactly once, or it duplicates items. */
 class PendingRestoreStorageTest {
 
     private TempStorage storage;

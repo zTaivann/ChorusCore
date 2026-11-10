@@ -5,7 +5,6 @@ import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.economy.Economy;
 import dev.chorus.core.locale.Messages;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -18,10 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-/**
- * Signs that trade with the server: {@code [Buy]} hands items over for a price, {@code [Sell]}
- * takes them back.
- */
+/** Signs that trade with the server: {@code [Buy]} sells items to players, {@code [Sell]} buys them. */
 public final class ShopSignListener implements Listener {
 
     private static final String CREATE_PERMISSION = "chorus.shops.create";
@@ -184,8 +180,7 @@ public final class ShopSignListener implements Listener {
     }
 
     private static @Nullable String header(Component line) {
-        String text = PlainTextComponentSerializer.plainText()
-                .serialize(line).trim().toLowerCase(Locale.ROOT);
+        String text = Signs.plain(line);
         return text.equals("[buy]") || text.equals("[sell]") ? text : null;
     }
 }

@@ -1,5 +1,6 @@
 package dev.chorus.core.request.command;
 
+import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.PlayerCommand;
 import dev.chorus.core.request.TeleportRequest;
@@ -82,7 +83,9 @@ public final class TeleportResponseCommand extends PlayerCommand {
         Player traveller = server.getPlayer(request.traveller());
         Player anchor = server.getPlayer(request.anchor());
         if (traveller != null && anchor != null) {
-            teleports.teleport(traveller, anchor.getLocation(), rules(), name());
+            // Where the anchor stands is read on the thread that owns them.
+            CommandRules current = rules();
+            onPlayer(anchor, () -> teleports.teleport(traveller, anchor.getLocation(), current, name()));
         }
     }
 

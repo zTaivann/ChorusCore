@@ -6,10 +6,7 @@ import dev.chorus.core.preference.PlayerPreference;
 import dev.chorus.core.preference.PlayerPreferenceService;
 import org.bukkit.entity.Player;
 
-/**
- * Stops every powertool without forgetting any of them, for building with a tool that has a
- * command on it.
- */
+/** Pauses every powertool without forgetting them, for building with a tool that holds a command. */
 public final class PowertoolToggleCommand extends PlayerCommand {
 
     private final PlayerPreferenceService preferences;

@@ -1,13 +1,13 @@
 package dev.chorus.core.request;
 
+import dev.chorus.commons.config.ConfigFile;
+import dev.chorus.commons.platform.ChorusTask;
 import dev.chorus.core.ChorusModule;
 import dev.chorus.core.ChorusPlugin;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandRules;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.config.ConfigFile;
 import dev.chorus.core.locale.Messages;
-import dev.chorus.core.platform.ChorusTask;
 import dev.chorus.core.preference.PlayerPreferenceService;
 import dev.chorus.core.request.command.BackCommand;
 import dev.chorus.core.request.command.TeleportRequestCommand;

@@ -2,6 +2,8 @@ package dev.chorus.core.storage;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import dev.chorus.commons.storage.SqlDialect;
+import dev.chorus.commons.storage.Storage;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -7,7 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.jetbrains.annotations.Nullable;
 
-/** Closes the door to everyone but staff, for the ten minutes after something has gone wrong. */
+/** Locks everyone but staff out for ten minutes after something goes wrong. */
 public final class LockdownService implements Listener {
 
     private static final String BYPASS_PERMISSION = "chorus.staff.lockdown.bypass";

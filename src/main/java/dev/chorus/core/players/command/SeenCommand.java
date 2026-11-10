@@ -1,8 +1,8 @@
 package dev.chorus.core.players.command;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.command.ChorusCommand;
 import dev.chorus.core.command.CommandSupport;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.players.AfkService;
 import dev.chorus.core.players.PlayerProfile;
 import dev.chorus.core.players.PlayerProfiles;
@@ -47,12 +47,15 @@ public final class SeenCommand extends ChorusCommand {
         Player online = sender.getServer().getPlayerExact(args[0]);
         if (online != null && (!(sender instanceof Player viewer) || viewer.canSee(online))) {
             settle(sender);
-            messages.send(sender, afk.isAway(online.getUniqueId())
-                            ? "players.seen-online-afk"
-                            : "players.seen-online",
-                    "player", online.getName(),
-                    "world", online.getWorld().getName());
-            details(sender, online.getUniqueId());
+            Player target = online;
+            onPlayer(target, () -> {
+                messages.send(sender, afk.isAway(target.getUniqueId())
+                                ? "players.seen-online-afk"
+                                : "players.seen-online",
+                        "player", target.getName(),
+                        "world", target.getWorld().getName());
+                details(sender, target.getUniqueId());
+            });
             return;
         }
 

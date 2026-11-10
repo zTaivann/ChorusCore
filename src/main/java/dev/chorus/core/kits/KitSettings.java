@@ -1,6 +1,6 @@
 package dev.chorus.core.kits;
 
-import dev.chorus.core.menu.MenuSettings;
+import dev.chorus.commons.menu.MenuSettings;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;

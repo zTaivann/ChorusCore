@@ -30,11 +30,10 @@ public final class PrivateMessages {
     }
 
     /**
-     * Who {@code /reply} would answer.
+     * Who {@code /reply} answers.
      *
-     * @param preferSender true to answer whoever last spoke to them, false to carry on the
-     *                     conversation they started. Either way the other one stands in when
-     *                     there is nothing on the preferred side.
+     * @param preferSender true for whoever last wrote to them, false for the conversation they
+     *                     started; the other side is used when the preferred one is empty
      */
     public @Nullable UUID replyTarget(UUID player, boolean preferSender) {
         UUID first = preferSender ? heardFrom.get(player) : sentTo.get(player);

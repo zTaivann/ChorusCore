@@ -11,9 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-/**
- * What addons see. A disabled module leaves its service absent.
- */
+/** What addons see. A disabled module's service is absent. */
 final class ChorusServices implements ChorusApi {
 
     private final String version;

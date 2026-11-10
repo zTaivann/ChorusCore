@@ -11,8 +11,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 
 /**
- * Items a command takes as part of its price, written {@code 'diamond 2'}. Only plain stacks
- * count, so a renamed or enchanted item is never taken by mistake.
+ * Items taken as part of a price, written {@code 'diamond 2'}. Only plain stacks count.
  *
  * @param material null for none
  */

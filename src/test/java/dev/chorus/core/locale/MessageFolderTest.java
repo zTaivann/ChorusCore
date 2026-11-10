@@ -1,6 +1,6 @@
 package dev.chorus.core.locale;
 
-import dev.chorus.core.config.ConfigFiles;
+import dev.chorus.commons.config.ConfigFiles;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.plugin.Plugin;

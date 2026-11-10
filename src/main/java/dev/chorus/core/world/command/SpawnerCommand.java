@@ -3,6 +3,7 @@ package dev.chorus.core.world.command;
 import dev.chorus.core.command.CommandSupport;
 import dev.chorus.core.command.Numbers;
 import dev.chorus.core.command.PlayerCommand;
+import dev.chorus.core.world.Mobs;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.command.Command;
@@ -11,7 +12,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -40,7 +40,7 @@ public final class SpawnerCommand extends PlayerCommand {
             return;
         }
 
-        EntityType type = type(args[0]);
+        EntityType type = Mobs.parse(args[0]);
         if (type == null) {
             messages.send(player, "world.spawnmob-unknown", "mob", args[0]);
             return;
@@ -64,15 +64,6 @@ public final class SpawnerCommand extends PlayerCommand {
         messages.send(player, "world.spawner-set", "mob", type.name().toLowerCase(Locale.ROOT));
     }
 
-    private static EntityType type(String raw) {
-        try {
-            EntityType type = EntityType.valueOf(raw.toUpperCase(Locale.ROOT).replace(' ', '_'));
-            return type.isSpawnable() && type.isAlive() ? type : null;
-        } catch (IllegalArgumentException unknown) {
-            return null;
-        }
-    }
-
     private static int delay(String raw) {
         int ticks = Numbers.integer(raw, -1);
         return ticks < 0 ? -1 : Math.min(MAX_DELAY, ticks);
@@ -84,12 +75,6 @@ public final class SpawnerCommand extends PlayerCommand {
         if (args.length != 1) {
             return List.of();
         }
-        List<String> names = new ArrayList<>();
-        for (EntityType type : EntityType.values()) {
-            if (type.isSpawnable() && type.isAlive()) {
-                names.add(type.name().toLowerCase(Locale.ROOT));
-            }
-        }
-        return startingWith(args[0], names);
+        return startingWith(args[0], Mobs.NAMES);
     }
 }

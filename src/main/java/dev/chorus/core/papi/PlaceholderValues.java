@@ -1,8 +1,8 @@
 package dev.chorus.core.papi;
 
+import dev.chorus.commons.command.Durations;
 import dev.chorus.core.api.ChorusApi;
 import dev.chorus.core.api.HomeApi;
-import dev.chorus.core.command.Durations;
 import dev.chorus.core.players.AfkService;
 import dev.chorus.core.players.Playtime;
 import dev.chorus.core.staff.VanishService;

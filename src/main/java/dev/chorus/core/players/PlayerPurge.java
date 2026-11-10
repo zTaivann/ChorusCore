@@ -1,6 +1,6 @@
 package dev.chorus.core.players;
 
-import dev.chorus.core.storage.Storage;
+import dev.chorus.commons.storage.Storage;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -49,9 +49,9 @@ public final class PlayerPurge {
     }
 
     /**
-     * @param players  how many were removed, or would be.
-     * @param rows     how many rows that came to across every table.
-     * @param shopKeep how many were left alone because they own a chest shop.
+     * @param players  how many were (or would be) removed
+     * @param rows     rows affected across every table
+     * @param shopKeep how many were kept for owning a chest shop
      */
     public record Report(int players, int rows, int shopKeep) {
 
@@ -61,9 +61,9 @@ public final class PlayerPurge {
     }
 
     /**
-     * @param before  nobody last seen after this is touched.
-     * @param exclude players to leave alone whatever their date, which is everybody online.
-     * @param live    false reads and counts without deleting anything.
+     * @param before  nobody seen after this is touched
+     * @param exclude players to keep regardless of date, which is everyone online
+     * @param live    false counts without deleting
      */
     public Report run(long before, Set<UUID> exclude, boolean live) throws SQLException {
         try (Connection connection = storage.connection()) {

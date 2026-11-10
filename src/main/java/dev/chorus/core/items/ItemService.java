@@ -22,10 +22,7 @@ public final class ItemService {
         this.settings = updated;
     }
 
-    /**
-     * A typed name. Only a player holding the format permission gets their formatting read;
-     * for everyone else the text stays exactly as they wrote it.
-     */
+    /** A typed name; formatting is read only for holders of the format permission. */
     public Component name(Player author, String raw) {
         return TextFormat.upright(typed(author, raw));
     }
