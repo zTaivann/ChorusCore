@@ -42,6 +42,16 @@ storage:
       useSSL: false
       characterEncoding: utf8
 
+# ── Backups ───────────────────────────────────────────────────────────────
+# /chorus backup writes one zip with the database (SQLite only; a MySQL or
+# MariaDB database is not copied), the configs and the messages.
+backup:
+  # Relative to plugins/ChorusCore/.
+  folder: backups
+
+  # Zips older than this are deleted after each backup. 0 keeps them all.
+  keep-days: 14
+
 # ── Economy ───────────────────────────────────────────────────────────────
 economy:
   # false disables prices, /pay and /balance.

@@ -4,6 +4,7 @@ import dev.chorus.commons.config.ConfigFile;
 import dev.chorus.commons.config.ConfigProblem;
 import dev.chorus.commons.config.ConfigSnapshot;
 import dev.chorus.core.ChorusPlugin;
+import dev.chorus.core.backup.DataBackup;
 import dev.chorus.core.config.ConfigCheck;
 import dev.chorus.core.importer.EssentialsImport;
 import dev.chorus.core.importer.ImportReport;
@@ -13,9 +14,11 @@ import dev.chorus.core.papi.PlaceholderValues;
 import dev.chorus.core.players.PlayerPurge;
 import dev.chorus.core.shops.WorthTable;
 import dev.chorus.core.storage.Queries;
+import dev.chorus.core.storage.StorageOptions;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,13 +31,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ForkJoinPool;
 import java.util.logging.Level;
 
 public final class RootCommand extends ChorusCommand {
 
 
     private static final List<String> ACTIONS = List.of("reload", "status", "check",
-            "permissions", "placeholders", "debug", "import", "purge");
+            "permissions", "placeholders", "debug", "import", "purge", "backup");
 
     private static final String PERMISSIONS = "permissions.yml";
 
@@ -78,6 +82,7 @@ public final class RootCommand extends ChorusCommand {
             case "debug" -> debug(sender);
             case "import" -> importFrom(sender, args);
             case "purge" -> purge(sender, args);
+            case "backup" -> backup(sender);
             default -> messages.send(sender, "core.usage",
                     "version", plugin.getDescription().getVersion());
         }
@@ -215,6 +220,35 @@ public final class RootCommand extends ChorusCommand {
         }
 
         messages.send(sender, live ? "core.import-restart" : "core.import-next");
+    }
+
+    /** {@code /chorus backup}: one zip with the database, configs and messages. */
+    private void backup(CommandSender sender) {
+        StorageOptions storage = StorageOptions.read(plugin.configs().get("config.yml").data());
+        ConfigurationSection settings = plugin.configs().get("config.yml").section("backup");
+        Path data = plugin.getDataFolder().toPath();
+        DataBackup backup = new DataBackup(data, data.resolve(settings.getString("folder", "backups")),
+                Math.max(0, settings.getInt("keep-days", 14)), plugin.storage(), storage.file(), plugin.worker());
+
+        messages.send(sender, "core.backup-started");
+        // A plain pool, not the storage thread: zipping a large database must not stall queries.
+        Queries.run(backup::run, ForkJoinPool.commonPool(), plugin.mainThread())
+                .whenComplete((result, failure) -> {
+                    if (failure != null) {
+                        plugin.getLogger().log(Level.SEVERE, "The backup failed", failure);
+                        messages.send(sender, "core.backup-failed");
+                        return;
+                    }
+                    messages.send(sender, "core.backup-done",
+                            "file", result.file().getFileName().toString(),
+                            "size", String.format(Locale.ROOT, "%.1f", result.bytes() / 1_048_576.0));
+                    if (!result.database()) {
+                        messages.send(sender, "core.backup-remote");
+                    }
+                    if (result.removed() > 0) {
+                        messages.send(sender, "core.backup-rotated", "count", String.valueOf(result.removed()));
+                    }
+                });
     }
 
     /** {@code /chorus purge <days> [run]}: forgets players nobody has seen in a long time. */

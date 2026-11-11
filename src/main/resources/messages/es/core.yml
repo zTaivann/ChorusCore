@@ -22,7 +22,7 @@ error:
 
 
 core:
-  usage: '%prefix%<gray>ChorusCore <white>%version%</white>. Uso: <white>/chorus [reload|status|check|permissions|placeholders|debug|import|purge]</white>'
+  usage: '%prefix%<gray>ChorusCore <white>%version%</white>. Uso: <white>/chorus [reload|status|check|permissions|placeholders|debug|import|purge|backup]</white>'
   reloaded: '%prefix%<green>Configuración recargada.<newline>%prefix%<gray>El almacenamiento y los alias necesitan reiniciar el servidor.'
   status-storage: '<dark_gray>▪ <gray>Almacenamiento <dark_gray>» <white>%storage%'
   status-economy: '<dark_gray>▪ <gray>Economía <dark_gray>» <white>%economy%'
@@ -101,6 +101,11 @@ core:
   purge-empty: '%prefix%<gray>Ningún jugador lleva tanto tiempo sin conectarse.'
   purge-failed: '%prefix%<red>La limpieza se detuvo. La consola dice por qué. No se borró nada.'
   purge-next: '%prefix%<gray>Para borrarlos, añade <white>run</white> al final.'
+  backup-started: '%prefix%<gray>Copiando la base de datos, las configuraciones y los mensajes.'
+  backup-done: '%prefix%<green>Copia guardada como <white>%file%</white> <dark_gray>(<gray>%size% MB<dark_gray>)<green>.'
+  backup-remote: '%prefix%<yellow>La base de datos está en un servidor remoto y no se copió. Haz su copia con sus propias herramientas.'
+  backup-rotated: '<dark_gray>▪ <gray>Copias antiguas borradas <dark_gray>» <white>%count%'
+  backup-failed: '%prefix%<red>La copia se detuvo. La consola dice por qué.'
 
   status-updates: '<dark_gray>▪ <gray>Actualizaciones <dark_gray>» <white>%updates%'
   update-available: '%prefix%<gray>Ya salió ChorusCore <white>%latest%</white>. Este servidor tiene la <white>%current%</white>. <c:accent><underlined>Haz clic para descargarla</underlined></c> <dark_gray>(%site%)'

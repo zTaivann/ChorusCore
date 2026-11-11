@@ -29,7 +29,7 @@ error:
 
 
 core:
-  usage: '%prefix%<gray>ChorusCore <white>%version%</white>. Usage: <white>/chorus [reload|status|check|permissions|placeholders|debug|import|purge]</white>'
+  usage: '%prefix%<gray>ChorusCore <white>%version%</white>. Usage: <white>/chorus [reload|status|check|permissions|placeholders|debug|import|purge|backup]</white>'
   reloaded: '%prefix%<green>Configuration reloaded.<newline>%prefix%<gray>Storage and aliases still need a server restart.'
   status-header: '<dark_gray>» <c:brand><bold>CHORUSCORE</bold></c> <dark_gray>« <gray>%version%'
   status-storage: '<dark_gray>▪ <gray>Storage <dark_gray>» <white>%storage%'
@@ -123,6 +123,11 @@ core:
   purge-empty: '%prefix%<gray>No player has been offline that long.'
   purge-failed: '%prefix%<red>The purge stopped. The console says why. Nothing was deleted.'
   purge-next: '%prefix%<gray>To delete them, add <white>run</white> to the end.'
+  backup-started: '%prefix%<gray>Backing up the database, configs and messages.'
+  backup-done: '%prefix%<green>Backup saved as <white>%file%</white> <dark_gray>(<gray>%size% MB<dark_gray>)<green>.'
+  backup-remote: '%prefix%<yellow>The database is on a remote server and was not copied. Back it up with its own tools.'
+  backup-rotated: '<dark_gray>▪ <gray>Old backups deleted <dark_gray>» <white>%count%'
+  backup-failed: '%prefix%<red>The backup stopped. The console says why.'
 
   status-updates: '<dark_gray>▪ <gray>Updates <dark_gray>» <white>%updates%'
   update-available: '%prefix%<gray>ChorusCore <white>%latest%</white> is out. This server has <white>%current%</white>. <c:accent><underlined>Click to download it</underlined></c> <dark_gray>(%site%)'
